@@ -1,0 +1,891 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  body {
+    @apply bg-gray-50 text-gray-900;
+  }
+}
+
+@layer components {
+  /* 基础按钮样式 */
+  .btn {
+    @apply inline-flex items-center justify-center px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none active:scale-95;
+  }
+
+  /* 主要按钮 - 渐变效果 */
+  .btn-primary {
+    @apply bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-sm hover:from-primary-600 hover:to-primary-700 hover:shadow-md focus:ring-primary-500;
+  }
+
+  /* 次要按钮 */
+  .btn-secondary {
+    @apply bg-secondary-500 text-white shadow-sm hover:bg-secondary-600 hover:shadow-md focus:ring-secondary-500;
+  }
+
+  /* 轮廓按钮 */
+  .btn-outline {
+    @apply border border-gray-300 bg-white text-gray-700 shadow-sm hover:bg-gray-50 hover:border-gray-400 focus:ring-primary-500;
+  }
+
+  /* 幽灵按钮 */
+  .btn-ghost {
+    @apply text-gray-600 hover:text-primary-600 hover:bg-gray-50 focus:ring-primary-500;
+  }
+
+  /* 危险按钮 */
+  .btn-danger {
+    @apply bg-red-500 text-white shadow-sm hover:bg-red-600 hover:shadow-md focus:ring-red-500;
+  }
+
+  /* 成功按钮 */
+  .btn-success {
+    @apply bg-green-500 text-white shadow-sm hover:bg-green-600 hover:shadow-md focus:ring-green-500;
+  }
+
+  /* 按钮尺寸 */
+  .btn-sm {
+    @apply px-3 py-1.5 text-xs;
+  }
+
+  .btn-lg {
+    @apply px-6 py-3 text-base;
+  }
+
+  .btn-xl {
+    @apply px-8 py-4 text-lg;
+  }
+
+  /* 输入框样式 - 增强版 */
+  .input {
+    @apply block w-full px-4 py-3 border border-gray-200 rounded-lg shadow-sm placeholder-gray-400
+           focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500
+           transition-all duration-300 ease-in-out bg-white text-gray-900
+           hover:border-gray-300 hover:shadow-md;
+  }
+
+  /* 带图标的输入框容器 */
+  .input-with-icon {
+    @apply relative;
+  }
+
+  /* 输入框图标 */
+  .input-icon {
+    @apply absolute top-1/2 left-3 transform -translate-y-1/2 flex items-center pointer-events-none z-10;
+  }
+
+  .input-icon svg {
+    @apply h-5 w-5 text-gray-400 transition-colors duration-200;
+  }
+
+  /* 带图标的输入框 */
+  .input.has-icon {
+    @apply pl-10;
+  }
+
+  /* 输入框聚焦时的图标颜色 - 现在由组件控制 */
+
+  /* 错误状态的输入框 */
+  .input-error {
+    @apply border-red-300 focus:border-red-500 focus:ring-red-500/20;
+  }
+
+  /* 禁用状态的输入框 */
+  .input:disabled {
+    @apply opacity-50 cursor-not-allowed bg-gray-50;
+  }
+
+  /* 下拉框样式 */
+  .select {
+    @apply block w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 appearance-none;
+  }
+
+  /* 卡片样式 */
+  .card {
+    @apply bg-white rounded-xl shadow-sm border border-gray-100;
+  }
+
+  /* 现代卡片样式 */
+  .card-modern {
+    @apply bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20;
+  }
+
+  /* 轮播组件样式 */
+  .carousel-container {
+    @apply relative overflow-hidden;
+  }
+
+  .carousel-track {
+    @apply flex transition-transform duration-300 ease-in-out;
+  }
+
+  .carousel-slide {
+    @apply flex-shrink-0 w-full;
+  }
+
+  .carousel-arrow {
+    @apply absolute top-1/2 transform -translate-y-1/2 z-10
+           bg-transparent rounded-full p-2
+           hover:bg-white/20 transition-colors duration-200
+           focus:outline-none;
+  }
+
+  .carousel-dot {
+    @apply w-2 h-2 rounded-full bg-gray-300 transition-all duration-200
+           hover:bg-gray-400 focus:outline-none;
+  }
+
+  .carousel-dot-active {
+    @apply bg-primary-500 w-4;
+  }
+
+  /* 进度条样式 - Ant Design 风格 */
+  .carousel-progress-container {
+    @apply absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2 z-10;
+  }
+
+  .carousel-progress-item {
+    @apply relative w-8 h-1 bg-gray-300 rounded-full overflow-hidden cursor-pointer;
+  }
+
+  .carousel-progress-item:focus {
+    @apply outline-none;
+  }
+
+  .carousel-progress-item:active {
+    @apply transform-none bg-gray-300; /* 移除点击时的缩放效果，保持背景色不变 */
+  }
+
+  .carousel-progress-item:hover {
+    @apply bg-gray-300; /* 悬停时保持背景色不变 */
+  }
+
+  .carousel-progress-item:focus-visible {
+    @apply outline-none ring-0; /* 移除焦点时的轮廓 */
+  }
+
+  .carousel-progress-fill {
+    @apply absolute top-0 left-0 h-full bg-primary-500 transition-all duration-100 ease-linear;
+  }
+
+  /* 平台介绍页面动画效果 */
+  .animate-fade-up {
+    animation: fadeUp 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  /* 特色功能卡片专用动画 */
+  .feature-card {
+    animation: featureCardIn 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    opacity: 0;
+    transform: translateY(40px) scale(0.95) rotateX(10deg);
+    perspective: 1000px;
+  }
+
+  .feature-card:hover {
+    animation: featureCardHover 0.6s ease-out forwards;
+    transform-style: preserve-3d;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.8s ease-out forwards;
+    opacity: 0;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.5s ease-out forwards;
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  .animate-slide-in-left {
+    animation: slideInLeft 0.6s ease-out forwards;
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+
+  .animate-slide-in-right {
+    animation: slideInRight 0.6s ease-out forwards;
+    opacity: 0;
+    transform: translateX(30px);
+  }
+
+  /* 悬停动画效果 */
+  .hover-lift {
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    position: relative;
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-6px) scale(1.02) rotateX(2deg) rotateY(1deg);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12), 0 8px 16px rgba(0, 0, 0, 0.08);
+  }
+
+  .hover-lift::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(168, 85, 247, 0.05) 100%);
+    border-radius: inherit;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    z-index: -1;
+  }
+
+  .hover-lift:hover::before {
+    opacity: 1;
+  }
+
+  /* 特色功能卡片边框动画 */
+  .feature-card {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .feature-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.6), transparent);
+    transition: left 0.6s ease;
+  }
+
+  .feature-card:hover::after {
+    left: 100%;
+  }
+
+  /* 常见问题项目动画 */
+  .faq-item {
+    position: relative;
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    border-left: 4px solid transparent;
+    animation: faqItemIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+
+  .faq-item:hover {
+    border-left-color: rgba(59, 130, 246, 0.3);
+    transform: translateX(8px) scale(1.01);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  }
+
+  .faq-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.02) 0%, rgba(168, 85, 247, 0.02) 100%);
+    border-radius: inherit;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    z-index: -1;
+  }
+
+  .faq-item:hover::before {
+    opacity: 1;
+  }
+
+  /* 常见问题边框高亮动画 */
+  .faq-item::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border: 2px solid transparent;
+    border-radius: inherit;
+    opacity: 0;
+    transition: all 0.4s ease;
+    pointer-events: none;
+  }
+
+  .faq-item:hover::after {
+    opacity: 1;
+    border-color: rgba(59, 130, 246, 0.2);
+    animation: borderGlow 2s ease-in-out infinite;
+  }
+
+  @keyframes borderGlow {
+    0%, 100% {
+      border-color: rgba(59, 130, 246, 0.2);
+    }
+    50% {
+      border-color: rgba(59, 130, 246, 0.4);
+    }
+  }
+
+  /* 标题区域动画 */
+  .title-section {
+    position: relative;
+  }
+
+  /* 简洁的标题图标动画 */
+  .title-section .w-10.h-10 {
+    transition: all 0.3s ease;
+  }
+
+  .title-section:hover .w-10.h-10 {
+    transform: scale(1.05);
+    background-color: rgba(59, 130, 246, 0.15);
+  }
+
+  /* 特色标签动画 */
+  .title-section span.inline-flex {
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    animation: tagSlideIn 0.6s ease-out forwards;
+    opacity: 0;
+    transform: translateY(15px);
+  }
+
+  .title-section span.inline-flex:nth-child(1) { animation-delay: 0.2s; }
+  .title-section span.inline-flex:nth-child(2) { animation-delay: 0.4s; }
+  .title-section span.inline-flex:nth-child(3) { animation-delay: 0.6s; }
+  .title-section span.inline-flex:nth-child(4) { animation-delay: 0.8s; }
+
+  .title-section span.inline-flex:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  }
+
+  .title-section span.inline-flex:hover .w-2.h-2 {
+    animation: dotPulse 1s ease-in-out infinite;
+  }
+
+  @keyframes dotPulse {
+    0%, 100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.3);
+    }
+  }
+
+  .hover-scale {
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .hover-scale:hover {
+    transform: scale(1.08);
+    filter: brightness(1.1);
+  }
+
+  .hover-pulse {
+    transition: all 0.3s ease;
+  }
+
+  .hover-pulse:hover {
+    animation: pulse 2s infinite;
+  }
+
+  /* 图标动画 */
+  .icon-pulse {
+    animation: iconPulse 3s ease-in-out infinite;
+  }
+
+  .icon-float {
+    animation: iconFloat 3s ease-in-out infinite;
+  }
+
+  /* 特色功能图标动画 */
+  .feature-card:hover .text-2xl {
+    animation: iconGlow 2s ease-in-out infinite;
+  }
+
+  .feature-card:hover .absolute {
+    opacity: 0.3;
+  }
+
+  /* 常见问题Q图标动画 */
+  .faq-item:hover .w-8.h-8 {
+    animation: qIconPulse 1.5s ease-in-out infinite;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(59, 130, 246, 0.4) 100%) !important;
+  }
+}
+
+@keyframes fadeUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideInLeft {
+  0% {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  0% {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes iconPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+@keyframes iconFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes featureCardIn {
+  0% {
+    opacity: 0;
+    transform: translateY(40px) scale(0.95) rotateX(10deg);
+  }
+  60% {
+    opacity: 0.8;
+    transform: translateY(-5px) scale(1.02) rotateX(0deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotateX(0deg);
+  }
+}
+
+@keyframes featureCardHover {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-8px) scale(1.05);
+  }
+  100% {
+    transform: translateY(-6px) scale(1.03);
+  }
+}
+
+@keyframes iconGlow {
+  0%, 100% {
+    filter: brightness(1) drop-shadow(0 0 0 rgba(59, 130, 246, 0));
+  }
+  50% {
+    filter: brightness(1.2) drop-shadow(0 0 10px rgba(59, 130, 246, 0.3));
+  }
+}
+
+@keyframes faqItemIn {
+  0% {
+    opacity: 0;
+    transform: translateX(-20px) scale(0.98);
+  }
+  60% {
+    opacity: 0.8;
+    transform: translateX(5px) scale(1.01);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes qIconPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 rgba(59, 130, 246, 0.4);
+  }
+  50% {
+    transform: scale(1.1);
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.6);
+  }
+}
+
+@keyframes tagSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(15px) scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* 步骤卡片样式 - 优化版本 */
+.step-card {
+  @apply relative bg-white rounded-xl shadow border border-gray-100 p-4;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  animation: stepCardIn 0.6s ease-out forwards;
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.step-card.animate-in {
+  opacity: 1 !important;
+  transform: none !important;
+  animation: none;
+}
+
+/* 步骤数字容器 - 横向布局 */
+.step-number-container {
+  @apply relative flex items-start gap-4;
+}
+
+/* 步骤数字 */
+.step-number {
+  @apply w-8 h-8 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center
+         text-base font-semibold relative z-10 flex-shrink-0;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* 垂直连接线 - 美化设计 */
+.step-card-container::before {
+  content: '';
+  position: absolute;
+  left: 2rem;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(to bottom,
+    transparent 0%,
+    rgba(59, 130, 246, 0.2) 20%,
+    rgba(59, 130, 246, 0.3) 50%,
+    rgba(59, 130, 246, 0.2) 80%,
+    transparent 100%);
+  z-index: 1;
+  transition: all 0.3s ease;
+}
+
+/* 步骤内容 */
+.step-content {
+  @apply space-y-2 flex-1 relative z-10;
+}
+
+.step-title {
+  @apply text-base font-semibold text-gray-900 transition-colors duration-200;
+}
+
+.step-description {
+  @apply text-sm text-gray-600 leading-relaxed transition-colors duration-200;
+}
+
+/* 悬停效果 - 优化版本 */
+.step-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  border-color: rgba(59, 130, 246, 0.2);
+  scale: 1.01;
+}
+
+.step-card:hover .step-number {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.8), rgba(59, 130, 246, 1));
+  color: white;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+/* 悬停时连接线高亮效果 */
+.step-card:hover ~ .step-card-container::before,
+.step-card:hover + .step-card::before {
+  background: linear-gradient(to bottom,
+    transparent 0%,
+    rgba(59, 130, 246, 0.6) 20%,
+    rgba(59, 130, 246, 0.8) 50%,
+    rgba(59, 130, 246, 0.6) 80%,
+    transparent 100%);
+}
+
+/* 简约边框高亮效果 */
+.step-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.step-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.8), transparent);
+  transition: left 0.4s ease;
+}
+
+.step-card:hover::before {
+  left: 100%;
+}
+
+/* 动画关键帧 - 优化版本 */
+@keyframes stepCardIn {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 数字脉冲效果 */
+@keyframes numberPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.2);
+  }
+}
+
+/* 添加数字悬停时的脉冲动画 */
+.step-card:hover .step-number {
+  animation: numberPulse 1.5s ease-in-out infinite;
+}
+
+/* 响应式设计 - 优化版本 */
+@media (max-width: 768px) {
+  .step-card {
+    @apply p-3;
+    margin-bottom: 0.5rem;
+  }
+
+  .step-number-container {
+    @apply gap-3;
+  }
+
+  .step-number {
+    @apply w-6 h-6 text-xs;
+  }
+
+  .step-card-container::before {
+    left: 1.5rem;
+  }
+
+  .step-connector {
+    @apply w-4;
+    margin: 0 0.5rem;
+  }
+
+  .step-title {
+    @apply text-sm;
+  }
+
+  .step-description {
+    @apply text-xs;
+  }
+}
+
+/* 延迟动画类（已有的延迟类已经定义在之前的部分） */
+
+/* 消息组件样式 */
+.message {
+  @apply relative max-w-sm p-4 rounded-lg shadow-lg border-l-4 transition-all duration-300 mb-3;
+  @apply bg-white border-gray-300 text-gray-800;
+  min-width: 300px;
+}
+
+/* 消息类型样式 */
+.message-success {
+  @apply bg-green-50 border-green-400 text-green-800;
+}
+
+.message-error {
+  @apply bg-red-50 border-red-400 text-red-800;
+}
+
+.message-warning {
+  @apply bg-yellow-50 border-yellow-400 text-yellow-800;
+}
+
+.message-info {
+  @apply bg-secondary-50 border-secondary-400 text-secondary-800;
+}
+
+/* 消息布局 */
+.message {
+  @apply flex items-start gap-3;
+}
+
+.message-icon {
+  @apply flex-shrink-0 mt-0.5;
+}
+
+.message-content {
+  @apply flex-1 min-w-0;
+}
+
+.message-title {
+  @apply text-sm font-semibold mb-1;
+}
+
+.message-text {
+  @apply text-sm leading-relaxed;
+}
+
+/* 关闭按钮 */
+.message-close {
+  @apply flex-shrink-0 p-1 rounded-md transition-colors duration-200;
+  @apply hover:bg-black/10 focus:outline-none focus:ring-2 focus:ring-black/20;
+}
+
+/* 进度指示器 */
+.message-progress {
+  @apply absolute bottom-0 left-0 w-full h-1 bg-black/10 rounded-b-lg overflow-hidden;
+}
+
+.message-progress-bar {
+  @apply h-full bg-current opacity-30;
+  animation: messageProgress linear forwards;
+}
+
+/* 消息容器 */
+.message-container {
+  @apply fixed z-50 p-4;
+}
+
+/* 消息容器内的消息应该可以接收点击事件 */
+.message-container .message {
+  pointer-events: auto;
+}
+
+.message-container-top-right {
+  @apply top-0 right-0;
+}
+
+.message-container-top-left {
+  @apply top-0 left-0;
+}
+
+.message-container-bottom-right {
+  @apply bottom-0 right-0;
+}
+
+.message-container-bottom-left {
+  @apply bottom-0 left-0;
+}
+
+.message-stack {
+  @apply space-y-2;
+}
+
+/* 消息动画 */
+.message-enter-active {
+  animation: messageSlideIn 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+.message-leave-active {
+  animation: messageSlideOut 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+@keyframes messageSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateX(100%) scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes messageSlideOut {
+  0% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(100%) scale(0.9);
+  }
+}
+
+@keyframes messageProgress {
+  0% {
+    width: 100%;
+  }
+  100% {
+    width: 0%;
+  }
+}
+
+/* 响应式设计 */
+@media (max-width: 640px) {
+  .message {
+    @apply max-w-full min-w-0 mx-2;
+  }
+
+  .message-container {
+    @apply w-full p-2;
+  }
+
+  .message-container-top-right,
+  .message-container-top-left,
+  .message-container-bottom-right,
+  .message-container-bottom-left {
+    @apply left-0 right-0;
+  }
+}
+
