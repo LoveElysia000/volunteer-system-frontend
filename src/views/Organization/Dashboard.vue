@@ -107,84 +107,80 @@
 
     <!-- 数据概览 -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      <!-- 活跃志愿者 -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <!-- 活跃志愿者 - 添加参与率 -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 card-hover">
         <div class="flex items-center">
-          <div class="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
-            <UsersIcon class="h-6 w-6 text-blue-600" />
-          </div>
+          <CircularProgress
+            :percentage="85"
+            :size="56"
+            :stroke-width="4"
+            progress-color="#3b82f6"
+            text-color-class="text-xs font-bold text-blue-600"
+            class="mr-4 card-icon"
+          />
           <div>
-            <p class="text-sm font-medium text-gray-600">
-              活跃志愿者
-            </p>
-            <p class="text-2xl font-bold text-gray-900">
-              158
-            </p>
+            <p class="text-sm font-medium text-gray-600">活跃志愿者</p>
+            <p class="text-2xl font-bold text-gray-900">158</p>
             <p class="text-xs text-green-600 mt-1">
               <TrendingUpIcon class="h-3 w-3 inline mr-1" />
-              较上月增长 12%
+              参与率 85%
             </p>
           </div>
         </div>
       </div>
 
-      <!-- 近期活动 -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <!-- 近期活动 - 添加完成进度 -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 card-hover">
         <div class="flex items-center">
-          <div class="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center mr-4">
+          <div class="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center mr-4 card-icon">
             <CalendarIcon class="h-6 w-6 text-green-600" />
           </div>
-          <div>
-            <p class="text-sm font-medium text-gray-600">
-              近期活动
-            </p>
-            <p class="text-2xl font-bold text-gray-900">
-              8
-            </p>
-            <p class="text-xs text-gray-500 mt-1">
-              本月开展
-            </p>
+          <div class="flex-1">
+            <p class="text-sm font-medium text-gray-600">近期活动</p>
+            <p class="text-2xl font-bold text-gray-900">8</p>
+            <div class="flex items-center gap-2 mt-1">
+              <div class="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                <div class="h-full bg-green-500 rounded-full transition-all duration-1000" style="width: 75%" />
+              </div>
+              <span class="text-xs text-gray-500">6/8完成</span>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- 服务总时长 -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <!-- 服务总时长 - 添加月度目标 -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 card-hover">
         <div class="flex items-center">
-          <div class="h-12 w-12 bg-orange-100 rounded-lg flex items-center justify-center mr-4">
-            <ClockIcon class="h-6 w-6 text-orange-600" />
-          </div>
+          <CircularProgress
+            :current="245"
+            :max="300"
+            :size="56"
+            :stroke-width="4"
+            progress-color="#f97316"
+            text-color-class="text-xs font-bold text-orange-600"
+            class="mr-4 card-icon"
+          />
           <div>
-            <p class="text-sm font-medium text-gray-600">
-              服务总时长
-            </p>
-            <p class="text-2xl font-bold text-gray-900">
-              245h
-            </p>
-            <p class="text-xs text-green-600 mt-1">
-              <TrendingUpIcon class="h-3 w-3 inline mr-1" />
-              累计贡献
-            </p>
+            <p class="text-sm font-medium text-gray-600">服务总时长</p>
+            <p class="text-2xl font-bold text-gray-900">245h</p>
+            <p class="text-xs text-orange-600 mt-1">本月目标 81%</p>
           </div>
         </div>
       </div>
 
-      <!-- 待办事项 -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <!-- 待办事项 - 添加紧迫度分布 -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 card-hover">
         <div class="flex items-center">
-          <div class="h-12 w-12 bg-red-100 rounded-lg flex items-center justify-center mr-4">
+          <div class="h-12 w-12 bg-red-100 rounded-lg flex items-center justify-center mr-4 card-icon">
             <AlertCircleIcon class="h-6 w-6 text-red-600" />
           </div>
-          <div>
-            <p class="text-sm font-medium text-gray-600">
-              待办事项
-            </p>
-            <p class="text-2xl font-bold text-gray-900">
-              5
-            </p>
-            <p class="text-xs text-gray-500 mt-1">
-              需要处理
-            </p>
+          <div class="flex-1">
+            <p class="text-sm font-medium text-gray-600">待办事项</p>
+            <p class="text-2xl font-bold text-gray-900">5</p>
+            <div class="flex items-center gap-1 mt-1">
+              <span class="px-1.5 py-0.5 bg-red-100 text-red-600 text-xs rounded">3急</span>
+              <span class="px-1.5 py-0.5 bg-yellow-100 text-yellow-600 text-xs rounded">2普</span>
+            </div>
           </div>
         </div>
       </div>
@@ -245,6 +241,7 @@ import {
   AlertCircleIcon,
   BuildingIcon
 } from 'lucide-vue-next'
+import CircularProgress from '@/components/ui/CircularProgress.vue'
 
 const authStore = useAuthStore()
 const user = computed(() => authStore.user)

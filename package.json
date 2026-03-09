@@ -10,6 +10,7 @@
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore"
   },
   "dependencies": {
+    "@vuepic/vue-datepicker": "^12.1.0",
     "axios": "^1.13.4",
     "lucide-vue-next": "^0.303.0",
     "pinia": "^2.1.7",

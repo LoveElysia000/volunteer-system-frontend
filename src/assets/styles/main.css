@@ -173,6 +173,16 @@
     @apply absolute top-0 left-0 h-full bg-primary-500 transition-all duration-100 ease-linear;
   }
 
+  /* 轮播图播放控制容器 */
+  .carousel-progress-wrapper {
+    @apply absolute bottom-4 left-1/2 transform -translate-x-1/2 flex items-center gap-2 z-10 bg-black/20 backdrop-blur-sm rounded-full px-3 py-2;
+  }
+
+  /* 播放/暂停按钮 */
+  .carousel-play-pause {
+    @apply flex items-center justify-center w-6 h-6 rounded-full bg-white/90 text-gray-700 hover:bg-white hover:text-primary-600 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500/50;
+  }
+
   /* 平台介绍页面动画效果 */
   .animate-fade-up {
     animation: fadeUp 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
@@ -569,6 +579,99 @@
     opacity: 1;
     transform: translateY(0) scale(1);
   }
+}
+
+/* Hero 入场动画 - P0 */
+.hero-fade-up {
+  opacity: 0;
+  animation: heroFadeUp 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+@keyframes heroFadeUp {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 延迟类 */
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+.delay-500 { animation-delay: 500ms; }
+.delay-600 { animation-delay: 600ms; }
+
+/* P1: 卡片悬停微交互 --- */
+.card-hover {
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12), 0 8px 16px rgba(0, 0, 0, 0.08);
+}
+
+.card-hover:hover .card-icon {
+  transform: scale(1.1);
+}
+
+.card-icon {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* P1: 按钮交互增强 */
+.btn-interactive {
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.btn-interactive:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.btn-interactive:active {
+  transform: scale(0.98);
+}
+
+/* P1: 按钮涟漪效果 */
+.btn-ripple {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-ripple::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.4s, height 0.4s;
+}
+
+.btn-ripple:active::after {
+  width: 200px;
+  height: 200px;
+}
+
+/* P0: 滚动淡入动画 */
+.scroll-fade-in {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.scroll-fade-in.visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 /* 步骤卡片样式 - 优化版本 */

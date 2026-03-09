@@ -37,7 +37,7 @@
     <!-- 活动列表 -->
     <div class="grid gap-6">
       <!-- 活动卡片 -->
-      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+      <div v-scroll-fade:1 class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 card-hover" style="transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)">
         <div class="flex flex-col md:flex-row md:items-center gap-6">
           <!-- 活动图片占位 -->
           <div class="w-full md:w-48 h-32 bg-gradient-to-br from-green-100 to-green-200 rounded-xl flex items-center justify-center">
@@ -56,7 +56,7 @@
             </div>
 
             <!-- 活动详情 -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
               <div class="flex items-center gap-2">
                 <CalendarIcon class="h-4 w-4 text-gray-400" />
                 <span class="text-gray-600">2024-01-15</span>
@@ -78,15 +78,27 @@
 
           <!-- 报名按钮 -->
           <div class="flex flex-col gap-3">
+            <div class="flex items-center gap-2 justify-end">
+              <CircularProgress
+                :current="25"
+                :max="50"
+                :size="44"
+                :stroke-width="4"
+                progress-color="#10b981"
+                text-color-class="text-xs font-semibold text-gray-700"
+                class="card-icon"
+              />
+              <span class="text-xs text-gray-500">25/50</span>
+            </div>
             <router-link
               to="/login"
-              class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200 text-center font-medium"
+              class="px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 text-center font-medium btn-interactive btn-ripple"
             >
               立即报名
             </router-link>
             <router-link
               to="/activities/1"
-              class="px-6 py-3 text-primary-600 border border-primary-200 rounded-lg hover:bg-primary-50 transition-colors duration-200 text-center font-medium"
+              class="px-6 py-3 text-primary-600 border border-primary-200 rounded-lg hover:bg-primary-50 text-center font-medium btn-interactive"
             >
               查看详情
             </router-link>
@@ -112,6 +124,8 @@
 <script setup lang="ts">
 import { CalendarIcon, MapPinIcon, UsersIcon, ClockIcon } from 'lucide-vue-next'
 import Carousel from '@/components/ui/Carousel.vue'
+import CircularProgress from '@/components/ui/CircularProgress.vue'
+import vScrollFade from '@/directives/vScrollFade'
 
 // 特色活动数据
 const featuredActivities = [
