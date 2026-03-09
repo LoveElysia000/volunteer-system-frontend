@@ -20,13 +20,13 @@
 
     <!-- 快速操作 -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
-      <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 p-4 md:p-5 lg:p-6">
+      <div class="gradient-card bg-gradient-to-br from-green-500 to-green-600 rounded-2xl text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 p-4 md:p-5 lg:p-6">
         <div class="flex items-center justify-between">
           <div>
-            <h3 class="text-sm md:text-base lg:text-lg font-semibold">
+            <h3 class="gradient-card-text text-sm md:text-base lg:text-lg font-semibold">
               报名活动
             </h3>
-            <p class="text-green-100 text-xs md:text-sm mt-1">
+            <p class="gradient-card-text text-green-100 text-xs md:text-sm mt-1">
               发现新的志愿者机会
             </p>
           </div>
@@ -37,13 +37,13 @@
         </button>
       </div>
 
-      <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 p-4 md:p-5 lg:p-6">
+      <div class="gradient-card bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 p-4 md:p-5 lg:p-6">
         <div class="flex items-center justify-between">
           <div>
-            <h3 class="text-sm md:text-base lg:text-lg font-semibold">
+            <h3 class="gradient-card-text text-sm md:text-base lg:text-lg font-semibold">
               查看记录
             </h3>
-            <p class="text-blue-100 text-xs md:text-sm mt-1">
+            <p class="gradient-card-text text-blue-100 text-xs md:text-sm mt-1">
               累计贡献一目了然
             </p>
           </div>
@@ -54,13 +54,13 @@
         </button>
       </div>
 
-      <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 p-4 md:p-5 lg:p-6">
+      <div class="gradient-card bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 p-4 md:p-5 lg:p-6">
         <div class="flex items-center justify-between">
           <div>
-            <h3 class="text-sm md:text-base lg:text-lg font-semibold">
+            <h3 class="gradient-card-text text-sm md:text-base lg:text-lg font-semibold">
               完善资料
             </h3>
-            <p class="text-purple-100 text-xs md:text-sm mt-1">
+            <p class="gradient-card-text text-purple-100 text-xs md:text-sm mt-1">
               更新您的个人信息
             </p>
           </div>

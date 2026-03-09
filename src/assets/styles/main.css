@@ -4,7 +4,9 @@
 
 @layer base {
   html {
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: 'Inter', 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   body {
@@ -990,5 +992,76 @@
   .message-container-bottom-left {
     @apply left-0 right-0;
   }
+}
+
+/* ========== P0: 渐变卡片文字可读性优化 ========== */
+
+/* 渐变卡片基础样式 */
+.gradient-card {
+  position: relative;
+  overflow: hidden;
+}
+
+/* 渐变卡片文字阴影增强 */
+.gradient-card-text {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2), 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* 浅色文字在渐变背景上的增强 */
+.gradient-card .text-white {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+/* 彩色浅色文字增强（如 text-green-100, text-blue-100 等） */
+.gradient-card [class*="text-"][class*="-100"] {
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+/* 按钮在渐变卡片上的对比度保护 */
+.gradient-card .btn-white {
+  text-shadow: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* ========== P1: 卡片内边距统一 ========== */
+
+/* 标准卡片内边距 */
+.card-sm {
+  padding: 1rem; /* p-4 */
+}
+
+.card-md {
+  padding: 1.25rem; /* p-5 */
+}
+
+.card-lg {
+  padding: 1.5rem; /* p-6 */
+}
+
+.card-xl {
+  padding: 2rem; /* p-8 */
+}
+
+/* ========== P2: 图标尺寸规范 ========== */
+
+/* 图标尺寸标准 */
+.icon-xs {
+  @apply h-4 w-4; /* 16px */
+}
+
+.icon-sm {
+  @apply h-5 w-5; /* 20px */
+}
+
+.icon-md {
+  @apply h-6 w-6; /* 24px */
+}
+
+.icon-lg {
+  @apply h-8 w-8; /* 32px */
+}
+
+.icon-xl {
+  @apply h-10 w-10; /* 40px */
 }
 

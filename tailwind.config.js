@@ -34,7 +34,7 @@ export default {
         }
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['Inter', 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', 'system-ui', 'sans-serif'],
       },
       screens: {
         '3xl': '1920px',  // 超大屏适配
@@ -43,6 +43,17 @@ export default {
       maxWidth: {
         'screen-3xl': '1920px',
         'screen-4xl': '2560px'
+      },
+      spacing: {
+        // 语义化间距系统
+        '18': '4.5rem',   // 72px
+        '22': '5.5rem',   // 88px
+        '30': '7.5rem',   // 120px
+        '34': '8.5rem',   // 136px
+        '38': '9.5rem',   // 152px
+        '88': '22rem',    // 352px
+        '92': '23rem',    // 368px
+        '128': '32rem',   // 512px
       }
     },
   },

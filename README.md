@@ -67,10 +67,9 @@ VITE_API_BASE_URL=http://localhost:1109
 npm run dev      # 启动开发服务器
 npm run build    # 构建生产包（输出到 dist/）
 npm run preview  # 本地预览构建结果
-npm run lint     # ESLint 检查并自动修复
+npm run lint     # ESLint 检查（不改文件）
+npm run lint:fix # ESLint 检查并自动修复
 ```
-
-说明：`lint` 脚本包含 `--fix`，会直接修改代码文件。
 
 ## 项目结构
 

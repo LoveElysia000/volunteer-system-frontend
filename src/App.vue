@@ -8,7 +8,7 @@
 
     <!-- 主要内容区域 -->
     <main class="flex-1 min-h-[calc(100vh-4rem)]">
-      <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8 xl:max-w-[1800px] 2xl:max-w-[2000px]">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <router-view />
       </div>
     </main>
@@ -21,7 +21,7 @@
       v-if="showHeader"
       class="bg-white border-t border-gray-200 shadow-sm"
     >
-      <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 xl:max-w-[1800px] 2xl:max-w-[2000px]">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div class="text-center text-gray-600 text-sm">
           <p>© 2026 环保志愿者平台. 致力于环境保护和志愿服务</p>
         </div>

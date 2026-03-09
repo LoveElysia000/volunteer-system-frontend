@@ -23,20 +23,20 @@
       <!-- 创建活动 -->
       <router-link
         to="/organization/activities/create"
-        class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 p-4 md:p-5 lg:p-6"
+        class="gradient-card bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 p-4 md:p-5 lg:p-6"
       >
         <div class="flex items-center justify-between">
           <div>
-            <h3 class="text-sm md:text-base lg:text-lg font-semibold">
+            <h3 class="gradient-card-text text-sm md:text-base lg:text-lg font-semibold">
               创建活动
             </h3>
-            <p class="text-blue-100 text-xs md:text-sm mt-1">
+            <p class="gradient-card-text text-blue-100 text-xs md:text-sm mt-1">
               组织新的志愿者活动
             </p>
           </div>
           <PlusIcon class="h-6 md:h-7 lg:h-8 w-6 md:w-7 lg:w-8 text-blue-200" />
         </div>
-        <div class="mt-4 text-xs md:text-sm">
+        <div class="gradient-card-text mt-4 text-xs md:text-sm">
           点击开始创建
         </div>
       </router-link>
@@ -44,20 +44,20 @@
       <!-- 管理志愿者 -->
       <router-link
         to="/organization/volunteers"
-        class="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 p-4 md:p-5 lg:p-6"
+        class="gradient-card bg-gradient-to-br from-green-500 to-green-600 rounded-2xl text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 p-4 md:p-5 lg:p-6"
       >
         <div class="flex items-center justify-between">
           <div>
-            <h3 class="text-sm md:text-base lg:text-lg font-semibold">
+            <h3 class="gradient-card-text text-sm md:text-base lg:text-lg font-semibold">
               管理志愿者
             </h3>
-            <p class="text-green-100 text-xs md:text-sm mt-1">
+            <p class="gradient-card-text text-green-100 text-xs md:text-sm mt-1">
               查看和管理志愿者信息
             </p>
           </div>
           <UsersIcon class="h-6 md:h-7 lg:h-8 w-6 md:w-7 lg:w-8 text-green-200" />
         </div>
-        <div class="mt-4 text-xs md:text-sm">
+        <div class="gradient-card-text mt-4 text-xs md:text-sm">
           查看志愿者列表
         </div>
       </router-link>
@@ -65,20 +65,20 @@
       <!-- 数据统计 -->
       <router-link
         to="/organization/statistics"
-        class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 p-4 md:p-5 lg:p-6"
+        class="gradient-card bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 p-4 md:p-5 lg:p-6"
       >
         <div class="flex items-center justify-between">
           <div>
-            <h3 class="text-sm md:text-base lg:text-lg font-semibold">
+            <h3 class="gradient-card-text text-sm md:text-base lg:text-lg font-semibold">
               数据统计
             </h3>
-            <p class="text-purple-100 text-xs md:text-sm mt-1">
+            <p class="gradient-card-text text-purple-100 text-xs md:text-sm mt-1">
               查看活动与志愿者统计
             </p>
           </div>
           <BarChartIcon class="h-6 md:h-7 lg:h-8 w-6 md:w-7 lg:w-8 text-purple-200" />
         </div>
-        <div class="mt-4 text-xs md:text-sm">
+        <div class="gradient-card-text mt-4 text-xs md:text-sm">
           查看详细报告
         </div>
       </router-link>
@@ -86,20 +86,20 @@
       <!-- 组织信息 -->
       <router-link
         to="/organization/organization-info"
-        class="bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-2xl text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 p-4 md:p-5 lg:p-6"
+        class="gradient-card bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-2xl text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 p-4 md:p-5 lg:p-6"
       >
         <div class="flex items-center justify-between">
           <div>
-            <h3 class="text-sm md:text-base lg:text-lg font-semibold">
+            <h3 class="gradient-card-text text-sm md:text-base lg:text-lg font-semibold">
               组织信息
             </h3>
-            <p class="text-indigo-100 text-xs md:text-sm mt-1">
+            <p class="gradient-card-text text-indigo-100 text-xs md:text-sm mt-1">
               完善组织基本信息
             </p>
           </div>
           <BuildingIcon class="h-6 md:h-7 lg:h-8 w-6 md:w-7 lg:w-8 text-indigo-200" />
         </div>
-        <div class="mt-4 text-xs md:text-sm">
+        <div class="gradient-card-text mt-4 text-xs md:text-sm">
           更新组织资料
         </div>
       </router-link>
