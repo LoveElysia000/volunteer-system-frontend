@@ -98,37 +98,49 @@
 
     <!-- 指示点 - 已集成到进度条中 -->
 
-    <!-- 进度条 - Ant Design 风格 -->
+    <!-- 进度条和播放控制 - Ant Design 风格 -->
     <div
       v-if="autoplay && slides && slides.length > 1"
-      class="carousel-progress-container"
-      role="tablist"
-      aria-label="幻灯片进度条和指示点"
+      class="carousel-progress-wrapper"
     >
       <button
-        v-for="(_, index) in slides"
-        :key="index"
-        class="carousel-progress-item"
-        :aria-label="`跳转到幻灯片 ${index + 1}`"
-        :aria-selected="index === currentSlideIndex"
-        role="tab"
-        @click="goTo(index)"
+        class="carousel-play-pause"
+        :aria-label="isAutoplayActive ? '暂停自动播放' : '开始自动播放'"
+        @click="toggleAutoplay"
       >
-        <div
-          class="carousel-progress-fill"
-          :style="{
-            width: index === currentSlideIndex ? `${progressPercentage}%` : '0%',
-            opacity: index === currentSlideIndex ? 1 : 0.3
-          }"
-        />
+        <PauseIcon v-if="isAutoplayActive" class="h-3.5 w-3.5" />
+        <PlayIcon v-else class="h-3.5 w-3.5" />
       </button>
+      <div
+        class="carousel-progress-container"
+        role="tablist"
+        aria-label="幻灯片进度条和指示点"
+      >
+        <button
+          v-for="(_, index) in slides"
+          :key="index"
+          class="carousel-progress-item"
+          :aria-label="`跳转到幻灯片 ${index + 1}`"
+          :aria-selected="index === currentSlideIndex"
+          role="tab"
+          @click="goTo(index)"
+        >
+          <div
+            class="carousel-progress-fill"
+            :style="{
+              width: index === currentSlideIndex ? `${progressPercentage}%` : '0%',
+              opacity: index === currentSlideIndex ? 1 : 0.3
+            }"
+          />
+        </button>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
-import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-vue-next'
+import { ChevronLeftIcon, ChevronRightIcon, PlayIcon, PauseIcon } from 'lucide-vue-next'
 
 interface CarouselSlide {
   id: string | number
@@ -307,6 +319,20 @@ const handleKeydown = (event: KeyboardEvent) => {
       event.preventDefault()
       goTo(totalSlides.value - 1)
       break
+    case ' ':
+    case 'Spacebar':
+      event.preventDefault()
+      toggleAutoplay()
+      break
+  }
+}
+
+// 切换自动播放
+const toggleAutoplay = () => {
+  if (isAutoplayActive.value) {
+    stopAutoplay()
+  } else {
+    startAutoplay()
   }
 }
 

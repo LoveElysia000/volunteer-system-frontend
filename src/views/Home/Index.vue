@@ -13,23 +13,23 @@
         <!-- 左侧内容 -->
         <div class="space-y-8">
           <div class="space-y-4">
-            <h1 class="text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
+            <h1 class="text-5xl lg:text-6xl font-bold text-gray-900 leading-tight hero-fade-up">
               为地球
               <span class="bg-gradient-to-r from-primary-600 to-primary-800 bg-clip-text text-transparent">
                 贡献力量
               </span>
             </h1>
-            <p class="text-xl text-gray-600 leading-relaxed">
+            <p class="text-xl text-gray-600 leading-relaxed hero-fade-up delay-100">
               加入环保志愿者平台，参与有意义的环保活动，
               与志同道合的人一起为保护地球环境贡献力量。
             </p>
           </div>
 
           <!-- 统计数据 -->
-          <div class="grid grid-cols-3 gap-6 py-4">
+          <div class="grid grid-cols-3 gap-6 py-4 hero-fade-up delay-200">
             <div class="text-center">
               <div class="text-3xl font-bold text-primary-600">
-                500+
+                {{ volunteerCount }}+
               </div>
               <div class="text-sm text-gray-500">
                 注册志愿者
@@ -37,7 +37,7 @@
             </div>
             <div class="text-center">
               <div class="text-3xl font-bold text-primary-600">
-                100+
+                {{ activityCount }}+
               </div>
               <div class="text-sm text-gray-500">
                 环保活动
@@ -45,7 +45,7 @@
             </div>
             <div class="text-center">
               <div class="text-3xl font-bold text-primary-600">
-                50+
+                {{ orgCount }}+
               </div>
               <div class="text-sm text-gray-500">
                 合作组织
@@ -55,8 +55,8 @@
         </div>
 
         <!-- 右侧插图 -->
-        <div class="relative">
-          <div class="bg-gradient-to-br from-primary-50 via-white to-primary-100 rounded-2xl p-8 shadow-xl border border-white/20">
+        <div class="relative hero-fade-up delay-300">
+          <div class="bg-gradient-to-br from-primary-50 via-white to-primary-100 rounded-2xl p-8 shadow-xl border border-white/20 hover:shadow-2xl transition-shadow duration-500">
             <div class="aspect-square bg-gradient-to-br from-white/90 to-white/70 rounded-2xl shadow-inner flex items-center justify-center relative overflow-hidden">
               <!-- 背景装饰元素 -->
               <div class="absolute inset-0 opacity-10">
@@ -111,4 +111,11 @@
 <script setup lang="ts">
 import { LeafIcon } from 'lucide-vue-next'
 import EcoParticles from '@/components/background/EcoParticles.vue'
+import { useCountUp } from '@/composables/useCountUp'
+
+// 统计数据动画（自动在 onMounted 启动，在 onUnmounted 清理）
+const { current: volunteerCount } = useCountUp(500)
+const { current: activityCount } = useCountUp(100)
+const { current: orgCount } = useCountUp(50)
 </script>
+

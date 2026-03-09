@@ -3,6 +3,7 @@ import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
 import { useAuthStore } from './store/modules/auth'
+import vScrollFade from './directives/vScrollFade'
 import './assets/styles/main.css'
 
 const app = createApp(App)
@@ -23,6 +24,9 @@ window.addEventListener('unhandledrejection', (event) => {
 const pinia = createPinia()
 app.use(pinia)
 app.use(router)
+
+// 注册全局自定义指令
+app.directive('scroll-fade', vScrollFade)
 
 // 恢复认证状态（必须在路由初始化后调用）
 const authStore = useAuthStore()
