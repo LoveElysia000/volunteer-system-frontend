@@ -12,12 +12,14 @@
       <div
         v-for="particle in brandParticles"
         :key="particle.id"
-        class="absolute transition-all duration-500"
+        class="absolute particle-item"
         :style="{
           top: particle.top + '%',
           left: particle.left + '%',
-          animation: `leafFloat-c23563bd ${particle.duration}s ease-in-out infinite ${particle.delay}s`,
-          transform: `translate3d(${particle.mouseOffsetX}px, ${particle.mouseOffsetY}px, 0) rotate(${particle.rotation}deg)`
+          '--mouse-x': `${particle.mouseOffsetX}px`,
+          '--mouse-y': `${particle.mouseOffsetY}px`,
+          '--rotation': `${particle.rotation}deg`,
+          animation: prefersReducedMotion ? 'none' : `leafFloat-c23563bd ${particle.duration}s ease-in-out infinite ${particle.delay}s`
         }"
       >
         <svg
@@ -38,12 +40,14 @@
       <div
         v-for="particle in natureParticles"
         :key="particle.id"
-        class="absolute transition-all duration-500"
+        class="absolute particle-item"
         :style="{
           top: particle.top + '%',
           left: particle.left + '%',
-          animation: `leafFloat-c23563bd ${particle.duration}s ease-in-out infinite ${particle.delay}s`,
-          transform: `translate3d(${particle.mouseOffsetX}px, ${particle.mouseOffsetY}px, 0) rotate(${particle.rotation}deg)`
+          '--mouse-x': `${particle.mouseOffsetX}px`,
+          '--mouse-y': `${particle.mouseOffsetY}px`,
+          '--rotation': `${particle.rotation}deg`,
+          animation: prefersReducedMotion ? 'none' : `leafFloat-c23563bd ${particle.duration}s ease-in-out infinite ${particle.delay}s`
         }"
       >
         <svg
@@ -64,12 +68,14 @@
       <div
         v-for="leaf in leafParticles"
         :key="leaf.id"
-        class="absolute transition-all duration-500"
+        class="absolute particle-item"
         :style="{
           top: leaf.top + '%',
           left: leaf.left + '%',
-          animation: `leafFloat-c23563bd ${leaf.duration}s ease-in-out infinite ${leaf.delay}s`,
-          transform: `translate3d(${leaf.mouseOffsetX}px, ${leaf.mouseOffsetY}px, 0) rotate(${leaf.rotation}deg)`
+          '--mouse-x': `${leaf.mouseOffsetX}px`,
+          '--mouse-y': `${leaf.mouseOffsetY}px`,
+          '--rotation': `${leaf.rotation}deg`,
+          animation: prefersReducedMotion ? 'none' : `leafFloat-c23563bd ${leaf.duration}s ease-in-out infinite ${leaf.delay}s`
         }"
       >
         <svg
@@ -108,7 +114,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 
 interface Particle {
   id: number
@@ -171,12 +177,23 @@ const leafParticles = ref<LeafParticle[]>([])
 const ripples = ref<Ripple[]>([])
 let rippleId = 0
 
+// 动画帧控制
+let rafId: number | null = null
+let lastMouseMoveTime = 0
+const MOUSE_MOVE_THROTTLE = 16 // ~60fps
+
+// 检测用户是否偏好减少动画
+const prefersReducedMotion = computed(() => {
+  if (typeof window === 'undefined') return false
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+})
+
 // 根据强度设置粒子数量
 const getParticleCountByIntensity = () => {
   const counts = {
-    low: { particles: 10, leaves: 15 },
-    medium: { particles: 15, leaves: 20 },
-    high: { particles: 20, leaves: 30 }
+    low: { particles: 8, leaves: 12 },
+    medium: { particles: 12, leaves: 16 },
+    high: { particles: 16, leaves: 22 }
   }
   return counts[props.intensity]
 }
@@ -260,9 +277,14 @@ const generateLeafParticles = () => {
   }
 }
 
-// 鼠标移动事件处理
+// 鼠标移动事件处理 - 使用 RAF 节流
 const handleMouseMove = (event: MouseEvent) => {
   if (!props.enableMouseFollow || !container.value) return
+  if (prefersReducedMotion.value) return // 尊重用户减少动画的偏好
+
+  const now = performance.now()
+  if (now - lastMouseMoveTime < MOUSE_MOVE_THROTTLE) return
+  lastMouseMoveTime = now
 
   const rect = container.value.getBoundingClientRect()
   mousePosition.value = {
@@ -270,8 +292,11 @@ const handleMouseMove = (event: MouseEvent) => {
     y: event.clientY - rect.top
   }
 
-  // 更新所有粒子的鼠标偏移
-  updateParticleMouseOffsets()
+  // 使用 RAF 批量更新
+  if (rafId) {
+    cancelAnimationFrame(rafId)
+  }
+  rafId = requestAnimationFrame(updateParticleMouseOffsets)
 }
 
 // 更新粒子鼠标偏移
@@ -355,9 +380,34 @@ const handleClick = (event: MouseEvent) => {
 // 响应式粒子数量调整
 const handleResize = () => {
   // 在窗口大小变化时重新计算鼠标偏移
-  if (props.enableMouseFollow) {
-    updateParticleMouseOffsets()
+  if (props.enableMouseFollow && !prefersReducedMotion.value) {
+    if (rafId) cancelAnimationFrame(rafId)
+    rafId = requestAnimationFrame(updateParticleMouseOffsets)
   }
+}
+
+// 监听减少动画偏好变化
+let mediaQuery: MediaQueryList | null = null
+const handleMotionPreferenceChange = (e: MediaQueryListEvent) => {
+  if (e.matches) {
+    // 用户偏好减少动画，重置所有偏移
+    resetAllOffsets()
+  }
+}
+
+const resetAllOffsets = () => {
+  brandParticles.value.forEach(p => {
+    p.mouseOffsetX = 0
+    p.mouseOffsetY = 0
+  })
+  natureParticles.value.forEach(p => {
+    p.mouseOffsetX = 0
+    p.mouseOffsetY = 0
+  })
+  leafParticles.value.forEach(p => {
+    p.mouseOffsetX = 0
+    p.mouseOffsetY = 0
+  })
 }
 
 onMounted(() => {
@@ -366,10 +416,20 @@ onMounted(() => {
   generateLeafParticles()
   console.log('生成的粒子数量:', brandParticles.value.length + natureParticles.value.length + leafParticles.value.length)
   window.addEventListener('resize', handleResize)
+
+  // 监听减少动画偏好
+  mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+  mediaQuery.addEventListener('change', handleMotionPreferenceChange)
 })
 
 onUnmounted(() => {
   window.removeEventListener('resize', handleResize)
+  if (mediaQuery) {
+    mediaQuery.removeEventListener('change', handleMotionPreferenceChange)
+  }
+  if (rafId) {
+    cancelAnimationFrame(rafId)
+  }
 })
 </script>
 
@@ -478,5 +538,24 @@ onUnmounted(() => {
 
 .absolute > div {
   contain: layout style paint;
+}
+
+/* 使用 CSS 自定义属性进行粒子位移 - 性能优化 */
+.particle-item {
+  --mouse-x: 0px;
+  --mouse-y: 0px;
+  --rotation: 0deg;
+  transform: translate3d(var(--mouse-x), var(--mouse-y), 0) rotate(var(--rotation));
+  will-change: transform;
+  transition: transform 0.3s ease-out;
+}
+
+/* 减少动画偏好 - 禁用移动效果 */
+@media (prefers-reduced-motion: reduce) {
+  .particle-item {
+    animation: none !important;
+    transform: none !important;
+    transition: none !important;
+  }
 }
 </style>

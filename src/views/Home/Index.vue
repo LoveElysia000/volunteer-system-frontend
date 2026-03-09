@@ -52,52 +52,64 @@
               </div>
             </div>
           </div>
+
+          <!-- CTA 按钮 -->
+          <div class="flex flex-col sm:flex-row gap-4 pt-4 hero-fade-up delay-300">
+            <router-link
+              to="/register"
+              class="inline-flex items-center justify-center px-8 py-4 text-base font-semibold text-white bg-gradient-to-r from-primary-500 to-primary-600 rounded-xl shadow-lg hover:from-primary-600 hover:to-primary-700 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5"
+            >
+              立即加入
+              <ArrowRightIcon class="ml-2 h-5 w-5" />
+            </router-link>
+            <router-link
+              to="/activities"
+              class="inline-flex items-center justify-center px-8 py-4 text-base font-semibold text-gray-700 bg-white border-2 border-gray-200 rounded-xl shadow-sm hover:border-primary-300 hover:text-primary-600 hover:bg-primary-50 transition-all duration-300"
+            >
+              浏览活动
+            </router-link>
+          </div>
         </div>
 
-        <!-- 右侧插图 -->
-        <div class="relative hero-fade-up delay-300">
-          <div class="bg-gradient-to-br from-primary-50 via-white to-primary-100 rounded-2xl p-8 shadow-xl border border-white/20 hover:shadow-2xl transition-shadow duration-500">
-            <div class="aspect-square bg-gradient-to-br from-white/90 to-white/70 rounded-2xl shadow-inner flex items-center justify-center relative overflow-hidden">
-              <!-- 背景装饰元素 -->
-              <div class="absolute inset-0 opacity-10">
-                <div class="absolute top-4 left-4 w-16 h-16 bg-primary-300 rounded-full" />
-                <div class="absolute bottom-6 right-6 w-12 h-12 bg-green-300 rounded-full" />
-                <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-24 h-24 bg-blue-200 rounded-full" />
+        <!-- 右侧插图 - 简化设计 -->
+        <div class="relative hero-fade-up delay-400">
+          <div class="bg-gradient-to-br from-primary-50 to-primary-100 rounded-2xl p-6 shadow-xl border border-primary-100">
+            <div class="aspect-square bg-white rounded-2xl shadow-sm flex items-center justify-center relative overflow-hidden">
+              <!-- 简化背景装饰 -->
+              <div class="absolute inset-0 opacity-5">
+                <div class="absolute top-8 left-8 w-12 h-12 bg-primary-400 rounded-full" />
+                <div class="absolute bottom-8 right-8 w-8 h-8 bg-green-400 rounded-full" />
               </div>
 
-              <!-- 主要内容 -->
-              <div class="text-center space-y-6 relative z-10">
-                <!-- 图标容器 -->
-                <div class="relative">
-                  <div class="h-20 w-20 bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl flex items-center justify-center mx-auto shadow-lg transform rotate-3">
-                    <LeafIcon class="h-10 w-10 text-white" />
-                  </div>
-                  <div class="absolute -top-2 -right-2 w-6 h-6 bg-green-400 rounded-full flex items-center justify-center">
-                    <span class="text-white text-xs font-bold">✓</span>
-                  </div>
+              <!-- 核心内容 -->
+              <div class="text-center space-y-5 relative z-10">
+                <!-- 图标 -->
+                <div class="h-16 w-16 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl flex items-center justify-center mx-auto shadow-md">
+                  <LeafIcon class="h-8 w-8 text-white" />
                 </div>
 
-                <!-- 文字内容 -->
-                <div class="space-y-3">
-                  <h3 class="text-2xl font-bold bg-gradient-to-r from-primary-600 to-primary-800 bg-clip-text text-transparent">
+                <!-- 文字 -->
+                <div class="space-y-2">
+                  <h3 class="text-xl font-bold text-primary-700">
                     环保志愿者平台
                   </h3>
-                  <div class="relative">
-                    <p class="text-lg font-medium text-gray-700 leading-relaxed">
-                      让环保成为一种
-                      <span class="bg-gradient-to-r from-green-600 to-green-800 bg-clip-text text-transparent font-semibold">
+                  <p class="text-base text-gray-600 leading-relaxed">
+                    让环保成为一种
+                    <span class="group relative inline-flex items-center gap-1 cursor-default">
+                      <span class="relative font-semibold bg-gradient-to-r from-green-500 to-primary-600 bg-clip-text text-transparent transition-all duration-300 group-hover:-translate-y-0.5">
                         生活方式
                       </span>
-                    </p>
-                    <div class="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-16 h-0.5 bg-gradient-to-r from-green-400 to-primary-400 rounded-full" />
-                  </div>
+                      <LeafIcon class="w-3 h-3 text-green-500 opacity-0 -translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 group-hover:rotate-12 transition-all duration-300" />
+                      <!-- 下划线动画 -->
+                      <span class="absolute -bottom-0.5 left-0 w-0 h-0.5 bg-gradient-to-r from-green-400 to-primary-400 rounded-full transition-all duration-500 group-hover:w-full" />
+                    </span>
+                  </p>
                 </div>
 
-                <!-- 装饰性标签 -->
+                <!-- 简化标签 -->
                 <div class="flex justify-center space-x-2">
-                  <span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">可持续</span>
-                  <span class="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">绿色</span>
-                  <span class="px-3 py-1 bg-primary-100 text-primary-700 text-xs font-medium rounded-full">社区</span>
+                  <span class="px-2.5 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">可持续</span>
+                  <span class="px-2.5 py-1 bg-primary-100 text-primary-700 text-xs font-medium rounded-full">社区</span>
                 </div>
               </div>
             </div>
@@ -109,7 +121,7 @@
 </template>
 
 <script setup lang="ts">
-import { LeafIcon } from 'lucide-vue-next'
+import { LeafIcon, ArrowRightIcon } from 'lucide-vue-next'
 import EcoParticles from '@/components/background/EcoParticles.vue'
 import { useCountUp } from '@/composables/useCountUp'
 

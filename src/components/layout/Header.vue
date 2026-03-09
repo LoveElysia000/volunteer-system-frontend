@@ -1,6 +1,6 @@
 <template>
   <header class="bg-white/80 backdrop-blur-sm border-b border-gray-100 shadow-sm sticky top-0 z-50">
-    <div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between items-center h-16">
         <!-- Logo和品牌区域 -->
         <div class="flex items-center space-x-8">
@@ -78,51 +78,60 @@
           </button>
         </div>
 
-        <!-- 移动端菜单 -->
-        <div
-          v-if="isMobileMenuOpen"
-          class="lg:hidden absolute top-full left-0 right-0 bg-white border-t border-gray-200 shadow-lg"
+        <!-- 移动端菜单 - 添加动画效果 -->
+        <Transition
+          enter-active-class="transition-all duration-300 ease-out"
+          enter-from-class="opacity-0 -translate-y-2"
+          enter-to-class="opacity-100 translate-y-0"
+          leave-active-class="transition-all duration-200 ease-in"
+          leave-from-class="opacity-100 translate-y-0"
+          leave-to-class="opacity-0 -translate-y-2"
         >
-          <div class="px-4 py-2 space-y-1">
-            <!-- 移动端导航菜单 -->
-            <NavigationMenuMobile @close="isMobileMenuOpen = false" />
+          <div
+            v-if="isMobileMenuOpen"
+            class="lg:hidden absolute top-full left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-gray-200 shadow-lg"
+          >
+            <div class="px-4 py-3 space-y-1 max-h-[calc(100vh-4rem)] overflow-y-auto">
+              <!-- 移动端导航菜单 -->
+              <NavigationMenuMobile @close="isMobileMenuOpen = false" />
 
-            <!-- 移动端用户操作 -->
-            <div class="border-t border-gray-200 pt-2">
-              <template v-if="!isAuthenticated">
-                <router-link
-                  to="/login"
-                  class="block px-3 py-2 text-base font-medium text-gray-600 hover:text-primary-600 hover:bg-gray-50 rounded-lg transition-colors duration-200"
-                  @click="isMobileMenuOpen = false"
-                >
-                  登录
-                </router-link>
-                <router-link
-                  to="/register"
-                  class="block px-3 py-2 text-base font-medium text-white bg-primary-500 hover:bg-primary-600 rounded-lg transition-colors duration-200"
-                  @click="isMobileMenuOpen = false"
-                >
-                  注册
-                </router-link>
-              </template>
-              <template v-else>
-                <router-link
-                  to="/profile"
-                  class="block px-3 py-2 text-base font-medium text-gray-600 hover:text-primary-600 hover:bg-gray-50 rounded-lg transition-colors duration-200"
-                  @click="isMobileMenuOpen = false"
-                >
-                  个人中心
-                </router-link>
-                <button
-                  class="w-full text-left px-3 py-2 text-base font-medium text-gray-600 hover:text-primary-600 hover:bg-gray-50 rounded-lg transition-colors duration-200"
-                  @click="handleLogout"
-                >
-                  退出登录
-                </button>
-              </template>
+              <!-- 移动端用户操作 -->
+              <div class="border-t border-gray-200 pt-3 mt-3">
+                <template v-if="!isAuthenticated">
+                  <router-link
+                    to="/login"
+                    class="block px-3 py-2.5 text-base font-medium text-gray-600 hover:text-primary-600 hover:bg-gray-50 rounded-lg transition-all duration-200"
+                    @click="isMobileMenuOpen = false"
+                  >
+                    登录
+                  </router-link>
+                  <router-link
+                    to="/register"
+                    class="block px-3 py-2.5 text-base font-medium text-white bg-primary-500 hover:bg-primary-600 rounded-lg transition-all duration-200 mt-2"
+                    @click="isMobileMenuOpen = false"
+                  >
+                    注册
+                  </router-link>
+                </template>
+                <template v-else>
+                  <router-link
+                    to="/profile"
+                    class="block px-3 py-2.5 text-base font-medium text-gray-600 hover:text-primary-600 hover:bg-gray-50 rounded-lg transition-all duration-200"
+                    @click="isMobileMenuOpen = false"
+                  >
+                    个人中心
+                  </router-link>
+                  <button
+                    class="w-full text-left px-3 py-2.5 text-base font-medium text-gray-600 hover:text-primary-600 hover:bg-gray-50 rounded-lg transition-all duration-200"
+                    @click="handleLogout"
+                  >
+                    退出登录
+                  </button>
+                </template>
+              </div>
             </div>
           </div>
-        </div>
+        </Transition>
       </div>
     </div>
   </header>
