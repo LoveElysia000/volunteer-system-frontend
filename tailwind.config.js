@@ -31,7 +31,23 @@ export default {
           700: '#435261',
           800: '#3b4652',
           900: '#343c46',
-        }
+        },
+        // 参考设计自然色系
+        forest: {
+          DEFAULT: '#244d31',
+          deep: '#1a3c26',
+        },
+        sage: {
+          DEFAULT: '#e7f3e9',
+          light: '#f1f7f2',
+        },
+        cream: '#faf9f2',
+        accent: '#13ec37',
+        earth: {
+          DEFAULT: '#6b7c6d',
+          light: '#8a9a8c',
+          dark: '#4a5a4c',
+        },
       },
       fontFamily: {
         sans: ['Inter', 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', 'system-ui', 'sans-serif'],
