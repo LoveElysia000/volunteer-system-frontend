@@ -26,19 +26,19 @@
 import { computed } from 'vue'
 import MenuItem from './MenuItem.vue'
 
-interface MenuItem {
+interface SubMenuItemData {
   key: string
   label: string
   icon?: any
   to?: string
-  children?: MenuItem[]
+  children?: SubMenuItemData[]
   badge?: string
   badgeClass?: string
   disabled?: boolean
 }
 
 interface Props {
-  items: MenuItem[]
+  items: SubMenuItemData[]
   expanded?: boolean
   level?: number
 }
@@ -49,7 +49,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  'item-click': [item: MenuItem]
+  'item-click': [item: SubMenuItemData]
   'toggle-expand': [key: string]
 }>()
 

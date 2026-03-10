@@ -8,7 +8,11 @@
 
     <!-- 主要内容区域 -->
     <main class="flex-1 min-h-[calc(100vh-4rem)]">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <router-view v-if="isFullWidthPage" />
+      <div
+        v-else
+        class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
+      >
         <router-view />
       </div>
     </main>
@@ -23,7 +27,7 @@
     >
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div class="text-center text-gray-600 text-sm">
-          <p>© 2026 环保志愿者平台. 致力于环境保护和志愿服务</p>
+          <p>{{ t('app.footer.copyright') }}</p>
         </div>
       </div>
     </footer>
@@ -33,12 +37,14 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/store/modules/auth'
 import { usePageStateStore } from '@/store/modules/pageState'
 import { useMessageStore } from '@/store/modules/messages'
 import Header from '@/components/layout/Header.vue'
 import MessageContainer from '@/components/ui/MessageContainer.vue'
 
+const { t } = useI18n()
 const route = useRoute()
 const authStore = useAuthStore()
 const pageStateStore = usePageStateStore()
@@ -61,6 +67,14 @@ const showHeader = computed(() => {
   }
 
   return true
+})
+
+// 防御性兜底：即使 route meta 被误改，about 仍按全宽页面渲染
+const fullWidthRouteNames = new Set(['about'])
+
+const isFullWidthPage = computed(() => {
+  const routeName = typeof route.name === 'string' ? route.name : ''
+  return Boolean(route.meta.fullWidth) || fullWidthRouteNames.has(routeName)
 })
 </script>
 

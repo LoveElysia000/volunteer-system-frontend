@@ -1,9 +1,9 @@
 <template>
   <nav class="bg-white/80 backdrop-blur-sm border-b border-gray-100 shadow-sm">
     <div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex justify-center items-center h-16">
+      <div class="flex h-16 items-center overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <!-- 主导航菜单 -->
-        <div class="flex items-center space-x-1">
+        <div class="mx-auto flex w-max items-center gap-1">
           <!-- 使用条件渲染，禁用状态显示为普通span，非禁用状态显示为router-link -->
           <div
             v-for="item in menuItems"
@@ -12,7 +12,7 @@
             <template v-if="!item.disabled">
               <router-link
                 :to="item.to || { name: item.routeName }"
-                class="group relative flex items-center space-x-2 px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200"
+                class="group relative flex min-w-0 max-w-[10.5rem] items-center space-x-2 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 xl:max-w-none xl:px-4"
                 :class="[
                   isActive(item)
                     ? 'text-primary-600 bg-primary-50'
@@ -25,7 +25,7 @@
                   class="h-4 w-4 shrink-0"
                   :class="isActive(item) ? 'text-primary-600' : 'text-gray-400 group-hover:text-primary-500'"
                 />
-                <span>{{ item.label }}</span>
+                <span class="min-w-0 truncate">{{ t(item.labelKey) }}</span>
 
                 <!-- 活动指示器 -->
                 <span
@@ -36,13 +36,13 @@
             </template>
             <template v-else>
               <span
-                class="group relative flex items-center space-x-2 px-4 py-2.5 text-sm font-medium rounded-lg opacity-50 cursor-not-allowed text-gray-400"
+                class="group relative flex min-w-0 max-w-[10.5rem] items-center space-x-2 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-400 opacity-50 xl:max-w-none xl:px-4"
               >
                 <component
                   :is="item.icon"
                   class="h-4 w-4 shrink-0 text-gray-400"
                 />
-                <span>{{ item.label }}</span>
+                <span class="min-w-0 truncate">{{ t(item.labelKey) }}</span>
               </span>
             </template>
           </div>
@@ -53,8 +53,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/store/modules/auth'
 import {
   HomeIcon,
@@ -66,7 +67,7 @@ import {
 
 interface MenuItem {
   key: string
-  label: string
+  labelKey: string
   icon?: any
   to?: string
   routeName?: string
@@ -80,12 +81,7 @@ interface MenuItem {
 const route = useRoute()
 const authStore = useAuthStore()
 const router = useRouter()
-
-// 获取from路由信息（用于判断是否来自其他页面）
-const from = ref()
-router.afterEach((to, fromRoute) => {
-  from.value = fromRoute
-})
+const { t } = useI18n()
 
 // 认证状态
 const isAuthenticated = computed(() => authStore.isAuthenticated)
@@ -96,13 +92,13 @@ const menuItems = computed<MenuItem[]>(() => {
   const baseItems = [
     {
       key: 'home',
-      label: '首页',
+      labelKey: 'nav.home',
       icon: HomeIcon,
       routeName: 'home'
     },
     {
       key: 'popular-activities',
-      label: '热门活动',
+      labelKey: 'nav.activities',
       icon: CalendarIcon,
       routeName: 'activities'
     }
@@ -111,7 +107,7 @@ const menuItems = computed<MenuItem[]>(() => {
   // 平台介绍菜单项
   const aboutItem = {
     key: 'about',
-    label: '平台介绍',
+    labelKey: 'nav.about',
     icon: InfoIcon,
     routeName: 'about'
   }
@@ -120,7 +116,7 @@ const menuItems = computed<MenuItem[]>(() => {
   const permissionItems = [
     {
       key: 'volunteer-center',
-      label: '志愿者中心',
+      labelKey: 'nav.volunteerCenter',
       icon: UsersIcon,
       routeName: 'volunteer',
       disabled: isAuthenticated.value && user.value?.role !== 'volunteer',
@@ -128,7 +124,7 @@ const menuItems = computed<MenuItem[]>(() => {
     },
     {
       key: 'organization-center',
-      label: '组织管理者中心',
+      labelKey: 'nav.organizationCenter',
       icon: BuildingIcon,
       routeName: 'organization',
       disabled: isAuthenticated.value && user.value?.role !== 'organization',
@@ -159,14 +155,14 @@ const handleMenuItemClick = (item: MenuItem, event: Event) => {
   if (item.requiresAuth && !isAuthenticated.value) {
     event.preventDefault()
     // 显示提示信息
-    alert('请先登录访问该功能')
+    alert(t('nav.loginRequired'))
     // 跳转到登录页面
     router.push('/login')
     return
   }
 
   // 如果当前已经在目标页面，且不是刷新操作，则阻止默认跳转
-  if (item.routeName && route.name === item.routeName && from.value?.name) {
+  if (item.routeName && route.name === item.routeName) {
     event.preventDefault()
     return
   }

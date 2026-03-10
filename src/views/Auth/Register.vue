@@ -510,11 +510,12 @@ const validateField = (field: keyof FormErrors, value: string) => {
       if (!value.trim()) return '*真实姓名必须填写'
       return ''
 
-    case 'age':
+    case 'age': {
       if (!value.trim()) return '*年龄必须填写'
-      const ageNum = parseInt(value)
-      if (isNaN(ageNum) || ageNum < 1 || ageNum > 120) return '*请输入有效的年龄(1-120)'
+      const ageNum = Number.parseInt(value, 10)
+      if (Number.isNaN(ageNum) || ageNum < 1 || ageNum > 120) return '*请输入有效的年龄(1-120)'
       return ''
+    }
 
     case 'gender':
       if (!value.trim()) return '*性别必须选择'

@@ -8,7 +8,7 @@
       <template v-if="!item.disabled">
         <router-link
           :to="item.to || { name: item.routeName }"
-          class="flex items-center space-x-3 px-3 py-2 text-base font-medium rounded-lg transition-colors duration-200"
+          class="flex min-w-0 items-center space-x-3 rounded-lg px-3 py-2 text-base font-medium transition-colors duration-200"
           :class="[
             isActive(item)
               ? 'text-primary-600 bg-primary-50'
@@ -21,18 +21,18 @@
             class="h-5 w-5 shrink-0"
             :class="isActive(item) ? 'text-primary-600' : 'text-gray-400'"
           />
-          <span>{{ item.label }}</span>
+          <span class="min-w-0 break-words leading-5">{{ t(item.labelKey) }}</span>
         </router-link>
       </template>
       <template v-else>
         <span
-          class="flex items-center space-x-3 px-3 py-2 text-base font-medium rounded-lg opacity-50 cursor-not-allowed text-gray-400"
+          class="flex min-w-0 items-center space-x-3 rounded-lg px-3 py-2 text-base font-medium text-gray-400 opacity-50"
         >
           <component
             :is="item.icon"
             class="h-5 w-5 shrink-0 text-gray-400"
           />
-          <span>{{ item.label }}</span>
+          <span class="min-w-0 break-words leading-5">{{ t(item.labelKey) }}</span>
         </span>
       </template>
     </div>
@@ -40,11 +40,11 @@
     <!-- 子菜单项 -->
     <div
       v-for="group in subMenuItems"
-      :key="group.label"
+      :key="group.key"
       class="border-t border-gray-200 pt-2"
     >
       <div class="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">
-        {{ group.label }}
+        {{ t(group.labelKey) }}
       </div>
       <div class="space-y-1">
         <div
@@ -54,7 +54,7 @@
           <template v-if="!item.disabled">
             <router-link
               :to="item.to || { name: item.routeName }"
-              class="flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors duration-200"
+              class="flex min-w-0 items-center space-x-3 rounded-lg px-3 py-2 text-sm text-gray-700 transition-colors duration-200 hover:bg-gray-50"
               @click="(event) => { handleMenuItemClick(item, event); $emit('close') }"
             >
               <component
@@ -62,19 +62,19 @@
                 v-if="item.icon"
                 class="h-4 w-4 text-gray-400"
               />
-              <span>{{ item.label }}</span>
+              <span class="min-w-0 break-words leading-5">{{ t(item.labelKey) }}</span>
             </router-link>
           </template>
           <template v-else>
             <span
-              class="flex items-center space-x-3 px-3 py-2 text-sm text-gray-400 opacity-50 cursor-not-allowed rounded-lg"
+              class="flex min-w-0 items-center space-x-3 rounded-lg px-3 py-2 text-sm text-gray-400 opacity-50"
             >
               <component
                 :is="item.icon"
                 v-if="item.icon"
                 class="h-4 w-4 text-gray-400"
               />
-              <span>{{ item.label }}</span>
+              <span class="min-w-0 break-words leading-5">{{ t(item.labelKey) }}</span>
             </span>
           </template>
         </div>
@@ -89,19 +89,20 @@
         :href="item.href"
         target="_blank"
         rel="noopener noreferrer"
-        class="flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors duration-200"
+        class="flex min-w-0 items-center space-x-3 rounded-lg px-3 py-2 text-sm text-gray-700 transition-colors duration-200 hover:bg-gray-50"
         @click="$emit('close')"
       >
         <ExternalLinkIcon class="h-4 w-4 text-gray-400" />
-        <span>{{ item.label }}</span>
+        <span class="min-w-0 break-words leading-5">{{ t(item.labelKey) }}</span>
       </a>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/store/modules/auth'
 import {
   HomeIcon,
@@ -115,7 +116,7 @@ import {
 
 interface MenuItem {
   key: string
-  label: string
+  labelKey: string
   icon?: any
   to?: string
   routeName?: string
@@ -129,12 +130,7 @@ interface MenuItem {
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
-
-// 获取from路由信息（用于判断是否来自其他页面）
-const from = ref()
-router.afterEach((to, fromRoute) => {
-  from.value = fromRoute
-})
+const { t } = useI18n()
 
 // 认证状态
 const isAuthenticated = computed(() => authStore.isAuthenticated)
@@ -144,19 +140,19 @@ const user = computed(() => authStore.user)
 const menuItems = computed<MenuItem[]>(() => [
   {
     key: 'home',
-    label: '首页',
+    labelKey: 'nav.home',
     icon: HomeIcon,
     routeName: 'home'
   },
   {
     key: 'activities',
-    label: '活动列表',
+    labelKey: 'nav.activities',
     icon: CalendarIcon,
     routeName: 'activities'
   },
   {
     key: 'about',
-    label: '平台介绍',
+    labelKey: 'nav.about',
     icon: InfoIcon,
     routeName: 'about'
   }
@@ -166,11 +162,11 @@ const menuItems = computed<MenuItem[]>(() => [
 const subMenuItems = computed<MenuItem[]>(() => [
   {
     key: 'permission-centers',
-    label: '权限中心',
+    labelKey: 'nav.permissionCenter',
     children: [
       {
         key: 'volunteer-center',
-        label: '志愿者中心',
+        labelKey: 'nav.volunteerCenter',
         icon: UsersIcon,
         routeName: 'volunteer',
         disabled: isAuthenticated.value && user.value?.role !== 'volunteer',
@@ -178,7 +174,7 @@ const subMenuItems = computed<MenuItem[]>(() => [
       },
       {
         key: 'organization-center',
-        label: '组织管理者中心',
+        labelKey: 'nav.organizationCenter',
         icon: BuildingIcon,
         routeName: 'organization',
         disabled: isAuthenticated.value && user.value?.role !== 'organization',
@@ -188,11 +184,11 @@ const subMenuItems = computed<MenuItem[]>(() => [
   },
   {
     key: 'settings',
-    label: '设置',
+    labelKey: 'nav.settings',
     children: [
       {
         key: 'profile',
-        label: '个人中心',
+        labelKey: 'nav.profile',
         icon: UserIcon,
         routeName: 'profile'
       }
@@ -204,7 +200,7 @@ const subMenuItems = computed<MenuItem[]>(() => [
 const externalItems = computed<MenuItem[]>(() => [
   {
     key: 'antd',
-    label: '设计规范',
+    labelKey: 'nav.designGuideline',
     icon: ExternalLinkIcon,
     href: 'https://ant.design'
   }
@@ -231,14 +227,14 @@ const handleMenuItemClick = (item: MenuItem, event: Event) => {
   if (item.requiresAuth && !isAuthenticated.value) {
     event.preventDefault()
     // 显示提示信息
-    alert('请先登录访问该功能')
+    alert(t('nav.loginRequired'))
     // 跳转到登录页面
     router.push('/login')
     return
   }
 
   // 如果当前已经在目标页面，且不是刷新操作，则阻止默认跳转
-  if (item.routeName && route.name === item.routeName && from.value?.name) {
+  if (item.routeName && route.name === item.routeName) {
     event.preventDefault()
     return
   }

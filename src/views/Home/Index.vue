@@ -17,14 +17,13 @@
           <div class="space-y-8">
             <div class="space-y-4">
               <h1 class="text-5xl lg:text-6xl font-bold text-gray-900 leading-tight hero-fade-up">
-                为地球
+                {{ homeText.hero.titlePrefix }}
                 <span class="bg-gradient-to-r from-primary-600 to-primary-800 bg-clip-text text-transparent">
-                  贡献力量
+                  {{ homeText.hero.titleHighlight }}
                 </span>
               </h1>
               <p class="text-xl text-gray-600 leading-relaxed hero-fade-up delay-100">
-                加入环保志愿者平台，参与有意义的环保活动，
-                与志同道合的人一起为保护地球环境贡献力量。
+                {{ homeText.hero.description }}
               </p>
             </div>
 
@@ -35,7 +34,7 @@
                   {{ volunteerCount }}+
                 </div>
                 <div class="text-sm text-gray-500">
-                  注册志愿者
+                  {{ homeText.hero.volunteerLabel }}
                 </div>
               </div>
               <div class="text-center">
@@ -43,7 +42,7 @@
                   {{ activityCount }}+
                 </div>
                 <div class="text-sm text-gray-500">
-                  环保活动
+                  {{ homeText.hero.activityLabel }}
                 </div>
               </div>
               <div class="text-center">
@@ -51,7 +50,7 @@
                   {{ orgCount }}+
                 </div>
                 <div class="text-sm text-gray-500">
-                  合作组织
+                  {{ homeText.hero.organizationLabel }}
                 </div>
               </div>
             </div>
@@ -62,14 +61,14 @@
                 to="/register"
                 class="inline-flex items-center justify-center px-8 py-4 text-base font-semibold text-white bg-gradient-to-r from-primary-500 to-primary-600 rounded-xl shadow-lg hover:from-primary-600 hover:to-primary-700 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5"
               >
-                立即加入
+                {{ homeText.hero.joinNow }}
                 <ArrowRightIcon class="ml-2 h-5 w-5" />
               </router-link>
               <router-link
                 to="/activities"
                 class="inline-flex items-center justify-center px-8 py-4 text-base font-semibold text-gray-700 bg-white border-2 border-gray-200 rounded-xl shadow-sm hover:border-primary-300 hover:text-primary-600 hover:bg-primary-50 transition-all duration-300"
               >
-                浏览活动
+                {{ homeText.hero.browseActivities }}
               </router-link>
             </div>
           </div>
@@ -82,11 +81,11 @@
                 <!-- 背景图片 - 森林主题 -->
                 <img
                   src="https://images.unsplash.com/photo-1448375240586-882707db888b?w=600&q=80"
-                  alt="Forest nature"
+                  :alt="homeText.hero.cardImageAlt"
                   class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                   loading="lazy"
                   @error="$event.target.style.display='none'"
-                />
+                >
                 <!-- 渐变遮罩 - 从透明到深色，确保文字可读 -->
                 <div class="absolute inset-0 bg-gradient-to-t from-[rgba(26,60,38,0.85)] via-[rgba(26,60,38,0.3)] to-transparent" />
 
@@ -94,12 +93,19 @@
                 <div class="absolute inset-0 flex flex-col items-center justify-center p-6 text-center">
                   <!-- 主图标 -->
                   <div class="h-14 w-14 bg-accent/30 rounded-2xl flex items-center justify-center backdrop-blur-sm border border-accent/50 mb-4 animate-float-slow group-hover:scale-110 transition-transform duration-500">
-                    <LeafIcon class="h-7 w-7 text-accent" stroke-width="1.5" />
+                    <LeafIcon
+                      class="h-7 w-7 text-accent"
+                      stroke-width="1.5"
+                    />
                   </div>
 
                   <!-- 标题 -->
-                  <h3 class="text-white text-xl font-bold mb-1">生态环保</h3>
-                  <p class="text-white/60 text-xs mb-4">Volunteer Platform</p>
+                  <h3 class="text-white text-xl font-bold mb-1">
+                    {{ homeText.hero.cardTitle }}
+                  </h3>
+                  <p class="text-white/60 text-xs mb-4">
+                    {{ homeText.hero.cardSubtitle }}
+                  </p>
 
                   <!-- 简洁指示器 -->
                   <div class="flex gap-1.5">
@@ -113,14 +119,17 @@
               <!-- 浮动小卡片 - 放在内部右下角 -->
               <div class="absolute bottom-4 right-4 bg-white p-3 rounded-2xl shadow-lg border border-sage-light backdrop-blur-sm hover:scale-105 transition-transform">
                 <div class="flex items-center gap-2">
-                  <HeartIcon class="h-4 w-4 text-primary" stroke-width="1.5" />
+                  <HeartIcon
+                    class="h-4 w-4 text-primary"
+                    stroke-width="1.5"
+                  />
                   <span class="text-sm font-bold text-forest-deep">{{ volunteerCount }}+</span>
                 </div>
               </div>
 
               <!-- Growing 标签 -->
               <div class="absolute top-2 left-2 bg-accent text-white px-2 py-1 rounded-full text-[10px] font-bold shadow-lg">
-                🌿 Growing
+                {{ homeText.hero.growingTag }}
               </div>
             </div>
           </div>
@@ -136,48 +145,69 @@
           <div class="bg-white p-8 lg:p-10 rounded-2xl border border-sage shadow-sm hover:shadow-md transition-shadow group">
             <div class="flex justify-between items-start">
               <div>
-                <p class="text-earth text-xs font-bold uppercase tracking-widest mb-2">注册志愿者</p>
-                <h3 class="text-forest-deep text-4xl lg:text-5xl font-black">{{ volunteerCount }}<span class="text-lg font-medium text-primary ml-1">+</span></h3>
+                <p class="text-earth text-xs font-bold uppercase tracking-widest mb-2">
+                  {{ homeText.statsCard.volunteerTitle }}
+                </p>
+                <h3 class="text-forest-deep text-4xl lg:text-5xl font-black">
+                  {{ volunteerCount }}<span class="text-lg font-medium text-primary ml-1">+</span>
+                </h3>
               </div>
               <div class="bg-sage p-4 rounded-2xl text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300">
-                <UsersIcon class="w-7 h-7" stroke-width="1.5" />
+                <UsersIcon
+                  class="w-7 h-7"
+                  stroke-width="1.5"
+                />
               </div>
             </div>
             <div class="mt-6 flex items-center gap-2 text-primary font-bold text-sm">
-              <span class="w-1.5 h-1.5 bg-accent rounded-full animate-pulse"></span>
-              <span>持续增长中</span>
+              <span class="w-1.5 h-1.5 bg-accent rounded-full animate-pulse" />
+              <span>{{ homeText.statsCard.volunteerTrend }}</span>
             </div>
           </div>
           <!-- 统计卡片 2 -->
           <div class="bg-white p-8 lg:p-10 rounded-2xl border border-sage shadow-sm hover:shadow-md transition-shadow group">
             <div class="flex justify-between items-start">
               <div>
-                <p class="text-earth text-xs font-bold uppercase tracking-widest mb-2">环保活动</p>
-                <h3 class="text-forest-deep text-4xl lg:text-5xl font-black">{{ activityCount }}<span class="text-lg font-medium text-primary ml-1">+</span></h3>
+                <p class="text-earth text-xs font-bold uppercase tracking-widest mb-2">
+                  {{ homeText.statsCard.activityTitle }}
+                </p>
+                <h3 class="text-forest-deep text-4xl lg:text-5xl font-black">
+                  {{ activityCount }}<span class="text-lg font-medium text-primary ml-1">+</span>
+                </h3>
               </div>
               <div class="bg-sage p-4 rounded-2xl text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300">
-                <CalendarIcon class="w-7 h-7" stroke-width="1.5" />
+                <CalendarIcon
+                  class="w-7 h-7"
+                  stroke-width="1.5"
+                />
               </div>
             </div>
             <div class="mt-6 flex items-center gap-2 text-primary font-bold text-sm">
               <span class="material-symbols-outlined text-accent text-lg">bolt</span>
-              <span>本周新增 12 个</span>
+              <span>{{ homeText.statsCard.activityTrend }}</span>
             </div>
           </div>
           <!-- 统计卡片 3 -->
           <div class="bg-white p-8 lg:p-10 rounded-2xl border border-sage shadow-sm hover:shadow-md transition-shadow group">
             <div class="flex justify-between items-start">
               <div>
-                <p class="text-earth text-xs font-bold uppercase tracking-widest mb-2">活跃参与率</p>
-                <h3 class="text-forest-deep text-4xl lg:text-5xl font-black">98<span class="text-lg font-medium text-primary ml-1">%</span></h3>
+                <p class="text-earth text-xs font-bold uppercase tracking-widest mb-2">
+                  {{ homeText.statsCard.engagementTitle }}
+                </p>
+                <h3 class="text-forest-deep text-4xl lg:text-5xl font-black">
+                  98<span class="text-lg font-medium text-primary ml-1">%</span>
+                </h3>
               </div>
               <div class="bg-sage p-4 rounded-2xl text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300">
-                <HeartIcon class="w-7 h-7" stroke-width="1.5" />
+                <HeartIcon
+                  class="w-7 h-7"
+                  stroke-width="1.5"
+                />
               </div>
             </div>
             <div class="mt-6 flex items-center gap-2 text-primary font-bold text-sm">
-              <span class="w-1.5 h-1.5 bg-accent rounded-full"></span>
-              <span>高活跃度社区</span>
+              <span class="w-1.5 h-1.5 bg-accent rounded-full" />
+              <span>{{ homeText.statsCard.engagementTrend }}</span>
             </div>
           </div>
         </div>
@@ -190,34 +220,43 @@
         <div class="flex items-center justify-between mb-12">
           <div>
             <h2 class="text-3xl font-bold text-gray-900">
-              热门活动
+              {{ homeText.activityPreview.title }}
             </h2>
             <p class="mt-2 text-gray-600">
-              发现附近的志愿机会
+              {{ homeText.activityPreview.subtitle }}
             </p>
           </div>
           <router-link
             to="/activities"
             class="text-primary-600 font-medium hover:text-primary-700 flex items-center transition-colors"
           >
-            查看全部
+            {{ homeText.activityPreview.viewAll }}
             <ArrowRightIcon class="ml-1 h-4 w-4" />
           </router-link>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
-          <div v-for="(activity, index) in featuredActivities" :key="activity.id" class="group cursor-pointer">
+          <div
+            v-for="(activity, index) in featuredActivities"
+            :key="activity.id"
+            class="group cursor-pointer"
+          >
             <div class="flex flex-col">
               <!-- 有机形状图片容器 -->
-              <div :class="[
-                'relative overflow-hidden aspect-square bg-forest-deep border-8 border-sage-light shadow-xl hover:shadow-2xl transition-all duration-500 mb-6',
-                index % 3 === 0 ? 'organic-card-1' : index % 3 === 1 ? 'organic-card-2' : 'organic-card-3'
-              ]">
+              <div
+                :class="[
+                  'relative overflow-hidden aspect-square bg-forest-deep border-8 border-sage-light shadow-xl hover:shadow-2xl transition-all duration-500 mb-6',
+                  index % 3 === 0 ? 'organic-card-1' : index % 3 === 1 ? 'organic-card-2' : 'organic-card-3'
+                ]"
+              >
                 <!-- 背景图片容器 -->
-                <div class="absolute inset-0 overflow-hidden" :class="[
-                  index % 3 === 0 ? 'bg-gradient-to-br from-emerald-700 via-green-800 to-teal-900' :
-                  index % 3 === 1 ? 'bg-gradient-to-br from-cyan-600 via-blue-700 to-indigo-800' :
-                  'bg-gradient-to-br from-lime-600 via-emerald-700 to-green-800'
-                ]">
+                <div
+                  class="absolute inset-0 overflow-hidden"
+                  :class="[
+                    index % 3 === 0 ? 'bg-gradient-to-br from-emerald-700 via-green-800 to-teal-900' :
+                    index % 3 === 1 ? 'bg-gradient-to-br from-cyan-600 via-blue-700 to-indigo-800' :
+                    'bg-gradient-to-br from-lime-600 via-emerald-700 to-green-800'
+                  ]"
+                >
                   <!-- 实际图片 -->
                   <img
                     v-if="activity.image"
@@ -226,9 +265,12 @@
                     class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                     loading="lazy"
                     @error="$event.target.style.display='none'"
-                  />
+                  >
                   <!-- 主题图标备用 -->
-                  <div v-else class="absolute inset-0 flex items-center justify-center">
+                  <div
+                    v-else
+                    class="absolute inset-0 flex items-center justify-center"
+                  >
                     <component
                       :is="index % 3 === 0 ? SproutIcon : index % 3 === 1 ? WavesIcon : RecycleIcon"
                       class="w-24 h-24 text-white/30"
@@ -240,7 +282,10 @@
                 <!-- 地理位置标签 -->
                 <div class="absolute bottom-6 left-6 right-6">
                   <div class="flex items-center gap-2 text-white/90 text-sm font-bold">
-                    <MapPinIcon class="text-accent" stroke-width="2" />
+                    <MapPinIcon
+                      class="text-accent"
+                      stroke-width="2"
+                    />
                     <span>{{ activity.location }}</span>
                   </div>
                 </div>
@@ -258,10 +303,10 @@
                     <div class="size-8 rounded-full bg-sage flex items-center justify-center text-primary overflow-hidden">
                       <UsersIcon class="h-4 w-4" />
                     </div>
-                    <span class="text-sm font-bold text-forest-deep">{{ activity.joined }} 人参与</span>
+                    <span class="text-sm font-bold text-forest-deep">{{ activity.joined }} {{ homeText.activityPreview.joinedSuffix }}</span>
                   </div>
                   <button class="text-primary font-bold text-sm flex items-center gap-1 group-hover:gap-2 transition-all">
-                    Read more <ArrowRightIcon class="h-4 w-4" />
+                    {{ homeText.activityPreview.readMore }} <ArrowRightIcon class="h-4 w-4" />
                   </button>
                 </div>
               </div>
@@ -276,47 +321,32 @@
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-12">
           <h2 class="text-3xl font-bold text-gray-900">
-            三步开启环保之旅
+            {{ homeText.process.title }}
           </h2>
           <p class="mt-4 text-lg text-gray-600">
-            简单快捷，立即可开始
+            {{ homeText.process.subtitle }}
           </p>
         </div>
         <div class="relative">
           <!-- 连接线 -->
           <div class="hidden md:block absolute top-20 left-[calc(16.67%+20px)] right-[calc(16.67%+20px)] h-0.5 bg-gradient-to-r from-primary-200 via-green-200 to-primary-200" />
           <div class="grid md:grid-cols-3 gap-8 relative">
-            <div class="text-center">
-              <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary-100 text-primary-600 font-bold text-2xl mb-6 relative z-10">
-                1
+            <div
+              v-for="step in homeText.process.steps"
+              :key="step.number"
+              class="text-center"
+            >
+              <div
+                class="inline-flex items-center justify-center w-20 h-20 rounded-full font-bold text-2xl mb-6 relative z-10"
+                :class="step.badgeClass"
+              >
+                {{ step.number }}
               </div>
               <h3 class="text-xl font-bold text-gray-900 mb-3">
-                注册账号
+                {{ step.title }}
               </h3>
               <p class="text-gray-600">
-                完善个人信息，选择感兴趣的环保领域
-              </p>
-            </div>
-            <div class="text-center">
-              <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-green-100 text-green-600 font-bold text-2xl mb-6 relative z-10">
-                2
-              </div>
-              <h3 class="text-xl font-bold text-gray-900 mb-3">
-                报名活动
-              </h3>
-              <p class="text-gray-600">
-                浏览活动列表，选择感兴趣的志愿项目
-              </p>
-            </div>
-            <div class="text-center">
-              <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-blue-100 text-blue-600 font-bold text-2xl mb-6 relative z-10">
-                3
-              </div>
-              <h3 class="text-xl font-bold text-gray-900 mb-3">
-                参与活动
-              </h3>
-              <p class="text-gray-600">
-                按时参加，完成任务，获得志愿时长认证
+                {{ step.description }}
               </p>
             </div>
           </div>
@@ -329,14 +359,14 @@
       <div class="leaf-pattern bg-forest-deep rounded-3xl p-12 lg:p-20 flex flex-col lg:flex-row items-center justify-between gap-12 border border-white/10 shadow-2xl relative overflow-hidden">
         <!-- 背景光晕 -->
         <div class="absolute top-0 right-0 w-64 h-64 bg-accent/20 rounded-full blur-3xl -mr-32 -mt-32" />
-        <div class="absolute inset-0 bg-forest-deep/10"></div>
+        <div class="absolute inset-0 bg-forest-deep/10" />
 
         <div class="text-center lg:text-left space-y-6 relative z-10 max-w-xl">
           <h2 class="text-white text-3xl lg:text-5xl font-black tracking-tight leading-tight">
-            加入<br class="hidden lg:block" />环保之旅
+            {{ homeText.bottomCta.titleLine1 }}<br class="hidden lg:block">{{ homeText.bottomCta.titleLine2 }}
           </h2>
           <p class="text-white/80 font-medium text-lg">
-            与 {{ volunteerCount }}+ 志愿者一起，为地球环境贡献力量，创造绿色未来。
+            {{ homeText.bottomCta.descriptionPrefix }} {{ volunteerCount }}+ {{ homeText.bottomCta.descriptionSuffix }}
           </p>
         </div>
 
@@ -344,8 +374,11 @@
           to="/register"
           class="bg-accent text-forest-deep px-10 py-5 rounded-full font-black text-lg shadow-xl hover:scale-105 transition-all flex items-center gap-3 relative z-10 group"
         >
-          <span>立即加入</span>
-          <ArrowRightIcon class="w-6 h-6 group-hover:translate-x-1 transition-transform" stroke-width="2" />
+          <span>{{ homeText.bottomCta.button }}</span>
+          <ArrowRightIcon
+            class="w-6 h-6 group-hover:translate-x-1 transition-transform"
+            stroke-width="2"
+          />
         </router-link>
       </div>
     </section>
@@ -354,16 +387,20 @@
     <button
       class="back-to-top"
       :class="{ visible: showBackToTop }"
+      :aria-label="homeText.backToTop"
       @click="scrollToTop"
-      aria-label="返回顶部"
     >
-      <ArrowRightIcon class="w-6 h-6 rotate-[-90deg]" stroke-width="2" />
+      <ArrowRightIcon
+        class="w-6 h-6 rotate-[-90deg]"
+        stroke-width="2"
+      />
     </button>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import {
   LeafIcon,
   ArrowRightIcon,
@@ -371,19 +408,83 @@ import {
   UsersIcon,
   HeartIcon,
   CalendarIcon,
-  AwardIcon,
-  UsersIcon as Users2Icon,
   MapPinIcon,
-  Trash2Icon,
-  DropletsIcon
+  WavesIcon,
+  RecycleIcon
 } from 'lucide-vue-next'
 import EcoParticles from '@/components/background/EcoParticles.vue'
 import { useCountUp } from '@/composables/useCountUp'
+
+interface FeaturedActivity {
+  id: number
+  title: string
+  type: string
+  date: string
+  location: string
+  joined: number
+  spots: number
+  description: string
+  image: string
+}
+
+interface HomeText {
+  hero: {
+    titlePrefix: string
+    titleHighlight: string
+    description: string
+    volunteerLabel: string
+    activityLabel: string
+    organizationLabel: string
+    joinNow: string
+    browseActivities: string
+    cardTitle: string
+    cardSubtitle: string
+    cardImageAlt: string
+    growingTag: string
+  }
+  statsCard: {
+    volunteerTitle: string
+    volunteerTrend: string
+    activityTitle: string
+    activityTrend: string
+    engagementTitle: string
+    engagementTrend: string
+  }
+  activityPreview: {
+    title: string
+    subtitle: string
+    viewAll: string
+    joinedSuffix: string
+    readMore: string
+  }
+  process: {
+    title: string
+    subtitle: string
+    steps: Array<{
+      number: number
+      title: string
+      description: string
+      badgeClass: string
+    }>
+  }
+  bottomCta: {
+    titleLine1: string
+    titleLine2: string
+    descriptionPrefix: string
+    descriptionSuffix: string
+    button: string
+  }
+  backToTop: string
+}
+
+const { tm } = useI18n()
 
 // 统计数据
 const { current: volunteerCount } = useCountUp(500)
 const { current: activityCount } = useCountUp(100)
 const { current: orgCount } = useCountUp(50)
+
+const homeText = computed(() => tm('home') as unknown as HomeText)
 
 // 返回顶部逻辑
 const showBackToTop = ref(false)
@@ -404,45 +505,7 @@ onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
 })
 
-// 活动数据（模拟）- 使用可靠的 Unsplash 图片源
-const featuredActivities = [
-  {
-    id: 1,
-    title: '城市绿肺植树行动',
-    type: '植树造林',
-    date: '2024年3月15日',
-    location: '城市森林公园',
-    joined: 28,
-    spots: 12,
-    description: '参与城市绿化，种植树木，改善空气质量，为城市增添绿色。',
-    image: 'https://images.unsplash.com/photo-1448375240586-882707db888b?w=800&q=80'
-    // 茂密森林，阳光穿透树冠 - 环保志愿者主题
-  },
-  {
-    id: 2,
-    title: '海滩清洁保护海洋',
-    type: '海洋保护',
-    date: '2024年3月20日',
-    location: '滨海生态公园',
-    joined: 45,
-    spots: 5,
-    description: '收集海滩垃圾，保护海洋生态，让海洋恢复清澈。',
-    image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80'
-    // 碧海蓝天白沙滩，热带海岸风光
-  },
-  {
-    id: 3,
-    title: '社区垃圾分类推广',
-    type: '社区服务',
-    date: '2024年3月22日',
-    location: '阳光社区中心',
-    joined: 15,
-    spots: 20,
-    description: '向社区居民宣传垃圾分类知识，共同建设清洁社区。',
-    image: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=800&q=80'
-    // 双手捧起土壤，象征环保行动与新生
-  }
-]
+const featuredActivities = computed(() => tm('home.featuredActivities') as unknown as FeaturedActivity[])
 </script>
 
 <style scoped>

@@ -36,7 +36,7 @@
         <Skeleton
           v-for="i in 12"
           :key="i"
-          :width="100%"
+          width="100%"
           :height="`${Math.random() * 30 + 20}%`"
           class="flex-1"
         />

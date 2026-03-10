@@ -34,12 +34,12 @@ import {
 import MenuItem from './MenuItem.vue'
 import { hasChildActive } from '@/utils/pathMatcher'
 
-interface MenuItem {
+interface SidebarMenuItem {
   key: string
   label: string
   icon?: any
   to?: string
-  children?: MenuItem[]
+  children?: SidebarMenuItem[]
   badge?: string
   badgeClass?: string
   disabled?: boolean
@@ -52,7 +52,7 @@ const router = useRouter()
 const expandedKeys = ref<string[]>([])
 
 // 菜单项配置 - 多级嵌套结构
-const menuItems = computed<MenuItem[]>(() => [
+const menuItems = computed<SidebarMenuItem[]>(() => [
   {
     key: 'dashboard',
     label: '数据总览',
@@ -247,7 +247,7 @@ const toggleMenuItemExpand = (key: string) => {
 }
 
 // 查找菜单项
-const findMenuItem = (items: MenuItem[], key: string): MenuItem | null => {
+const findMenuItem = (items: SidebarMenuItem[], key: string): SidebarMenuItem | null => {
   for (const item of items) {
     if (item.key === key) return item
     if (item.children) {
@@ -259,7 +259,7 @@ const findMenuItem = (items: MenuItem[], key: string): MenuItem | null => {
 }
 
 // 查找同一级别的菜单项
-const findSameLevelItems = (items: MenuItem[], targetItem: MenuItem): MenuItem[] => {
+const findSameLevelItems = (items: SidebarMenuItem[], targetItem: SidebarMenuItem): SidebarMenuItem[] => {
   // 查找目标项的父级
   const parent = findParentItem(items, targetItem.key)
 
@@ -271,7 +271,7 @@ const findSameLevelItems = (items: MenuItem[], targetItem: MenuItem): MenuItem[]
 }
 
 // 查找父级菜单项
-const findParentItem = (items: MenuItem[], childKey: string): MenuItem | null => {
+const findParentItem = (items: SidebarMenuItem[], childKey: string): SidebarMenuItem | null => {
   for (const item of items) {
     if (item.children) {
       if (item.children.some(child => child.key === childKey)) {
@@ -285,7 +285,7 @@ const findParentItem = (items: MenuItem[], childKey: string): MenuItem | null =>
 }
 
 // 处理菜单项点击
-const handleMenuItemClick = (item: MenuItem) => {
+const handleMenuItemClick = (item: SidebarMenuItem) => {
   if (item.disabled) return
 
   // 如果有路由路径，则进行跳转

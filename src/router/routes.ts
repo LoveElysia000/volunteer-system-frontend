@@ -33,7 +33,7 @@ export const routes = [
     path: '/about',
     name: 'about',
     component: () => import('@/views/About/Index.vue'),
-    meta: { title: '平台介绍' }
+    meta: { title: '平台介绍', fullWidth: true }
   },
   {
     path: '/profile',

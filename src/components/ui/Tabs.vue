@@ -40,7 +40,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, provide, inject, type InjectionKey } from 'vue'
+import { computed, provide } from 'vue'
 
 interface Tab {
   label: string
@@ -98,7 +98,7 @@ provide('tabsValue', tabsValue)
 </script>
 
 <script lang="ts">
-import { h, computed, inject } from 'vue'
+import { h, computed as vueComputed, inject as vueInject } from 'vue'
 
 // TabPane 子组件
 export const TabPane = {
@@ -108,8 +108,8 @@ export const TabPane = {
     label: String
   },
   setup(props: { value?: string, label?: string }, { slots }: any) {
-    const tabsValue = inject<ReturnType<typeof computed<string>>>('tabsValue')
-    const isActive = computed(() => tabsValue?.value === props.value)
+    const tabsValue = vueInject<ReturnType<typeof vueComputed<string>>>('tabsValue')
+    const isActive = vueComputed(() => tabsValue?.value === props.value)
 
     return () => {
       if (!isActive.value) return null
