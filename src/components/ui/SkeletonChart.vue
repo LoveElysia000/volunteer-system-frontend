@@ -3,15 +3,28 @@
     <!-- 标题区 -->
     <div class="flex items-center justify-between mb-6">
       <div class="space-y-2">
-        <Skeleton width="120px" height="20px" />
-        <Skeleton width="80px" height="14px" />
+        <Skeleton
+          width="120px"
+          height="20px"
+        />
+        <Skeleton
+          width="80px"
+          height="14px"
+        />
       </div>
-      <Skeleton variant="circle" width="32px" height="32px" />
+      <Skeleton
+        variant="circle"
+        width="32px"
+        height="32px"
+      />
     </div>
 
     <!-- 模拟数据图形 -->
     <!-- 柱状图骨架 -->
-    <div v-if="type === 'bar'" class="flex items-end gap-2 h-32">
+    <div
+      v-if="type === 'bar'"
+      class="flex items-end gap-2 h-32"
+    >
       <Skeleton
         v-for="i in bars"
         :key="i"
@@ -23,15 +36,30 @@
     </div>
 
     <!-- 圆环图骨架 -->
-    <div v-else-if="type === 'circle'" class="flex items-center gap-6">
-      <Skeleton variant="circle" width="96px" height="96px" />
+    <div
+      v-else-if="type === 'circle'"
+      class="flex items-center gap-6"
+    >
+      <Skeleton
+        variant="circle"
+        width="96px"
+        height="96px"
+      />
       <div class="flex-1 space-y-3">
-        <Skeleton v-for="i in 4" :key="i" width="80%" height="12px" />
+        <Skeleton
+          v-for="i in 4"
+          :key="i"
+          width="80%"
+          height="12px"
+        />
       </div>
     </div>
 
     <!-- 折线图骨架 -->
-    <div v-else class="h-32 relative">
+    <div
+      v-else
+      class="h-32 relative"
+    >
       <div class="absolute inset-0 flex items-end gap-1">
         <Skeleton
           v-for="i in 12"

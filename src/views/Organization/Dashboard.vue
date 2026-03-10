@@ -119,8 +119,12 @@
             class="mr-4 card-icon"
           />
           <div>
-            <p class="text-sm font-medium text-gray-600">活跃志愿者</p>
-            <p class="text-2xl font-bold text-gray-900">158</p>
+            <p class="text-sm font-medium text-gray-600">
+              活跃志愿者
+            </p>
+            <p class="text-2xl font-bold text-gray-900">
+              158
+            </p>
             <p class="text-xs text-green-600 mt-1">
               <TrendingUpIcon class="h-3 w-3 inline mr-1" />
               参与率 85%
@@ -136,11 +140,18 @@
             <CalendarIcon class="h-6 w-6 text-green-600" />
           </div>
           <div class="flex-1">
-            <p class="text-sm font-medium text-gray-600">近期活动</p>
-            <p class="text-2xl font-bold text-gray-900">8</p>
+            <p class="text-sm font-medium text-gray-600">
+              近期活动
+            </p>
+            <p class="text-2xl font-bold text-gray-900">
+              8
+            </p>
             <div class="flex items-center gap-2 mt-1">
               <div class="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                <div class="h-full bg-green-500 rounded-full transition-all duration-1000" style="width: 75%" />
+                <div
+                  class="h-full bg-green-500 rounded-full transition-all duration-1000"
+                  style="width: 75%"
+                />
               </div>
               <span class="text-xs text-gray-500">6/8完成</span>
             </div>
@@ -161,9 +172,15 @@
             class="mr-4 card-icon"
           />
           <div>
-            <p class="text-sm font-medium text-gray-600">服务总时长</p>
-            <p class="text-2xl font-bold text-gray-900">245h</p>
-            <p class="text-xs text-orange-600 mt-1">本月目标 81%</p>
+            <p class="text-sm font-medium text-gray-600">
+              服务总时长
+            </p>
+            <p class="text-2xl font-bold text-gray-900">
+              245h
+            </p>
+            <p class="text-xs text-orange-600 mt-1">
+              本月目标 81%
+            </p>
           </div>
         </div>
       </div>
@@ -175,8 +192,12 @@
             <AlertCircleIcon class="h-6 w-6 text-red-600" />
           </div>
           <div class="flex-1">
-            <p class="text-sm font-medium text-gray-600">待办事项</p>
-            <p class="text-2xl font-bold text-gray-900">5</p>
+            <p class="text-sm font-medium text-gray-600">
+              待办事项
+            </p>
+            <p class="text-2xl font-bold text-gray-900">
+              5
+            </p>
             <div class="flex items-center gap-1 mt-1">
               <span class="px-1.5 py-0.5 bg-red-100 text-red-600 text-xs rounded">3急</span>
               <span class="px-1.5 py-0.5 bg-yellow-100 text-yellow-600 text-xs rounded">2普</span>

@@ -21,7 +21,10 @@
     <!-- 消息内容 -->
     <div class="message-content">
       <!-- 标题 -->
-      <h4 v-if="title" class="message-title">
+      <h4
+        v-if="title"
+        class="message-title"
+      >
         {{ title }}
       </h4>
 
@@ -35,8 +38,8 @@
     <button
       v-if="dismissible"
       class="message-close"
-      @click="handleClose"
       aria-label="关闭消息"
+      @click="handleClose"
     >
       <XIcon class="h-4 w-4" />
     </button>

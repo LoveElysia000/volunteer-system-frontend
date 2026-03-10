@@ -1,5 +1,8 @@
 <template>
-  <div class="relative inline-flex items-center justify-center" :style="{ width: size + 'px', height: size + 'px' }">
+  <div
+    class="relative inline-flex items-center justify-center"
+    :style="{ width: size + 'px', height: size + 'px' }"
+  >
     <!-- 背景圆环 -->
     <svg
       class="absolute inset-0 transform -rotate-90"
@@ -33,7 +36,11 @@
     <!-- 中间内容 -->
     <div class="relative z-10 text-center">
       <slot>
-        <span v-if="showPercentage" class="text-lg font-bold" :class="textColorClass">
+        <span
+          v-if="showPercentage"
+          class="text-lg font-bold"
+          :class="textColorClass"
+        >
           {{ Math.round(percentage) }}%
         </span>
       </slot>

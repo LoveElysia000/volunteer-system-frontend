@@ -5,10 +5,20 @@
       :key="i"
       class="flex items-center gap-4"
     >
-      <Skeleton variant="circle" width="40px" height="40px" />
+      <Skeleton
+        variant="circle"
+        width="40px"
+        height="40px"
+      />
       <div class="flex-1 space-y-2">
-        <Skeleton width="70%" height="16px" />
-        <Skeleton width="40%" height="12px" />
+        <Skeleton
+          width="70%"
+          height="16px"
+        />
+        <Skeleton
+          width="40%"
+          height="12px"
+        />
       </div>
     </div>
   </div>

@@ -36,7 +36,10 @@
   />
 
   <!-- 错误提示 -->
-  <p v-if="error" class="date-picker-error-text">
+  <p
+    v-if="error"
+    class="date-picker-error-text"
+  >
     {{ error }}
   </p>
 </template>

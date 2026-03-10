@@ -12,6 +12,12 @@ export const routes = [
     meta: { title: '登录' }
   },
   {
+    path: '/forgot-password',
+    name: 'forgot-password',
+    component: () => import('@/views/Auth/ForgotPassword.vue'),
+    meta: { title: '找回密码' }
+  },
+  {
     path: '/register',
     name: 'register',
     component: () => import('@/views/Auth/Register.vue'),
@@ -137,7 +143,7 @@ export const routes = [
         path: '',
         name: 'organization-dashboard',
         component: () => import('@/views/Organization/Dashboard.vue'),
-        meta: { title: '组织管理数据总览' }
+        meta: { title: '组织管理总览' }
       },
       {
         path: 'organization-info',

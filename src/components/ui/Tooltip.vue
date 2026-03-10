@@ -21,7 +21,10 @@
           :style="tooltipStyle"
         >
           <!-- 箭头 -->
-          <div class="tooltip-arrow" :class="`tooltip-arrow-${placement}`" />
+          <div
+            class="tooltip-arrow"
+            :class="`tooltip-arrow-${placement}`"
+          />
 
           <!-- 内容 -->
           <div class="tooltip-content">

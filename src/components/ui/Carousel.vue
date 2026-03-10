@@ -108,8 +108,14 @@
         :aria-label="isAutoplayActive ? '暂停自动播放' : '开始自动播放'"
         @click="toggleAutoplay"
       >
-        <PauseIcon v-if="isAutoplayActive" class="h-3.5 w-3.5" />
-        <PlayIcon v-else class="h-3.5 w-3.5" />
+        <PauseIcon
+          v-if="isAutoplayActive"
+          class="h-3.5 w-3.5"
+        />
+        <PlayIcon
+          v-else
+          class="h-3.5 w-3.5"
+        />
       </button>
       <div
         class="carousel-progress-container"

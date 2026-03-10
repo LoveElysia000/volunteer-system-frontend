@@ -77,14 +77,15 @@
           <div class="relative hero-fade-up delay-400">
             <div class="bg-sage rounded-3xl p-6 shadow-xl border border-sage-light relative">
               <!-- 主卡片 - 有机形状 -->
-              <div class="organic-card-1 organic-morph aspect-[4/5] relative overflow-hidden shadow-2xl border-8 border-white animate-gentle-float group cursor-pointer">
+              <div class="organic-card-1 organic-morph aspect-[4/5] relative overflow-hidden bg-gradient-to-br from-emerald-700 via-green-800 to-teal-900 shadow-2xl border-8 border-white animate-gentle-float group cursor-pointer">
                 <!-- 背景图片 - 森林主题 -->
                 <img
+                  v-if="!heroImageFailed"
                   src="https://images.unsplash.com/photo-1448375240586-882707db888b?w=600&q=80"
                   :alt="homeText.hero.cardImageAlt"
                   class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                   loading="lazy"
-                  @error="$event.target.style.display='none'"
+                  @error="handleHeroImageError"
                 >
                 <!-- 渐变遮罩 - 从透明到深色，确保文字可读 -->
                 <div class="absolute inset-0 bg-gradient-to-t from-[rgba(26,60,38,0.85)] via-[rgba(26,60,38,0.3)] to-transparent" />
@@ -183,7 +184,10 @@
               </div>
             </div>
             <div class="mt-6 flex items-center gap-2 text-primary font-bold text-sm">
-              <span class="material-symbols-outlined text-accent text-lg">bolt</span>
+              <ZapIcon
+                class="w-4 h-4 text-accent"
+                stroke-width="2"
+              />
               <span>{{ homeText.statsCard.activityTrend }}</span>
             </div>
           </div>
@@ -259,12 +263,12 @@
                 >
                   <!-- 实际图片 -->
                   <img
-                    v-if="activity.image"
+                    v-if="shouldShowActivityImage(activity)"
                     :src="activity.image"
                     :alt="activity.title"
                     class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                     loading="lazy"
-                    @error="$event.target.style.display='none'"
+                    @error="handleActivityImageError(activity.id)"
                   >
                   <!-- 主题图标备用 -->
                   <div
@@ -410,7 +414,8 @@ import {
   CalendarIcon,
   MapPinIcon,
   WavesIcon,
-  RecycleIcon
+  RecycleIcon,
+  ZapIcon
 } from 'lucide-vue-next'
 import EcoParticles from '@/components/background/EcoParticles.vue'
 import { useCountUp } from '@/composables/useCountUp'
@@ -486,11 +491,36 @@ const { current: orgCount } = useCountUp(50)
 
 const homeText = computed(() => tm('home') as unknown as HomeText)
 
-// 返回顶部逻辑
+const heroImageFailed = ref(false)
+const failedActivityImageIds = ref(new Set<number>())
+
+const handleHeroImageError = () => {
+  heroImageFailed.value = true
+}
+
+const shouldShowActivityImage = (activity: FeaturedActivity) => {
+  return Boolean(activity.image) && !failedActivityImageIds.value.has(activity.id)
+}
+
+const handleActivityImageError = (activityId: number) => {
+  if (failedActivityImageIds.value.has(activityId)) return
+  const nextFailedImageIds = new Set(failedActivityImageIds.value)
+  nextFailedImageIds.add(activityId)
+  failedActivityImageIds.value = nextFailedImageIds
+}
+
+// Back-to-top logic
 const showBackToTop = ref(false)
+let scrollRafId: number | null = null
+
+const updateBackToTopState = () => {
+  showBackToTop.value = window.scrollY > 500
+  scrollRafId = null
+}
 
 const handleScroll = () => {
-  showBackToTop.value = window.scrollY > 500
+  if (scrollRafId !== null) return
+  scrollRafId = requestAnimationFrame(updateBackToTopState)
 }
 
 const scrollToTop = () => {
@@ -498,11 +528,16 @@ const scrollToTop = () => {
 }
 
 onMounted(() => {
-  window.addEventListener('scroll', handleScroll)
+  updateBackToTopState()
+  window.addEventListener('scroll', handleScroll, { passive: true })
 })
 
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
+  if (scrollRafId !== null) {
+    cancelAnimationFrame(scrollRafId)
+    scrollRafId = null
+  }
 })
 
 const featuredActivities = computed(() => tm('home.featuredActivities') as unknown as FeaturedActivity[])

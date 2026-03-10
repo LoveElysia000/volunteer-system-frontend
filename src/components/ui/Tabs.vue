@@ -19,7 +19,10 @@
         }"
         @click="selectTab(tab)"
       >
-        <slot name="tab" :tab="tab">
+        <slot
+          name="tab"
+          :tab="tab"
+        >
           <span class="tab-label">{{ tab.label }}</span>
         </slot>
       </div>

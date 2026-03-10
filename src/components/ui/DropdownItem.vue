@@ -11,8 +11,8 @@
     <!-- 图标 -->
     <slot name="icon">
       <component
-        v-if="item.icon"
         :is="item.icon"
+        v-if="item.icon"
         class="dropdown-item-icon"
       />
     </slot>

@@ -64,8 +64,12 @@
           class="card-icon"
         />
         <div class="flex-1">
-          <p class="text-xs text-gray-500">年度目标</p>
-          <p class="text-sm font-semibold text-gray-900">{{ user?.totalHours || 0 }}/100 小时</p>
+          <p class="text-xs text-gray-500">
+            年度目标
+          </p>
+          <p class="text-sm font-semibold text-gray-900">
+            {{ user?.totalHours || 0 }}/100 小时
+          </p>
         </div>
       </div>
     </div>
@@ -95,7 +99,10 @@
           <span class="text-gray-500">社区服务</span>
           <div class="flex items-center gap-2">
             <div class="w-20 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-              <div class="h-full bg-purple-500 rounded-full" style="width: 60%" />
+              <div
+                class="h-full bg-purple-500 rounded-full"
+                style="width: 60%"
+              />
             </div>
             <span class="text-gray-700 w-6">5</span>
           </div>
@@ -104,7 +111,10 @@
           <span class="text-gray-500">环保宣传</span>
           <div class="flex items-center gap-2">
             <div class="w-20 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-              <div class="h-full bg-green-500 rounded-full" style="width: 30%" />
+              <div
+                class="h-full bg-green-500 rounded-full"
+                style="width: 30%"
+              />
             </div>
             <span class="text-gray-700 w-6">2</span>
           </div>
@@ -113,7 +123,10 @@
           <span class="text-gray-500">其他</span>
           <div class="flex items-center gap-2">
             <div class="w-20 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-              <div class="h-full bg-orange-500 rounded-full" style="width: 10%" />
+              <div
+                class="h-full bg-orange-500 rounded-full"
+                style="width: 10%"
+              />
             </div>
             <span class="text-gray-700 w-6">1</span>
           </div>
@@ -140,8 +153,12 @@
           </div>
         </CircularProgress>
         <div class="flex-1 min-w-0">
-          <p class="text-sm font-medium text-gray-600">志愿者等级</p>
-          <p class="text-xl font-bold text-gray-900 mt-1">Lv.{{ volunteerLevel }}</p>
+          <p class="text-sm font-medium text-gray-600">
+            志愿者等级
+          </p>
+          <p class="text-xl font-bold text-gray-900 mt-1">
+            Lv.{{ volunteerLevel }}
+          </p>
           <p class="text-xs text-orange-600 mt-1">
             还需 {{ hoursToNextLevel }} 小时升级
           </p>

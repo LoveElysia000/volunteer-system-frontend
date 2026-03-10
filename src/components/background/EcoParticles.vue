@@ -1,7 +1,7 @@
 <template>
   <div
     ref="container"
-    class="fixed inset-0 -z-100 overflow-hidden"
+    class="fixed inset-0 -z-10 overflow-hidden"
     :class="{ 'pointer-events-none': !enableMouseFollow && !enableClickRipple }"
     @mousemove="handleMouseMove"
     @click="handleClick"
@@ -153,16 +153,16 @@ interface Ripple {
 
 // Props
 interface Props {
-  particleCount?: number
-  leafCount?: number
+  particleCount?: number | null
+  leafCount?: number | null
   enableMouseFollow?: boolean
   enableClickRipple?: boolean
   intensity?: 'low' | 'medium' | 'high'
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  particleCount: 15,
-  leafCount: 20,
+  particleCount: null,
+  leafCount: null,
   enableMouseFollow: true,
   enableClickRipple: true,
   intensity: 'medium'
@@ -195,7 +195,11 @@ const getParticleCountByIntensity = () => {
     medium: { particles: 12, leaves: 16 },
     high: { particles: 16, leaves: 22 }
   }
-  return counts[props.intensity]
+  const baseCounts = counts[props.intensity]
+  return {
+    particles: props.particleCount ?? baseCounts.particles,
+    leaves: props.leafCount ?? baseCounts.leaves
+  }
 }
 
 // 绿叶形状定义
@@ -305,22 +309,30 @@ const updateParticleMouseOffsets = () => {
 
   const centerX = container.value.clientWidth / 2
   const centerY = container.value.clientHeight / 2
+  const getOffset = (distanceX: number, distanceY: number, maxDistance: number, amplitude: number) => {
+    const distance = Math.hypot(distanceX, distanceY)
+    if (distance < 1e-6) {
+      return { x: 0, y: 0 }
+    }
 
-  // 计算所有圆形粒子的偏移
+    const strength = Math.max(0, 1 - distance / maxDistance)
+    return {
+      x: (distanceX / distance) * strength * amplitude,
+      y: (distanceY / distance) * strength * amplitude
+    }
+  }
+
+  // Calculate offsets for all particles
   brandParticles.value.forEach(particle => {
     const particleX = centerX + (particle.left / 100) * container.value!.clientWidth
     const particleY = centerY + (particle.top / 100) * container.value!.clientHeight
 
     const distanceX = mousePosition.value.x - particleX
     const distanceY = mousePosition.value.y - particleY
-    const distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY)
+    const offset = getOffset(distanceX, distanceY, 200, 20)
 
-    // 距离越近，偏移越大（最大20px）
-    const maxDistance = 200
-    const strength = Math.max(0, 1 - distance / maxDistance)
-
-    particle.mouseOffsetX = (distanceX / distance) * strength * 20
-    particle.mouseOffsetY = (distanceY / distance) * strength * 20
+    particle.mouseOffsetX = offset.x
+    particle.mouseOffsetY = offset.y
   })
 
   natureParticles.value.forEach(particle => {
@@ -329,33 +341,26 @@ const updateParticleMouseOffsets = () => {
 
     const distanceX = mousePosition.value.x - particleX
     const distanceY = mousePosition.value.y - particleY
-    const distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY)
+    const offset = getOffset(distanceX, distanceY, 200, 15)
 
-    const maxDistance = 200
-    const strength = Math.max(0, 1 - distance / maxDistance)
-
-    particle.mouseOffsetX = (distanceX / distance) * strength * 15
-    particle.mouseOffsetY = (distanceY / distance) * strength * 15
+    particle.mouseOffsetX = offset.x
+    particle.mouseOffsetY = offset.y
   })
 
-  // 计算绿叶粒子的偏移
+  // Calculate offsets for leaves
   leafParticles.value.forEach(leaf => {
     const leafX = centerX + (leaf.left / 100) * container.value!.clientWidth
     const leafY = centerY + (leaf.top / 100) * container.value!.clientHeight
 
     const distanceX = mousePosition.value.x - leafX
     const distanceY = mousePosition.value.y - leafY
-    const distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY)
+    const offset = getOffset(distanceX, distanceY, 300, 25)
 
-    const maxDistance = 300
-    const strength = Math.max(0, 1 - distance / maxDistance)
-
-    leaf.mouseOffsetX = (distanceX / distance) * strength * 25
-    leaf.mouseOffsetY = (distanceY / distance) * strength * 25
+    leaf.mouseOffsetX = offset.x
+    leaf.mouseOffsetY = offset.y
   })
 }
 
-// 点击事件处理
 const handleClick = (event: MouseEvent) => {
   if (!props.enableClickRipple || !container.value) return
 
@@ -411,13 +416,11 @@ const resetAllOffsets = () => {
 }
 
 onMounted(() => {
-  console.log('EcoParticles组件已挂载')
   generateParticles()
   generateLeafParticles()
-  console.log('生成的粒子数量:', brandParticles.value.length + natureParticles.value.length + leafParticles.value.length)
   window.addEventListener('resize', handleResize)
 
-  // 监听减少动画偏好
+  // Listen to reduced motion preference
   mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
   mediaQuery.addEventListener('change', handleMotionPreferenceChange)
 })

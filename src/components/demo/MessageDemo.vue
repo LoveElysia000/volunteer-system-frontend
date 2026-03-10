@@ -1,6 +1,8 @@
 <template>
   <div class="p-6 max-w-md mx-auto">
-    <h2 class="text-2xl font-bold mb-6 text-center">消息组件演示</h2>
+    <h2 class="text-2xl font-bold mb-6 text-center">
+      消息组件演示
+    </h2>
 
     <div class="space-y-4">
       <button

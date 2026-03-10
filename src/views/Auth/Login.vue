@@ -1,295 +1,461 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative">
-    <!-- 背景动画 -->
-    <EcoParticles
-      intensity="low"
-      :enable-mouse-follow="true"
-      :enable-click-ripple="true"
-      :leaf-count="15"
-    />
+  <div class="relative min-h-screen overflow-hidden bg-[#f3f8f6]">
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(17,212,173,0.18),_transparent_36%),radial-gradient(circle_at_bottom_right,_rgba(16,185,129,0.14),_transparent_32%)]" />
 
-    <div class="max-w-md w-full space-y-8 relative z-10">
-      <!-- Logo和标题 -->
-      <div class="text-center">
-        <div class="mx-auto h-12 w-12 bg-primary-500 rounded-full flex items-center justify-center">
-          <LeafIcon class="h-6 w-6 text-white" />
-        </div>
-        <h2 class="mt-6 text-3xl font-bold text-gray-900">
-          登录环保志愿者平台
-        </h2>
-        <p class="mt-2 text-sm text-gray-600">
-          还没有账号？
-          <router-link
-            to="/register"
-            class="font-medium text-primary-600 hover:text-primary-500"
-          >
-            立即注册
-          </router-link>
-        </p>
-      </div>
+    <div class="relative flex min-h-screen w-full flex-col bg-white lg:flex-row">
+      <section class="relative hidden overflow-hidden bg-[#10221e] px-12 py-14 text-white lg:flex lg:w-[46%] xl:w-5/12">
+        <div class="absolute inset-0 bg-gradient-to-br from-[#143129] via-[#174e42] to-[#0c1715]" />
+        <div class="absolute -left-20 top-12 h-72 w-72 rounded-full bg-primary-400/20 blur-3xl" />
+        <div class="absolute -right-16 bottom-0 h-80 w-80 rounded-full bg-emerald-200/10 blur-3xl" />
 
-      <!-- 登录表单 -->
-      <form
-        class="mt-8 space-y-6"
-        @submit.prevent="handleLogin"
-      >
-        <!-- 身份选择区域 -->
-        <div>
-          <label
-            for="role"
-            class="block text-sm font-medium text-gray-700"
-          >
-            登录身份
-          </label>
-          <div class="mt-1">
-            <Select
-              id="role"
-              v-model="loginState.role"
-              placeholder="请选择登录身份"
-              :options="[
-                { value: 'volunteer', label: '志愿者' },
-                { value: 'organization', label: '组织管理者' }
-              ]"
-            />
-          </div>
-        </div>
-
-
-        <!-- 动态输入框区域 -->
-        <div class="space-y-4">
-          <!-- 邮箱模式 -->
-          <div v-if="loginState.mode === LoginMode.EMAIL">
-            <label class="block text-sm font-medium text-gray-700">
-              邮箱地址
-            </label>
-            <div class="mt-1">
-              <Input
-                v-model="loginState.form.email"
-                type="email"
-                placeholder="请输入邮箱地址"
-                required
-                :error="loginState.errors.email"
-                :icon="MailIcon"
-                @blur="() => handleBlur('email')"
-              />
-            </div>
-          </div>
-
-          <!-- 手机号模式 -->
-          <div v-else-if="loginState.mode === LoginMode.PHONE">
-            <label class="block text-sm font-medium text-gray-700">
-              手机号
-            </label>
-            <div class="mt-1">
-              <Input
-                v-model="loginState.form.phone"
-                type="tel"
-                placeholder="请输入手机号"
-                required
-                :error="loginState.errors.phone"
-                :icon="PhoneIcon"
-                @blur="() => handleBlur('phone')"
-              />
-            </div>
-          </div>
-
-          <!-- 密码输入 -->
+        <div class="relative z-10 mx-auto flex w-full max-w-xl flex-col justify-between">
           <div>
-            <label class="block text-sm font-medium text-gray-700">
-              密码
-            </label>
-            <div class="mt-1">
-              <PasswordInput
-                v-model="loginState.form.password"
-                placeholder="请输入密码"
-                required
-                :error="loginState.errors.password"
-                @blur="() => handleBlur('password')"
-              />
+            <div class="mb-10 flex items-center gap-3">
+              <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary-400 text-slate-950 shadow-xl shadow-black/20">
+                <LeafIcon class="h-6 w-6" />
+              </div>
+              <div>
+                <p class="text-sm font-semibold uppercase tracking-[0.35em] text-white/65">
+                  EcoVolunteer
+                </p>
+                <h1 class="text-3xl font-extrabold tracking-tight">
+                  环保志愿者平台
+                </h1>
+              </div>
+            </div>
+
+            <div class="overflow-hidden rounded-[30px] border border-white/15 bg-white/10 shadow-2xl shadow-black/20 backdrop-blur-sm">
+              <img
+                class="h-[480px] w-full object-cover"
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuDNGOpQsaHfVO6d_5_CQ57c11qL95AxMzIEFkpK-FyB4EfWz9MlZuub8d-zPikUmpim6lY4DlYAIVbG3BrYt8RKIGThIvLZO0hfzrpKq3-yeu6d_kF5uU1uU0qiamSZJNHCfeejy8fjRRAFzPj92W3sBqfU4YMY-SvVqGTIt_sKxkOa58bkCjhX688HaKuVQhnAdhWMggntwC7T0LmwkM7l1o9AxmbPZUbTJegWYwDTixJ6d0xsegZoSMNY-DnPbqMjb89-Qao1AZjt"
+                alt="环保志愿者活动展示图"
+              >
+            </div>
+          </div>
+
+          <div class="mt-12 space-y-8">
+            <div>
+              <p class="text-sm font-semibold uppercase tracking-[0.3em] text-white/70">
+                绿色行动
+              </p>
+              <h2 class="mt-3 text-4xl font-extrabold leading-tight">
+                守护自然环境，<br>
+                连接每一份善意。
+              </h2>
+              <p class="mt-4 max-w-lg text-base leading-7 text-white/80">
+                连接志愿者、公益组织与环保行动，用更清晰的流程记录服务时长、活动参与和成长成果。
+              </p>
+            </div>
+
+            <div class="grid grid-cols-3 gap-4">
+              <div class="rounded-2xl border border-white/15 bg-white/10 p-4 backdrop-blur-sm">
+                <p class="text-2xl font-extrabold">
+                  50k+
+                </p>
+                <p class="mt-1 text-sm text-white/70">
+                  活跃志愿者
+                </p>
+              </div>
+              <div class="rounded-2xl border border-white/15 bg-white/10 p-4 backdrop-blur-sm">
+                <p class="text-2xl font-extrabold">
+                  1.2k
+                </p>
+                <p class="mt-1 text-sm text-white/70">
+                  合作组织
+                </p>
+              </div>
+              <div class="rounded-2xl border border-white/15 bg-white/10 p-4 backdrop-blur-sm">
+                <p class="text-2xl font-extrabold">
+                  98%
+                </p>
+                <p class="mt-1 text-sm text-white/70">
+                  活动到场率
+                </p>
+              </div>
             </div>
           </div>
         </div>
+      </section>
 
-        <!-- 记住我和忘记密码 -->
-        <div class="flex items-center justify-between">
-          <div class="flex items-center">
-            <input
-              id="remember-me"
-              v-model="loginState.form.rememberMe"
-              type="checkbox"
-              class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+      <section class="flex w-full bg-[#f6f8f8] px-6 py-10 sm:px-10 lg:w-[54%] lg:px-14 xl:w-7/12 xl:px-20">
+        <div class="mx-auto flex w-full max-w-3xl flex-col">
+          <div class="mb-10 flex items-center justify-between lg:hidden">
+            <div class="flex items-center gap-3">
+              <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary-100 text-primary-700 shadow-sm">
+                <LeafIcon class="h-5 w-5" />
+              </div>
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.3em] text-primary-700/80">
+                  EcoVolunteer
+                </p>
+                <h1 class="text-xl font-extrabold text-slate-900">
+                  环保志愿者平台
+                </h1>
+              </div>
+            </div>
+            <router-link
+              to="/"
+              class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:border-primary-300 hover:text-primary-700"
             >
-            <label
-              for="remember-me"
-              class="ml-2 block text-sm text-gray-900"
-            >
-              记住我
-            </label>
+              <HomeIcon class="h-4 w-4" />
+              返回首页
+            </router-link>
           </div>
 
-          <div class="text-sm">
+          <div class="hidden justify-end lg:flex">
+            <router-link
+              to="/"
+              class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:border-primary-300 hover:text-primary-700"
+            >
+              <HomeIcon class="h-4 w-4" />
+              返回首页
+            </router-link>
+          </div>
+          <div class="my-auto py-4">
+            <div class="overflow-hidden rounded-[32px] border border-slate-200/80 bg-white shadow-[0_24px_80px_-40px_rgba(15,23,42,0.35)]">
+              <div class="h-2 w-full bg-slate-100">
+                <div class="h-full w-2/3 rounded-r-full bg-primary-400" />
+              </div>
+
+              <div class="p-6 sm:p-8 lg:p-10">
+                <div class="mb-8 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+                  <div>
+                    <p class="text-sm font-semibold uppercase tracking-[0.3em] text-primary-700/80">
+                      Welcome Back
+                    </p>
+                    <h2 class="mt-3 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
+                      欢迎回到你的公益空间
+                    </h2>
+                    <p class="mt-3 max-w-2xl text-base leading-7 text-slate-500">
+                      登录页与注册页已统一为同一套认证视觉语言，但不会改动你当前的登录方式、字段和账号参数。
+                    </p>
+                  </div>
+
+                  <div class="rounded-2xl bg-primary-50 px-4 py-3 text-right">
+                    <p class="text-xs font-bold uppercase tracking-[0.3em] text-primary-700">
+                      Secure access
+                    </p>
+                    <p class="mt-1 text-sm text-primary-900">
+                      Choose your entry
+                    </p>
+                  </div>
+                </div>
+
+                <form
+                  class="space-y-6"
+                  @submit.prevent="handleLogin"
+                >
+                  <div>
+                    <div class="mb-3 flex items-center justify-between">
+                      <label class="text-sm font-semibold text-slate-700">登录身份</label>
+                      <span class="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                        选择本次进入的身份
+                      </span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                      <button
+                        type="button"
+                        :class="roleButtonClass(UserIdentity.VOLUNTEER)"
+                        @click="loginState.role = UserIdentity.VOLUNTEER"
+                      >
+                        <UserIcon class="h-4 w-4" />
+                        志愿者
+                      </button>
+                      <button
+                        type="button"
+                        :class="roleButtonClass(UserIdentity.ORGANIZATION)"
+                        @click="loginState.role = UserIdentity.ORGANIZATION"
+                      >
+                        <Building2Icon class="h-4 w-4" />
+                        组织管理者
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div class="mb-3 flex items-center justify-between">
+                      <label class="text-sm font-semibold text-slate-700">登录方式</label>
+                      <span class="text-xs text-slate-400">两种方式都可直接使用</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 rounded-2xl bg-slate-100 p-1.5">
+                      <button
+                        type="button"
+                        :class="modeButtonClass(LoginMode.EMAIL)"
+                        @click="switchMode(LoginMode.EMAIL)"
+                      >
+                        <MailIcon class="h-4 w-4" />
+                        邮箱登录
+                      </button>
+                      <button
+                        type="button"
+                        :class="modeButtonClass(LoginMode.PHONE)"
+                        @click="switchMode(LoginMode.PHONE)"
+                      >
+                        <PhoneIcon class="h-4 w-4" />
+                        手机号登录
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="space-y-5">
+                    <div class="floating-field relative">
+                      <input
+                        v-if="loginState.mode === LoginMode.EMAIL"
+                        id="identifier"
+                        v-model="loginState.form.email"
+                        type="email"
+                        placeholder=" "
+                        class="peer login-input"
+                        :class="{ 'login-input-error': loginState.errors.email }"
+                        autocomplete="email"
+                        @blur="() => handleBlur('email')"
+                      >
+                      <input
+                        v-else
+                        id="identifier"
+                        v-model="loginState.form.phone"
+                        type="tel"
+                        placeholder=" "
+                        class="peer login-input"
+                        :class="{ 'login-input-error': loginState.errors.phone }"
+                        autocomplete="tel"
+                        @blur="() => handleBlur('phone')"
+                      >
+                      <label
+                        for="identifier"
+                        class="login-label"
+                      >
+                        {{ loginState.mode === LoginMode.EMAIL ? '邮箱地址' : '手机号码' }}
+                      </label>
+                      <component
+                        :is="loginState.mode === LoginMode.EMAIL ? MailIcon : PhoneIcon"
+                        class="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-300 transition peer-focus:text-primary-500"
+                      />
+                      <p
+                        v-if="currentIdentifierError"
+                        class="mt-2 text-sm font-medium text-rose-500"
+                      >
+                        {{ currentIdentifierError }}
+                      </p>
+                    </div>
+
+                    <div class="floating-field relative">
+                      <input
+                        id="password"
+                        v-model="loginState.form.password"
+                        :type="passwordVisible ? 'text' : 'password'"
+                        placeholder=" "
+                        class="peer login-input pr-12"
+                        :class="{ 'login-input-error': loginState.errors.password }"
+                        autocomplete="current-password"
+                        @blur="() => handleBlur('password')"
+                      >
+                      <label
+                        for="password"
+                        class="login-label"
+                      >密码</label>
+                      <button
+                        type="button"
+                        class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-primary-700"
+                        @click="passwordVisible = !passwordVisible"
+                      >
+                        <component
+                          :is="passwordVisible ? EyeOffIcon : EyeIcon"
+                          class="h-5 w-5"
+                        />
+                      </button>
+                      <LockIcon class="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-300 peer-focus:text-primary-400" />
+                      <p
+                        v-if="loginState.errors.password"
+                        class="mt-2 text-sm font-medium text-rose-500"
+                      >
+                        {{ loginState.errors.password }}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div class="flex flex-wrap items-center justify-between gap-3">
+                    <label class="inline-flex items-center gap-3 text-sm text-slate-600">
+                      <input
+                        v-model="loginState.form.rememberMe"
+                        type="checkbox"
+                        class="h-4 w-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500"
+                      >
+                      记住我
+                    </label>
+
+                    <router-link
+                      to="/forgot-password"
+                      class="text-sm font-semibold text-primary-700 transition hover:text-primary-700 hover:underline"
+                    >
+                      忘记密码？
+                    </router-link>
+                  </div>
+
+                  <button
+                    type="submit"
+                    class="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-primary-400 px-6 py-4 text-base font-bold text-slate-900 shadow-lg shadow-primary-400/20 transition hover:bg-primary-300 disabled:cursor-not-allowed disabled:opacity-70"
+                    :disabled="loading"
+                  >
+                    <span
+                      v-if="loading"
+                      class="h-5 w-5 animate-spin rounded-full border-2 border-slate-900/25 border-t-slate-900"
+                    />
+                    <template v-else>
+                      登录
+                      <ArrowRightIcon class="h-5 w-5" />
+                    </template>
+                    <template v-if="loading">
+                      登录中...
+                    </template>
+                  </button>
+                </form>
+
+                <div class="relative my-8">
+                  <div class="absolute inset-0 flex items-center">
+                    <div class="w-full border-t border-slate-200" />
+                  </div>
+                  <div class="relative flex justify-center">
+                    <span class="bg-white px-4 text-sm text-slate-400">快速操作</span>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-3">
+                  <button
+                    type="button"
+                    class="flex items-center justify-center rounded-2xl border border-slate-200 px-4 py-3 text-slate-600 transition hover:border-primary-300 hover:bg-primary-50 hover:text-primary-600"
+                    @click="switchMode(loginState.mode === LoginMode.EMAIL ? LoginMode.PHONE : LoginMode.EMAIL)"
+                  >
+                    <component
+                      :is="loginState.mode === LoginMode.EMAIL ? PhoneIcon : MailIcon"
+                      class="h-5 w-5"
+                    />
+                  </button>
+                  <button
+                    type="button"
+                    class="flex items-center justify-center rounded-2xl border border-slate-200 px-4 py-3 text-slate-600 transition hover:border-primary-300 hover:bg-primary-50 hover:text-primary-600"
+                    @click="showHelpMessage"
+                  >
+                    <ShieldIcon class="h-5 w-5" />
+                  </button>
+                  <router-link
+                    to="/"
+                    class="flex items-center justify-center rounded-2xl border border-slate-200 px-4 py-3 text-slate-600 transition hover:border-primary-300 hover:bg-primary-50 hover:text-primary-600"
+                  >
+                    <HomeIcon class="h-5 w-5" />
+                  </router-link>
+                </div>
+
+                <div class="mt-8 text-center text-sm text-slate-500">
+                  第一次使用平台？
+                  <router-link
+                    to="/register"
+                    class="font-bold text-primary-700 transition hover:text-primary-600 hover:underline"
+                  >
+                    立即注册
+                  </router-link>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-8 flex items-center justify-center gap-6 text-sm text-slate-400">
             <a
               href="#"
-              class="font-medium text-primary-600 hover:text-primary-500"
-            >
-              忘记密码？
-            </a>
+              class="transition hover:text-primary-700"
+            >隐私政策</a>
+            <a
+              href="#"
+              class="transition hover:text-primary-700"
+            >服务条款</a>
+            <a
+              href="#"
+              class="transition hover:text-primary-700"
+              @click.prevent="showHelpMessage"
+            >帮助支持</a>
           </div>
         </div>
-
-        <!-- 登录按钮 -->
-        <div>
-          <Button
-            type="submit"
-            size="lg"
-            block
-            :loading="loading"
-            loading-text="登录中..."
-          >
-            登录
-          </Button>
-        </div>
-
-        <!-- 第三方登录分割线 -->
-        <div class="flex items-center my-6">
-          <div class="flex-1 border-t border-gray-300" />
-          <div class="px-4 text-sm text-gray-500">
-            或者使用以下方式登录
-          </div>
-          <div class="flex-1 border-t border-gray-300" />
-        </div>
-
-        <!-- 第三方登录按钮 -->
-        <div class="grid grid-cols-1 gap-3">
-          <!-- 手机号登录按钮 - 模式切换 -->
-          <button
-            v-if="loginState.mode !== LoginMode.PHONE"
-            class="btn bg-blue-600 text-white border border-blue-600 hover:bg-blue-700 flex items-center justify-center gap-3 py-3 px-4 w-full"
-            @click="handleOAuthLogin('phone')"
-          >
-            <svg
-              aria-label="Phone icon"
-              width="16"
-              height="16"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-            >
-              <path
-                fill="white"
-                d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"
-              />
-            </svg>
-            使用手机号登录
-          </button>
-
-          <!-- 返回邮箱登录按钮 -->
-          <button
-            v-else
-            class="btn bg-gray-100 text-gray-600 border border-gray-300 hover:border-gray-400 flex items-center justify-center gap-3 py-3 px-4 w-full"
-            @click="switchToEmailMode"
-          >
-            <svg
-              aria-label="Back icon"
-              width="16"
-              height="16"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="m15 18-6-6 6-6"
-              />
-            </svg>
-            返回邮箱登录
-          </button>
-        </div>
-      </form>
+      </section>
     </div>
-
-    <!-- 回到主页浮动按钮 -->
-    <FloatButton
-      :icon="HomeIcon"
-      tooltip="回到主页"
-      to="/"
-    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/store/modules/auth'
 import { useMessageStore } from '@/store/modules/messages'
 import { LoginType, UserIdentity } from '@/types/auth'
-import { LeafIcon, MailIcon, PhoneIcon, HomeIcon } from 'lucide-vue-next'
-import Button from '@/components/ui/Button.vue'
-import Input from '@/components/ui/Input.vue'
-import PasswordInput from '@/components/ui/PasswordInput.vue'
-import Select from '@/components/ui/Select.vue'
-import FloatButton from '@/components/ui/FloatButton.vue'
-import EcoParticles from '@/components/background/EcoParticles.vue'
+import {
+  ArrowRightIcon,
+  Building2Icon,
+  EyeIcon,
+  EyeOffIcon,
+  HomeIcon,
+  LeafIcon,
+  LockIcon,
+  MailIcon,
+  PhoneIcon,
+  ShieldIcon,
+  UserIcon
+} from 'lucide-vue-next'
 
 const router = useRouter()
 const authStore = useAuthStore()
 const messageStore = useMessageStore()
 
-// 登录模式枚举
 enum LoginMode {
-  EMAIL = 'email',          // 邮箱模式（默认）
-  PHONE = 'phone'           // 手机号模式
+  EMAIL = 'email',
+  PHONE = 'phone'
 }
 
-// 表单状态
 const loginState = reactive({
-  mode: LoginMode.EMAIL,    // 默认邮箱登录
+  mode: LoginMode.EMAIL,
   role: UserIdentity.VOLUNTEER,
   form: {
-    email: '',              // 邮箱字段
-    phone: '',              // 手机号字段
+    email: '',
+    phone: '',
     password: '',
     rememberMe: false
   },
   errors: {
-    email: '',              // 邮箱错误
-    phone: '',              // 手机号错误
+    email: '',
+    phone: '',
     password: ''
   },
   touched: {
-    email: false,           // 邮箱触摸状态
-    phone: false,           // 手机号触摸状态
+    email: false,
+    phone: false,
     password: false
   }
 })
 
 const loading = ref(false)
+const passwordVisible = ref(false)
 
-// 字段验证
+const currentIdentifierError = computed(() => {
+  return loginState.mode === LoginMode.EMAIL ? loginState.errors.email : loginState.errors.phone
+})
+
 const validateField = (field: string, value: string) => {
   switch (field) {
     case 'email':
       if (!value.trim()) return '*邮箱地址必须填写'
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return '*请输入有效的邮箱地址'
       return ''
-
     case 'phone':
       if (!value.trim()) return '*手机号必须填写'
       if (!/^1[3-9]\d{9}$/.test(value)) return '*请输入有效的手机号'
       return ''
-
     case 'password':
       if (!value) return '*密码必须填写'
       if (value.length < 6) return '*密码至少6个字符'
       return ''
-
     default:
       return ''
   }
 }
 
-// 实时验证
 const validateForm = () => {
   Object.keys(loginState.errors).forEach(field => {
     if (loginState.touched[field as keyof typeof loginState.touched]) {
@@ -299,30 +465,63 @@ const validateForm = () => {
   })
 }
 
-// 字段失焦时标记为已触摸
 const handleBlur = (field: keyof typeof loginState.touched) => {
   loginState.touched[field] = true
   const value = loginState.form[field as keyof typeof loginState.form] as string
   loginState.errors[field as keyof typeof loginState.errors] = validateField(field, value || '')
 }
 
-// 监听表单变化进行实时验证
 watch(loginState.form, validateForm, { deep: true })
 
-// 表单提交
+const switchMode = (mode: LoginMode) => {
+  loginState.mode = mode
+
+  if (mode === LoginMode.EMAIL) {
+    loginState.form.phone = ''
+    loginState.errors.phone = ''
+    loginState.touched.phone = false
+  } else {
+    loginState.form.email = ''
+    loginState.errors.email = ''
+    loginState.touched.email = false
+  }
+}
+
+const roleButtonClass = (role: UserIdentity) => {
+  const active = loginState.role === role
+  return [
+    'inline-flex items-center justify-center gap-2 rounded-2xl border px-4 py-3 text-sm font-semibold transition',
+    active
+      ? 'border-primary-400 bg-primary-50 text-primary-900 shadow-sm shadow-primary-200/60'
+      : 'border-slate-200 bg-white text-slate-500 hover:border-primary-300 hover:text-primary-700'
+  ]
+}
+
+const modeButtonClass = (mode: LoginMode) => {
+  const active = loginState.mode === mode
+  return [
+    'inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition',
+    active
+      ? 'bg-white text-slate-900 shadow-sm'
+      : 'text-slate-500 hover:text-slate-700'
+  ]
+}
+
+const showHelpMessage = () => {
+  messageStore.info('如果你暂时无法登录，可以先尝试找回密码，或联系平台管理员协助处理。')
+}
+
 const handleLogin = async () => {
-  // 提交前标记所有相关字段为已触摸
   if (loginState.mode === LoginMode.EMAIL) {
     loginState.touched.email = true
     loginState.touched.password = true
-  } else if (loginState.mode === LoginMode.PHONE) {
+  } else {
     loginState.touched.phone = true
     loginState.touched.password = true
   }
 
   validateForm()
 
-  // 检查是否有错误
   const hasErrors = Object.values(loginState.errors).some(error => error)
   if (hasErrors) {
     return
@@ -331,94 +530,80 @@ const handleLogin = async () => {
   loading.value = true
 
   try {
-    // 调用认证store的登录方法，传递符合后端API格式的参数
     await authStore.login({
       loginType: loginState.mode === LoginMode.EMAIL ? LoginType.EMAIL : LoginType.PHONE,
-      identifier: loginState.mode === LoginMode.EMAIL ? loginState.form.email :
-                  loginState.form.phone,
+      identifier: loginState.mode === LoginMode.EMAIL ? loginState.form.email : loginState.form.phone,
       password: loginState.form.password,
       identity: loginState.role
     })
 
     loading.value = false
 
-    // 根据用户角色跳转到不同页面
     if (authStore.user?.role === UserIdentity.VOLUNTEER) {
-      // 志愿者用户跳转到志愿者中心
       router.push('/volunteer')
     } else if (authStore.user?.role === UserIdentity.ORGANIZATION) {
-      // 组织管理者跳转到组织管理中心
       router.push('/organization')
     } else {
-      // 其他用户跳转到首页
       router.push('/')
     }
   } catch (error: any) {
     loading.value = false
     console.error('登录失败:', error)
-    // 显示错误提示
     messageStore.error(error.message || '登录失败，请检查用户名和密码')
   }
 }
-
-// 第三方登录处理
-const handleOAuthLogin = (provider: string) => {
-  // 邮箱登录：切换模式，不跳转
-  if (provider === 'email') {
-    loginState.mode = LoginMode.EMAIL
-    // 清空手机号相关状态
-    loginState.form.phone = ''
-    loginState.errors.phone = ''
-    loginState.touched.phone = false
-    return
-  }
-
-  // 手机号登录：切换模式，不跳转
-  if (provider === 'phone') {
-    loginState.mode = LoginMode.PHONE
-    // 清空邮箱相关状态
-    loginState.form.email = ''
-    loginState.errors.email = ''
-    loginState.touched.email = false
-    return
-  }
-
-  // 其他第三方登录：直接跳转
-  loading.value = true
-  setTimeout(() => {
-    loading.value = false
-    // 这里可以添加实际的第三方登录逻辑
-    console.log(`使用 ${provider} 登录`)
-
-    // 模拟第三方登录成功，设置用户角色为当前选择的角色
-    authStore.token = 'mock-oauth-token'
-    authStore.user = {
-      id: '2',
-      username: 'oauth_user',
-      email: 'oauth@example.com',
-      realName: '第三方用户',
-      role: loginState.role, // 使用当前选择的角色
-      points: 50,
-      totalHours: 15
-    }
-
-    // 根据用户角色跳转到不同页面
-    if (authStore.user?.role === UserIdentity.VOLUNTEER) {
-      router.push('/volunteer')
-    } else if (authStore.user?.role === UserIdentity.ORGANIZATION) {
-      router.push('/organization')
-    } else {
-      router.push('/')
-    }
-  }, 1000)
-}
-
-// 切换到邮箱登录
-const switchToEmailMode = () => {
-  loginState.mode = LoginMode.EMAIL
-  // 清空手机号相关状态
-  loginState.form.phone = ''
-  loginState.errors.phone = ''
-  loginState.touched.phone = false
-}
 </script>
+
+<style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+:global(body) {
+  font-family: 'Plus Jakarta Sans', 'Inter', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+}
+
+.login-input {
+  width: 100%;
+  border-radius: 1rem;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  padding: 1rem 1rem 1rem 2.8rem;
+  color: #0f172a;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.login-input:focus {
+  border-color: rgb(17 212 173 / 0.75);
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgb(17 212 173 / 0.12);
+}
+
+.login-input-error {
+  border-color: rgb(244 63 94 / 0.55);
+  box-shadow: 0 0 0 4px rgb(244 63 94 / 0.08);
+}
+
+.floating-field .login-label {
+  position: absolute;
+  left: 2.8rem;
+  top: 1rem;
+  transform-origin: left top;
+  color: #94a3b8;
+  transition: all 0.2s ease;
+  pointer-events: none;
+}
+
+.floating-field .peer:focus ~ .login-label,
+.floating-field .peer:not(:placeholder-shown) ~ .login-label {
+  transform: translateY(-0.72rem) scale(0.84);
+  color: #11d4ad;
+}
+
+.floating-field .peer:focus,
+.floating-field .peer:not(:placeholder-shown) {
+  padding-top: 1.5rem;
+  padding-bottom: 0.75rem;
+}
+
+</style>
+

@@ -24,17 +24,27 @@
     <!-- 底部信息栏 -->
     <div class="textarea-footer">
       <!-- 错误提示 -->
-      <p v-if="error" class="textarea-error-text">
+      <p
+        v-if="error"
+        class="textarea-error-text"
+      >
         {{ error }}
       </p>
 
       <!-- 帮助文本 -->
-      <p v-else-if="helpText" class="textarea-help-text">
+      <p
+        v-else-if="helpText"
+        class="textarea-help-text"
+      >
         {{ helpText }}
       </p>
 
       <!-- 字数统计 -->
-      <span v-if="showCount" class="textarea-count" :class="{ 'textarea-count-limit': isNearLimit }">
+      <span
+        v-if="showCount"
+        class="textarea-count"
+        :class="{ 'textarea-count-limit': isNearLimit }"
+      >
         {{ currentLength }}/{{ maxlength }}
       </span>
     </div>

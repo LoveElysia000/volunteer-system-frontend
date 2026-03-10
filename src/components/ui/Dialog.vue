@@ -16,9 +16,14 @@
             aria-modal="true"
           >
             <!-- 头部 -->
-            <div v-if="title || $slots.header" class="dialog-header">
+            <div
+              v-if="title || $slots.header"
+              class="dialog-header"
+            >
               <slot name="header">
-                <h3 class="dialog-title">{{ title }}</h3>
+                <h3 class="dialog-title">
+                  {{ title }}
+                </h3>
                 <button
                   v-if="showClose"
                   class="dialog-close"
@@ -35,7 +40,10 @@
             </div>
 
             <!-- 底部 -->
-            <div v-if="$slots.footer || showFooter" class="dialog-footer">
+            <div
+              v-if="$slots.footer || showFooter"
+              class="dialog-footer"
+            >
               <slot name="footer">
                 <Button
                   v-if="showCancel"
