@@ -22,7 +22,7 @@
 
     <!-- 页脚区域 -->
     <footer
-      v-if="showHeader"
+      v-if="showFooter"
       class="bg-white border-t border-gray-200 shadow-sm"
     >
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -57,17 +57,19 @@ onMounted(() => {
   messageStore.restoreMessages()
 })
 
-// 在登录注册页面不显示头部导航
-const showHeader = computed(() => {
+const hideGlobalChrome = computed(() => {
   const routeName = route.name as string
 
   // 登录注册页面
   if (['login', 'register'].includes(routeName)) {
-    return false
+    return true
   }
 
-  return true
+  return Boolean(route.meta.hideGlobalChrome)
 })
+
+const showHeader = computed(() => !hideGlobalChrome.value)
+const showFooter = computed(() => !hideGlobalChrome.value)
 
 // 防御性兜底：即使 route meta 被误改，about 仍按全宽页面渲染
 const fullWidthRouteNames = new Set(['about'])

@@ -1,424 +1,336 @@
 <template>
-  <div class="space-y-8">
-    <!-- 页面标题和筛选 -->
-    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 hover:shadow-xl transition-shadow duration-300">
-      <div class="flex flex-col md:flex-row md:items-center justify-between space-y-4 md:space-y-0">
-        <div>
-          <h1 class="text-3xl font-bold text-gray-900">
-            活动管理
-          </h1>
-          <p class="mt-2 text-lg text-gray-600">
-            管理您参与和关注的环保活动
-          </p>
-        </div>
+  <div class="space-y-6">
+    <VolunteerPageHeader
+      eyebrow="活动管理"
+      title="发现并安排本周任务"
+      description="把筛选、报名和优先事项集中在一个视图内，减少页面切换和遗漏。"
+      :meta-items="summaryMeta"
+    >
+      <template #actions>
+        <button
+          class="volunteer-toolbar-button"
+          @click="clearFilters"
+        >
+          重置筛选
+        </button>
+        <RouterLink
+          to="/volunteer/activities/my-registrations"
+          class="volunteer-toolbar-button volunteer-toolbar-button--soft"
+        >
+          我的报名
+        </RouterLink>
+      </template>
+    </VolunteerPageHeader>
 
-        <!-- 筛选和搜索 -->
-        <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
-          <select
-            v-model="activeTab"
-            class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-          >
-            <option value="all">
-              所有活动
-            </option>
-            <option value="upcoming">
-              可报名活动
-            </option>
-            <option value="registered">
-              已报名活动
-            </option>
-            <option value="completed">
-              历史活动
-            </option>
-          </select>
+    <div class="grid gap-6 xl:grid-cols-[minmax(0,1.55fr)_minmax(300px,0.85fr)]">
+      <VolunteerSectionCard
+        class="volunteer-activity-command-board"
+        title="任务指挥台"
+        description="先选状态，再按关键词筛选，本页直接完成报名和管理动作。"
+      >
+        <div class="space-y-5">
+          <div class="grid gap-4 md:grid-cols-3">
+            <VolunteerSummaryCard
+              v-for="card in activityPulseCards"
+              :key="card.label"
+              :label="card.label"
+              :value="card.value"
+              :detail="card.detail"
+              :tone="card.tone"
+              class="volunteer-surface-lift"
+            />
+          </div>
 
-          <div class="relative">
-            <input
-              v-model="searchQuery"
-              type="text"
-              placeholder="搜索活动..."
-              class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent w-full"
-            >
-            <SearchIcon class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <div class="rounded-[1.5rem] border border-slate-200/80 bg-slate-50/85 p-4">
+            <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+              <div class="flex flex-wrap gap-2">
+                <button
+                  v-for="tab in filterTabs"
+                  :key="tab.id"
+                  class="rounded-full px-4 py-2 text-sm font-semibold transition"
+                  :class="tab.id === activeTab ? 'bg-emerald-600 text-white shadow-[0_10px_24px_-16px_rgba(5,150,105,0.9)]' : 'bg-white text-slate-600 hover:bg-slate-100'"
+                  @click="setActiveTab(tab.id)"
+                >
+                  {{ tab.label }}
+                </button>
+              </div>
+
+              <div class="relative w-full lg:max-w-sm">
+                <SearchIcon class="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                <input
+                  v-model="searchQuery"
+                  type="text"
+                  placeholder="搜索活动名称、地点或描述"
+                  class="input has-icon w-full rounded-full border-slate-200 bg-white pl-11 shadow-none"
+                >
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      </VolunteerSectionCard>
 
-      <!-- 标签页 -->
-      <div class="mt-6 border-b border-gray-200">
-        <nav class="-mb-px flex space-x-8">
-          <button
-            v-for="tab in filterTabs"
-            :key="tab.id"
-            class="py-2 px-1 border-b-2 font-medium text-sm"
-            :class="[
-              tab.id === activeTab
-                ? 'border-primary-500 text-primary-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            ]"
-            @click="setActiveTab(tab.id)"
+      <VolunteerSectionCard
+        title="优先处理"
+        description="按名额压力与参与状态排序，优先处理最紧急任务。"
+        tone="soft"
+      >
+        <div class="volunteer-aside-stack">
+          <article
+            v-for="item in activityPriorityQueue"
+            :key="item.id"
+            class="volunteer-surface-lift rounded-[1.25rem] border border-white/70 bg-white/90 px-4 py-4 shadow-[0_14px_34px_-28px_rgba(15,23,42,0.45)]"
           >
-            {{ tab.label }}
-            <span
-              v-if="tab.badge"
-              class="ml-2 py-0.5 px-2 text-xs rounded-full bg-gray-100"
-            >{{ tab.badge }}</span>
-          </button>
-        </nav>
-      </div>
+            <div class="flex items-center justify-between gap-3">
+              <p class="line-clamp-1 text-sm font-bold text-slate-900">
+                {{ item.title }}
+              </p>
+              <span
+                class="rounded-full px-2 py-1 text-[11px] font-semibold"
+                :class="item.userRegistrationStatus === 'registered' ? 'bg-sky-100 text-sky-700' : 'bg-amber-100 text-amber-700'"
+              >
+                {{ item.userRegistrationStatus === 'registered' ? '已报名' : '待报名' }}
+              </span>
+            </div>
+            <p class="mt-2 text-xs text-slate-500">
+              {{ item.date }} · {{ item.location }}
+            </p>
+            <div class="mt-3 flex items-center justify-between text-xs">
+              <span class="font-semibold text-slate-500">
+                余量 {{ item.remainingSeats }} / {{ item.capacity }}
+              </span>
+              <span class="font-semibold text-emerald-700">
+                +{{ item.points }} 积分
+              </span>
+            </div>
+          </article>
+        </div>
+      </VolunteerSectionCard>
     </div>
 
-    <!-- 活动列表 -->
-    <div class="space-y-6">
-      <div
-        v-for="activity in filteredActivities"
-        :key="activity.id"
-        class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
-      >
-        <div class="flex flex-col md:flex-row md:items-center gap-6">
-          <!-- 活动图片 -->
-          <div class="w-full md:w-32 h-24 bg-gradient-to-br from-green-100 to-green-200 rounded-xl flex items-center justify-center">
-            <CalendarIcon class="h-8 w-8 text-green-600" />
-          </div>
+    <VolunteerSectionCard
+      title="活动列表"
+      description="显示当前筛选结果，并保持报名、查看、取消操作在同一层级。"
+    >
+      <div class="mb-4 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-500">
+        <p>
+          当前共找到
+          <span class="font-semibold text-slate-800">{{ filteredActivities.length }}</span>
+          个匹配活动
+        </p>
+        <p>排序逻辑：状态优先，时间靠前</p>
+      </div>
 
-          <!-- 活动信息 -->
-          <div class="flex-1 space-y-3">
-            <div class="space-y-2">
-              <div class="flex items-center justify-between">
-                <h3 class="text-xl font-semibold text-gray-900">
+      <transition-group
+        name="volunteer-list-rise"
+        tag="div"
+        class="space-y-4"
+      >
+        <article
+          v-for="activity in filteredActivities"
+          :key="activity.id"
+          class="volunteer-surface-lift rounded-[1.5rem] border border-slate-200 bg-white p-5 shadow-[0_18px_44px_-36px_rgba(15,23,42,0.38)]"
+        >
+          <div class="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
+            <div class="min-w-0 flex-1 space-y-3">
+              <div class="flex flex-wrap items-center gap-3">
+                <VolunteerStatusBadge
+                  :label="getStatusText(activity.status)"
+                  :tone="getStatusTone(activity.status)"
+                />
+                <span
+                  v-if="activity.tag"
+                  class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400"
+                >{{ activity.tag }}</span>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold tracking-tight text-slate-900">
                   {{ activity.title }}
                 </h3>
-                <div class="flex items-center space-x-3">
-                  <span
-                    class="px-2 py-1 text-xs font-medium rounded-full"
-                    :class="getStatusClass(activity.status)"
-                  >
-                    {{ getStatusText(activity.status) }}
-                  </span>
-                  <span class="text-sm text-gray-500">{{ activity.points }}积分</span>
-                </div>
+                <p class="mt-2 text-sm leading-6 text-slate-600">
+                  {{ activity.description }}
+                </p>
               </div>
-              <p class="text-gray-600">
-                {{ activity.description }}
-              </p>
-            </div>
-
-            <!-- 活动详情 -->
-            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 text-sm">
-              <div class="flex items-center gap-2">
-                <CalendarIcon class="h-4 w-4 text-gray-400" />
-                <span class="text-gray-600">{{ activity.date }}</span>
-              </div>
-              <div class="flex items-center gap-2">
-                <MapPinIcon class="h-4 w-4 text-gray-400" />
-                <span class="text-gray-600">{{ activity.location }}</span>
-              </div>
-              <div class="flex items-center gap-2">
-                <UsersIcon class="h-4 w-4 text-gray-400" />
-                <span class="text-gray-600">{{ activity.participants }}/{{ activity.capacity }}</span>
-              </div>
-              <div class="flex items-center gap-2">
-                <ClockIcon class="h-4 w-4 text-gray-400" />
-                <span class="text-gray-600">{{ activity.duration }}小时</span>
+              <div class="flex flex-wrap gap-4 text-sm text-slate-500">
+                <span>{{ activity.date }}</span>
+                <span>{{ activity.location }}</span>
+                <span>{{ activity.duration }} 小时</span>
+                <span>{{ activity.participants }}/{{ activity.capacity }} 名额</span>
+                <span class="font-semibold text-emerald-700">+{{ activity.points }} 积分</span>
               </div>
             </div>
-          </div>
 
-          <!-- 操作按钮 -->
-          <div class="flex flex-col gap-3">
-            <button
-              v-if="activity.status === 'registered'"
-              class="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-all duration-200 text-center font-medium shadow-sm hover:shadow-md transform hover:scale-[1.02]"
-              @click="handleViewDetails(activity.id)"
-            >
-              查看详情
-            </button>
-            <button
-              v-else-if="activity.status === 'upcoming'"
-              class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all duration-200 text-center font-medium shadow-sm hover:shadow-md transform hover:scale-[1.02]"
-              @click="handleRegister(activity.id)"
-            >
-              立即报名
-            </button>
-            <button
-              v-else-if="activity.status === 'completed'"
-              class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 text-center font-medium shadow-sm hover:shadow-md transform hover:scale-[1.02]"
-              @click="handleViewDetails(activity.id)"
-            >
-              查看详情
-            </button>
-
-            <div class="flex space-x-2">
+            <div class="flex flex-wrap gap-3 xl:justify-end">
               <button
-                class="flex-1 px-3 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 text-center font-medium text-sm"
-                @click="handleShare(activity.id)"
+                v-if="activity.userRegistrationStatus !== 'registered' && activity.status === 'upcoming'"
+                class="rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700"
+                @click="handleRegister(activity.id)"
               >
-                分享
+                立即报名
               </button>
               <button
-                v-if="activity.status === 'registered'"
-                class="flex-1 px-3 py-2 text-red-600 border border-red-300 rounded-lg hover:bg-red-50 transition-colors duration-200 text-center font-medium text-sm"
+                v-else
+                class="volunteer-toolbar-button"
+                @click="handleViewDetails(activity.id)"
+              >
+                查看详情
+              </button>
+              <button
+                v-if="activity.userRegistrationStatus === 'registered'"
+                class="volunteer-toolbar-button text-rose-600 hover:border-rose-200 hover:text-rose-700"
                 @click="handleCancel(activity.id)"
               >
-                取消
+                取消报名
               </button>
             </div>
           </div>
-        </div>
-      </div>
+        </article>
+      </transition-group>
 
-      <!-- 空状态 -->
       <div
         v-if="filteredActivities.length === 0"
-        class="bg-gradient-to-br from-primary-50 to-primary-100 rounded-2xl p-8 text-center"
+        class="mt-4 rounded-[1.5rem] border border-dashed border-emerald-200 bg-emerald-50/60 p-8 text-center"
       >
-        <div class="space-y-4">
-          <CalendarIcon class="h-12 w-12 text-primary-400 mx-auto" />
-          <p class="text-lg text-gray-700 font-medium">
-            暂无相关活动
-          </p>
-          <p class="text-sm text-gray-600">
-            当前筛选条件下没有找到匹配的活动
-          </p>
-          <button
-            class="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors duration-200 font-medium"
-            @click="clearFilters"
-          >
-            清除筛选
-          </button>
-        </div>
+        <p class="text-base font-semibold text-slate-700">
+          当前没有匹配结果
+        </p>
+        <p class="mt-2 text-sm text-slate-500">
+          可以尝试切换筛选条件，或清空关键词后重新查看。
+        </p>
       </div>
-    </div>
+    </VolunteerSectionCard>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch, onActivated } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { computed, ref, watch } from 'vue'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
+import { SearchIcon } from 'lucide-vue-next'
+import VolunteerPageHeader from '@/components/volunteer/VolunteerPageHeader.vue'
+import VolunteerSectionCard from '@/components/volunteer/VolunteerSectionCard.vue'
+import VolunteerSummaryCard from '@/components/volunteer/VolunteerSummaryCard.vue'
+import VolunteerStatusBadge from '@/components/volunteer/VolunteerStatusBadge.vue'
+import { volunteerActivities } from '@/data/volunteerCenter'
 import { usePageStateStore } from '@/store/modules/pageState'
-import {
-  CalendarIcon,
-  MapPinIcon,
-  UsersIcon,
-  ClockIcon,
-  SearchIcon
-} from 'lucide-vue-next'
+import type { VolunteerActivityItem, VolunteerTone } from '@/data/volunteerCenter'
 
-interface Activity {
-  id: number
-  title: string
-  description: string
-  date: string
-  location: string
-  participants: number
-  capacity: number
-  duration: number
-  points: number
-  status: 'upcoming' | 'registered' | 'completed'
+type ActivityTab = 'all' | VolunteerActivityItem['status']
+
+interface FilterTab {
+  id: ActivityTab
+  label: string
 }
 
-// 路由和状态管理
+interface ActivityPulseCard {
+  label: string
+  value: string
+  detail: string
+  tone: VolunteerTone
+}
+
+interface ActivityPriorityItem extends VolunteerActivityItem {
+  remainingSeats: number
+  priorityScore: number
+}
+
 const route = useRoute()
 const router = useRouter()
 const pageStateStore = usePageStateStore()
+const activeTab = ref<ActivityTab>(pageStateStore.state.volunteerActivities.activeTab as ActivityTab || 'all')
+const searchQuery = ref(pageStateStore.state.volunteerActivities.searchQuery || '')
 
-// 使用store中的状态
-const activeTab = ref(pageStateStore.state.volunteerActivities.activeTab)
-const searchQuery = ref(pageStateStore.state.volunteerActivities.searchQuery)
-
-// 过滤标签页
-const filterTabs = [
-  { id: 'all', label: '所有活动', badge: '15' },
-  { id: 'upcoming', label: '可报名', badge: '8' },
-  { id: 'registered', label: '已报名', badge: '3' },
-  { id: 'completed', label: '历史活动', badge: '4' }
+const filterTabs: FilterTab[] = [
+  { id: 'all', label: '全部' },
+  { id: 'upcoming', label: '可报名' },
+  { id: 'registered', label: '已报名' },
+  { id: 'completed', label: '已完成' }
 ]
 
-// 模拟数据
-const activities = ref<Activity[]>([
+const isActivityTab = (value: string): value is ActivityTab => {
+  return filterTabs.some(tab => tab.id === value)
+}
+
+watch(() => route.query, (query) => {
+  if (typeof query.tab === 'string' && isActivityTab(query.tab)) activeTab.value = query.tab
+  else activeTab.value = 'all'
+  if (typeof query.search === 'string') searchQuery.value = query.search
+  else searchQuery.value = ''
+}, { immediate: true })
+
+watch([activeTab, searchQuery], ([tab, search]) => {
+  const query: Record<string, string> = {}
+  if (tab && tab !== 'all') query.tab = tab
+  if (search) query.search = search
+  router.replace({ query })
+  pageStateStore.updateVolunteerActivitiesState({ activeTab: tab, searchQuery: search })
+})
+
+const filteredActivities = computed(() => volunteerActivities.filter((activity) => {
+  const tabMatch = activeTab.value === 'all' || activity.status === activeTab.value
+  const keyword = searchQuery.value.trim().toLowerCase()
+  const searchMatch = !keyword || [activity.title, activity.description, activity.location].some((field) => field.toLowerCase().includes(keyword))
+  return tabMatch && searchMatch
+}))
+
+const upcomingCount = computed(() => volunteerActivities.filter(item => item.status === 'upcoming').length)
+const registeredCount = computed(() => volunteerActivities.filter(item => item.userRegistrationStatus === 'registered').length)
+const completedCount = computed(() => volunteerActivities.filter(item => item.status === 'completed').length)
+
+const activityPulseCards = computed<ActivityPulseCard[]>(() => [
   {
-    id: 1,
-    title: '社区垃圾分类指导活动',
-    description: '帮助社区居民正确进行垃圾分类，推广环保理念',
-    date: '2024-01-20 09:00',
-    location: '朝阳社区中心',
-    participants: 15,
-    capacity: 30,
-    duration: 3,
-    points: 30,
-    status: 'registered'
+    label: '可报名活动',
+    value: String(upcomingCount.value),
+    detail: '优先查看名额紧张项目',
+    tone: 'green'
   },
   {
-    id: 2,
-    title: '公园清洁志愿者活动',
-    description: '共同维护城市公园的清洁环境，创造美好家园',
-    date: '2024-01-22 14:00',
-    location: '人民公园',
-    participants: 8,
-    capacity: 20,
-    duration: 2,
-    points: 20,
-    status: 'upcoming'
+    label: '已报名活动',
+    value: String(registeredCount.value),
+    detail: '关注时间提醒和签到',
+    tone: 'blue'
   },
   {
-    id: 3,
-    title: '环保知识宣传讲座',
-    description: '向社区居民普及环保知识，提高环保意识',
-    date: '2024-01-25 10:00',
-    location: '环保教育中心',
-    participants: 12,
-    capacity: 50,
-    duration: 2,
-    points: 15,
-    status: 'upcoming'
-  },
-  {
-    id: 4,
-    title: '植树造林活动',
-    description: '参与植树造林，为城市增添绿色，改善生态环境',
-    date: '2024-01-15 08:00',
-    location: '西山森林公园',
-    participants: 30,
-    capacity: 30,
-    duration: 4,
-    points: 40,
-    status: 'completed'
+    label: '历史完成',
+    value: String(completedCount.value),
+    detail: '沉淀稳定服务记录',
+    tone: 'amber'
   }
 ])
 
-// 监听路由参数变化
-watch(() => route.query, (newQuery) => {
-  // 从路由参数恢复状态
-  if (newQuery.tab) {
-    activeTab.value = newQuery.tab as string
-    pageStateStore.updateVolunteerActivitiesState({ activeTab: newQuery.tab as string })
-  }
-  if (newQuery.search) {
-    searchQuery.value = newQuery.search as string
-    pageStateStore.updateVolunteerActivitiesState({ searchQuery: newQuery.search as string })
-  }
-  // 重新加载数据
-  loadActivities()
-}, { immediate: true })
-
-// 监听状态变化，同步到路由和store
-watch([activeTab, searchQuery], ([newTab, newSearch]) => {
-  const query: any = {}
-  if (newTab && newTab !== 'all') query.tab = newTab
-  if (newSearch) query.search = newSearch
-
-  // 更新路由参数
-  router.replace({ query })
-
-  // 更新store状态
-  pageStateStore.updateVolunteerActivitiesState({
-    activeTab: newTab,
-    searchQuery: newSearch
-  })
+const activityPriorityQueue = computed<ActivityPriorityItem[]>(() => {
+  return volunteerActivities
+    .filter((item) => item.status !== 'completed')
+    .map((item) => {
+      const remainingSeats = Math.max(item.capacity - item.participants, 0)
+      const baseScore = item.userRegistrationStatus === 'registered' ? 30 : 0
+      const pressureScore = remainingSeats <= 5 ? 50 : remainingSeats <= 10 ? 35 : 15
+      return {
+        ...item,
+        remainingSeats,
+        priorityScore: baseScore + pressureScore
+      }
+    })
+    .sort((a, b) => b.priorityScore - a.priorityScore)
+    .slice(0, 4)
 })
 
-// 过滤活动列表
-const filteredActivities = computed(() => {
-  let filtered = activities.value
+const summaryMeta = computed(() => [
+  { label: '推荐任务', value: `${upcomingCount.value} 场`, detail: '本周优先可参加' },
+  { label: '已报名', value: `${registeredCount.value} 场`, detail: '注意签到提醒' }
+])
 
-  // 按标签过滤
-  if (activeTab.value !== 'all') {
-    filtered = filtered.filter(activity => activity.status === activeTab.value)
-  }
-
-  // 按搜索查询过滤
-  if (searchQuery.value) {
-    const query = searchQuery.value.toLowerCase()
-    filtered = filtered.filter(activity =>
-      activity.title.toLowerCase().includes(query) ||
-      activity.description.toLowerCase().includes(query) ||
-      activity.location.toLowerCase().includes(query)
-    )
-  }
-
-  return filtered
-})
-
-// 设置活动标签
-const setActiveTab = (tabId: string) => {
-  activeTab.value = tabId
+const setActiveTab = (tab: ActivityTab) => {
+  activeTab.value = tab
 }
 
-// 数据加载函数
-const loadActivities = async () => {
-  console.log('加载活动数据:', {
-    activeTab: activeTab.value,
-    searchQuery: searchQuery.value
-  })
-  // 这里可以调用API进行数据加载
-  // 目前使用模拟数据
-}
-
-// 组件激活时恢复状态
-onActivated(() => {
-  console.log('活动管理页面激活，恢复状态')
-  loadActivities()
-})
-
-// 组件挂载时加载数据
-onMounted(() => {
-  console.log('活动管理页面挂载')
-  loadActivities()
-})
-
-// 获取状态显示文本
-const getStatusText = (status: string) => {
-  const statusMap = {
-    upcoming: '可报名',
-    registered: '已报名',
-    completed: '已完成'
-  }
-  return statusMap[status as keyof typeof statusMap] || status
-}
-
-// 获取状态样式类
-const getStatusClass = (status: string) => {
-  const classMap = {
-    upcoming: 'bg-green-100 text-green-800',
-    registered: 'bg-blue-100 text-blue-800',
-    completed: 'bg-gray-100 text-gray-800'
-  }
-  return classMap[status as keyof typeof classMap] || 'bg-gray-100 text-gray-800'
-}
-
-// 清除筛选条件
 const clearFilters = () => {
   activeTab.value = 'all'
   searchQuery.value = ''
-  // 重置store状态
   pageStateStore.resetVolunteerActivitiesState()
 }
 
-// 报名活动
-const handleRegister = (activityId: number) => {
-  console.log('报名活动:', activityId)
-  // 这里可以调用API进行报名
-}
-
-// 查看详情
-const handleViewDetails = (activityId: number) => {
-  console.log('查看活动详情:', activityId)
-  // 这里可以跳转到活动详情页面
-}
-
-// 取消报名
-const handleCancel = (activityId: number) => {
-  console.log('取消报名:', activityId)
-  // 这里可以调用API取消报名
-}
-
-// 分享活动
-const handleShare = (activityId: number) => {
-  console.log('分享活动:', activityId)
-  // 这里可以实现分享功能
-}
+const getStatusText = (status: VolunteerActivityItem['status']) => ({ upcoming: '可报名', registered: '已报名', completed: '已完成' }[status] || status)
+const getStatusTone = (status: VolunteerActivityItem['status']) => ({ upcoming: 'green', registered: 'blue', completed: 'slate' }[status] || 'slate') as 'green' | 'blue' | 'slate'
+const handleRegister = (id: number) => console.log('报名活动:', id)
+const handleViewDetails = (id: number) => console.log('查看详情:', id)
+const handleCancel = (id: number) => console.log('取消报名:', id)
 </script>
-
-<style scoped>
-/* 自定义样式已通过Tailwind类实现 */
-</style>

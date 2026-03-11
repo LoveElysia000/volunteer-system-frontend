@@ -355,6 +355,38 @@
                     立即注册
                   </router-link>
                 </div>
+
+                <div
+                  v-if="isDevMockAccessEnabled"
+                  class="mt-6 rounded-2xl border border-dashed border-emerald-300 bg-emerald-50/80 p-4"
+                >
+                  <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <p class="text-xs font-bold uppercase tracking-[0.28em] text-emerald-700">
+                        Dev Only
+                      </p>
+                      <p class="mt-2 text-sm text-emerald-900">
+                        后端未启动时，可直接模拟志愿者或组织管理者登录查看对应工作台页面。
+                      </p>
+                    </div>
+                    <div class="flex flex-col gap-2 sm:flex-row">
+                      <button
+                        type="button"
+                        class="inline-flex items-center justify-center rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-500"
+                        @click="handleMockVolunteerAccess"
+                      >
+                        模拟志愿者登录
+                      </button>
+                      <button
+                        type="button"
+                        class="inline-flex items-center justify-center rounded-full bg-orange-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-orange-500"
+                        @click="handleMockOrganizationAccess"
+                      >
+                        模拟组织登录
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -385,7 +417,8 @@ import { computed, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/store/modules/auth'
 import { useMessageStore } from '@/store/modules/messages'
-import { LoginType, UserIdentity } from '@/types/auth'
+import { tokenManager } from '@/utils/token'
+import { LoginType, UserIdentity, type User } from '@/types/auth'
 import {
   ArrowRightIcon,
   Building2Icon,
@@ -403,6 +436,7 @@ import {
 const router = useRouter()
 const authStore = useAuthStore()
 const messageStore = useMessageStore()
+const isDevMockAccessEnabled = import.meta.env.DEV
 
 enum LoginMode {
   EMAIL = 'email',
@@ -511,6 +545,44 @@ const showHelpMessage = () => {
   messageStore.info('如果你暂时无法登录，可以先尝试找回密码，或联系平台管理员协助处理。')
 }
 
+const handleMockVolunteerAccess = async () => {
+  const expiresAt = Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60
+  const mockVolunteerUser: User = {
+    id: 'dev-volunteer-001',
+    username: 'dev_volunteer',
+    realName: '调试志愿者',
+    email: 'dev-volunteer@example.com',
+    role: UserIdentity.VOLUNTEER,
+    phone: '13800138000',
+    points: 1240,
+    totalHours: 41
+  }
+
+  tokenManager.setTokens('dev-access-token', 'dev-refresh-token', expiresAt)
+  localStorage.setItem('auth_user', JSON.stringify(mockVolunteerUser))
+  authStore.restoreAuthState()
+  messageStore.success('已写入本地模拟志愿者登录态')
+  await router.push('/volunteer')
+}
+
+const handleMockOrganizationAccess = async () => {
+  const expiresAt = Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60
+  const mockOrganizationUser: User = {
+    id: 'dev-organization-001',
+    username: 'dev_organization',
+    realName: '调试组织管理员',
+    email: 'dev-organization@example.com',
+    role: UserIdentity.ORGANIZATION,
+    phone: '13900139000'
+  }
+
+  tokenManager.setTokens('dev-org-access-token', 'dev-org-refresh-token', expiresAt)
+  localStorage.setItem('auth_user', JSON.stringify(mockOrganizationUser))
+  authStore.restoreAuthState()
+  messageStore.success('已写入本地模拟组织登录态')
+  await router.push('/organization')
+}
+
 const handleLogin = async () => {
   if (loginState.mode === LoginMode.EMAIL) {
     loginState.touched.email = true
@@ -606,4 +678,3 @@ const handleLogin = async () => {
 }
 
 </style>
-

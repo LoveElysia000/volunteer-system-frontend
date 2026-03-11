@@ -83,12 +83,12 @@
                   v-if="!heroImageFailed"
                   src="https://images.unsplash.com/photo-1448375240586-882707db888b?w=600&q=80"
                   :alt="homeText.hero.cardImageAlt"
-                  class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 organic-shape-layer"
                   loading="lazy"
                   @error="handleHeroImageError"
                 >
                 <!-- 渐变遮罩 - 从透明到深色，确保文字可读 -->
-                <div class="absolute inset-0 bg-gradient-to-t from-[rgba(26,60,38,0.85)] via-[rgba(26,60,38,0.3)] to-transparent" />
+                <div class="absolute inset-0 bg-gradient-to-t from-[rgba(26,60,38,0.85)] via-[rgba(26,60,38,0.3)] to-transparent organic-shape-layer" />
 
                 <!-- 内容 -->
                 <div class="absolute inset-0 flex flex-col items-center justify-center p-6 text-center">

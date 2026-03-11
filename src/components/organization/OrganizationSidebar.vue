@@ -1,6 +1,6 @@
 <template>
-  <nav class="organization-sidebar bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-    <div class="space-y-2 p-3">
+  <nav class="organization-sidebar organization-sidebar-shell rounded-[1.8rem] border border-[#ffd8c2]/70 bg-white/90 p-3 shadow-[0_22px_70px_-54px_rgba(120,53,15,0.4)] backdrop-blur">
+    <div class="space-y-1.5 p-1">
       <MenuItem
         v-for="item in menuItems"
         :key="item.key"
@@ -14,14 +14,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   HomeIcon,
   CalendarIcon,
   UserIcon,
   BarChartIcon,
-  AwardIcon,
   SettingsIcon,
   ClockIcon,
   StarIcon,
@@ -29,7 +28,8 @@ import {
   TrophyIcon,
   BuildingIcon,
   BellIcon,
-  BookmarkIcon
+  BookmarkIcon,
+  FolderKanbanIcon
 } from 'lucide-vue-next'
 import MenuItem from './MenuItem.vue'
 import { hasChildActive } from '@/utils/pathMatcher'
@@ -45,17 +45,18 @@ interface SidebarMenuItem {
   disabled?: boolean
 }
 
+const emit = defineEmits<{
+  close: []
+}>()
+
 const route = useRoute()
 const router = useRouter()
-
-// 展开的菜单项keys
 const expandedKeys = ref<string[]>([])
 
-// 菜单项配置 - 多级嵌套结构
 const menuItems = computed<SidebarMenuItem[]>(() => [
   {
     key: 'dashboard',
-    label: '数据总览',
+    label: '总览中心',
     icon: HomeIcon,
     to: '/organization'
   },
@@ -69,8 +70,8 @@ const menuItems = computed<SidebarMenuItem[]>(() => [
         label: '组织信息',
         icon: BuildingIcon,
         to: '/organization/organization-info',
-        badge: '需完善',
-        badgeClass: 'bg-yellow-100 text-yellow-800'
+        badge: '待完善',
+        badgeClass: 'bg-amber-100 text-amber-700'
       },
       {
         key: 'member-management',
@@ -82,8 +83,8 @@ const menuItems = computed<SidebarMenuItem[]>(() => [
   },
   {
     key: 'activities',
-    label: '活动管理',
-    icon: CalendarIcon,
+    label: '项目管理',
+    icon: FolderKanbanIcon,
     children: [
       {
         key: 'create-activity',
@@ -91,7 +92,7 @@ const menuItems = computed<SidebarMenuItem[]>(() => [
         icon: CalendarIcon,
         to: '/organization/activities/create',
         badge: '新',
-        badgeClass: 'bg-green-100 text-green-800'
+        badgeClass: 'bg-emerald-100 text-emerald-700'
       },
       {
         key: 'activities-list',
@@ -105,7 +106,7 @@ const menuItems = computed<SidebarMenuItem[]>(() => [
         icon: StarIcon,
         to: '/organization/activities/review',
         badge: '3',
-        badgeClass: 'bg-blue-100 text-blue-800'
+        badgeClass: 'bg-sky-100 text-sky-700'
       }
     ]
   },
@@ -136,7 +137,7 @@ const menuItems = computed<SidebarMenuItem[]>(() => [
   },
   {
     key: 'statistics',
-    label: '数据统计',
+    label: '数据报告',
     icon: BarChartIcon,
     children: [
       {
@@ -146,7 +147,7 @@ const menuItems = computed<SidebarMenuItem[]>(() => [
         to: '/organization/statistics/activities'
       },
       {
-        key: 'volunteer-statistics',
+        key: 'volunteer-statistics-report',
         label: '志愿者统计',
         icon: UsersIcon,
         to: '/organization/statistics/volunteers'
@@ -192,121 +193,43 @@ const menuItems = computed<SidebarMenuItem[]>(() => [
       {
         key: 'permission-management',
         label: '权限管理',
-        icon: SettingsIcon,
+        icon: ClockIcon,
         to: '/organization/settings/permissions'
       }
     ]
   }
 ])
 
-// 获取所有父级菜单项
-const parentMenuItems = computed(() => {
-  return menuItems.value.filter(item => item.children && item.children.length > 0)
-})
+const parentMenuItems = computed(() => menuItems.value.filter(item => item.children?.length))
 
-// 根据当前路由自动展开对应的父级菜单
 watch(route, (newRoute) => {
   const currentPath = newRoute.path
 
-  // 查找当前路由对应的父级菜单
-  parentMenuItems.value.forEach(parentItem => {
-    if (parentItem.children) {
-      const isChildActive = hasChildActive(parentItem.children, currentPath)
+  parentMenuItems.value.forEach((parentItem) => {
+    if (!parentItem.children) return
+    const isChildActive = hasChildActive(parentItem.children, currentPath)
 
-      if (isChildActive && !expandedKeys.value.includes(parentItem.key)) {
-        toggleMenuItemExpand(parentItem.key)
-      }
+    if (isChildActive && !expandedKeys.value.includes(parentItem.key)) {
+      expandedKeys.value.push(parentItem.key)
     }
   })
 }, { immediate: true })
 
-// 切换菜单项展开状态
 const toggleMenuItemExpand = (key: string) => {
   const index = expandedKeys.value.indexOf(key)
 
   if (index > -1) {
-    // 如果已经展开，则关闭
     expandedKeys.value.splice(index, 1)
-  } else {
-    // 如果未展开，则先关闭同级别的其他菜单，再展开当前菜单
-    const targetItem = findMenuItem(menuItems.value, key)
-    if (targetItem) {
-      // 关闭同一级别的其他菜单
-      const sameLevelItems = findSameLevelItems(menuItems.value, targetItem)
-      sameLevelItems.forEach(item => {
-        const itemIndex = expandedKeys.value.indexOf(item.key)
-        if (itemIndex > -1) {
-          expandedKeys.value.splice(itemIndex, 1)
-        }
-      })
-
-      // 展开当前菜单
-      expandedKeys.value.push(key)
-    }
-  }
-}
-
-// 查找菜单项
-const findMenuItem = (items: SidebarMenuItem[], key: string): SidebarMenuItem | null => {
-  for (const item of items) {
-    if (item.key === key) return item
-    if (item.children) {
-      const found = findMenuItem(item.children, key)
-      if (found) return found
-    }
-  }
-  return null
-}
-
-// 查找同一级别的菜单项
-const findSameLevelItems = (items: SidebarMenuItem[], targetItem: SidebarMenuItem): SidebarMenuItem[] => {
-  // 查找目标项的父级
-  const parent = findParentItem(items, targetItem.key)
-
-  if (parent && parent.children) {
-    return parent.children
+    return
   }
 
-  return items
+  expandedKeys.value = [key]
 }
 
-// 查找父级菜单项
-const findParentItem = (items: SidebarMenuItem[], childKey: string): SidebarMenuItem | null => {
-  for (const item of items) {
-    if (item.children) {
-      if (item.children.some(child => child.key === childKey)) {
-        return item
-      }
-      const found = findParentItem(item.children, childKey)
-      if (found) return found
-    }
-  }
-  return null
-}
-
-// 处理菜单项点击
 const handleMenuItemClick = (item: SidebarMenuItem) => {
-  if (item.disabled) return
+  if (item.disabled || !item.to) return
 
-  // 如果有路由路径，则进行跳转
-  if (item.to) {
-    router.push(item.to)
-  }
-
-  console.log('点击菜单项:', item.key)
-
-  // 触发关闭移动端侧边栏事件
+  router.push(item.to)
   emit('close')
 }
-
-// 定义事件
-const emit = defineEmits<{
-  close: []
-}>()
 </script>
-
-<style scoped>
-.organization-sidebar {
-  @apply w-full;
-}
-</style>

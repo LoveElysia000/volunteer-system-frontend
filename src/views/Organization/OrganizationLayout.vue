@@ -1,209 +1,383 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
-    <div class="flex min-h-screen">
-      <!-- 侧边栏 -->
-      <div class="hidden lg:block w-64 xl:w-72 bg-white border-r border-gray-200 overflow-y-auto">
-        <div class="min-h-full flex flex-col">
-          <!-- Logo区域 -->
-          <div class="p-6 border-b border-gray-200">
-            <div class="flex items-center space-x-3">
-              <div class="h-10 w-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center shadow-md">
-                <Building2Icon class="h-6 w-6 text-white" />
+  <div class="org-shell">
+    <div class="org-shell-main flex h-screen">
+      <aside
+        class="org-nav-surface hidden shrink-0 overflow-y-auto lg:block"
+        :style="desktopSidebarStyle"
+      >
+        <div class="flex min-h-full flex-col gap-6 px-5 py-6">
+          <div class="org-shell-panel rounded-[1.9rem] border border-[#ffd9c4] bg-[linear-gradient(135deg,rgba(236,91,19,0.10),rgba(255,255,255,0.96))] p-5">
+            <div class="flex items-center gap-3">
+              <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#ec5b13] to-[#c9470c] text-white shadow-lg">
+                <Building2Icon class="h-6 w-6" />
               </div>
               <div>
-                <span class="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
-                  组织管理
-                </span>
-                <p class="text-xs text-gray-500 font-medium">
-                  Organization Center
+                <p class="text-lg font-black tracking-tight text-slate-900">
+                  组织管理中心
+                </p>
+                <p class="text-xs font-medium uppercase tracking-[0.24em] text-[#ec5b13]">
+                  Organization Hub
                 </p>
               </div>
             </div>
           </div>
 
-          <!-- 用户信息 -->
-          <div class="p-6 border-b border-gray-100">
-            <div class="flex items-center space-x-3">
-              <div class="h-12 w-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
+          <div class="org-shell-panel p-5">
+            <div class="flex items-center gap-4">
+              <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#f08b53] to-[#ec5b13] text-xl font-black text-white">
                 {{ userInitials }}
               </div>
-              <div class="flex-1 min-w-0">
-                <p class="font-semibold text-gray-900 truncate">
+              <div class="min-w-0 flex-1">
+                <p class="truncate text-base font-bold text-slate-900">
                   {{ user?.realName || '组织管理者' }}
                 </p>
-                <p class="text-sm text-gray-500 truncate">
-                  组织管理者
+                <p class="text-sm text-slate-500">
+                  Organization Admin
                 </p>
-                <div class="flex items-center mt-1">
-                  <div class="h-2 w-16 bg-blue-200 rounded-full overflow-hidden">
+                <div class="mt-3 flex items-center gap-3">
+                  <div class="h-2 flex-1 rounded-full bg-[#ffe7d8]">
                     <div
-                      class="h-full bg-blue-500"
-                      :style="{ width: '75%' }"
+                      class="h-full rounded-full bg-gradient-to-r from-[#ec5b13] to-[#f08b53]"
+                      :style="{ width: '86%' }"
                     />
                   </div>
-                  <span class="text-xs text-gray-500 ml-2">已认证</span>
+                  <span class="text-xs font-semibold text-slate-500">已认证</span>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- 导航菜单 -->
-          <div class="flex-1 p-4 overflow-y-auto">
-            <OrganizationSidebar />
-          </div>
+          <OrganizationSidebar />
 
-          <!-- 退出登录 -->
-          <div class="p-4 border-t border-gray-100">
+          <div class="mt-auto org-shell-panel p-4">
             <button
-              class="w-full flex items-center space-x-2 p-3 text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-lg transition-colors duration-200"
+              class="flex w-full items-center justify-center gap-2 rounded-full border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-600 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700"
               @click="handleLogout"
             >
               <LogOutIcon class="h-4 w-4" />
-              <span class="text-sm font-medium">退出登录</span>
+              退出登录
             </button>
           </div>
         </div>
-      </div>
+      </aside>
 
-      <!-- 主内容区域 -->
-      <div class="flex-1 flex flex-col overflow-hidden">
-        <!-- 移动端头部 -->
-        <div class="lg:hidden bg-white border-b border-gray-200 shadow-sm">
-          <div class="px-4 py-3 flex items-center justify-between">
+      <div
+        class="organization-resize-handle hidden lg:flex"
+        aria-label="调整组织导航宽度"
+        aria-orientation="vertical"
+        aria-valuemax="420"
+        aria-valuemin="256"
+        :aria-valuenow="sidebarWidth"
+        role="separator"
+        tabindex="0"
+        @keydown.left.prevent="shrinkSidebar"
+        @keydown.right.prevent="expandSidebar"
+        @keydown.home.prevent="setSidebarToMin"
+        @keydown.end.prevent="setSidebarToMax"
+        @mousedown="startSidebarResize"
+        @dblclick="resetSidebarWidth"
+      />
+
+      <div class="flex min-w-0 flex-1 flex-col overflow-hidden">
+        <div class="border-b border-white/70 bg-white/75 px-4 py-3 backdrop-blur lg:hidden">
+          <div class="flex items-center justify-between">
             <button
-              class="p-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-gray-50"
+              class="rounded-full border border-slate-200 bg-white p-2 text-slate-600"
               @click="isMobileSidebarOpen = true"
             >
               <MenuIcon class="h-5 w-5" />
             </button>
-            <div class="flex items-center space-x-2">
-              <div class="h-8 w-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-medium">
+            <div class="flex items-center gap-3">
+              <div class="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-[#f08b53] to-[#ec5b13] font-bold text-white">
                 {{ userInitials }}
               </div>
-              <span class="text-sm font-medium text-gray-700">{{ user?.realName || '组织管理者' }}</span>
+              <p class="text-sm font-semibold text-slate-700">
+                {{ currentPage.title }}
+              </p>
             </div>
           </div>
         </div>
 
-        <!-- 主要内容 -->
-        <main class="flex-1 overflow-y-auto">
-          <div class="p-4 lg:p-8 max-w-[calc(100vw-18rem)] xl:max-w-[calc(100vw-20rem)] 2xl:max-w-[1800px] mx-auto">
+        <main class="min-w-0 flex-1 overflow-y-auto">
+          <div class="org-content-grid">
+            <section class="org-context-strip">
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
+                  组织工作台
+                </p>
+                <div class="mt-2 flex flex-wrap items-center gap-3">
+                  <h2 class="text-xl font-black tracking-tight text-slate-900">
+                    {{ currentPage.title }}
+                  </h2>
+                  <span class="hidden h-1.5 w-1.5 rounded-full bg-[#ec5b13]/60 sm:block" />
+                  <p class="max-w-2xl text-sm text-slate-500">
+                    {{ currentPage.description }}
+                  </p>
+                </div>
+              </div>
+
+              <div class="flex flex-wrap items-center gap-3">
+                <div
+                  v-for="item in headerMeta"
+                  :key="item.label"
+                  class="rounded-full border border-white/80 bg-white/90 px-3 py-2 text-xs text-slate-500 shadow-[0_10px_28px_-24px_rgba(15,23,42,0.3)]"
+                >
+                  <span class="font-semibold text-slate-700">{{ item.label }}</span>
+                  <span class="mx-1 text-slate-300">/</span>
+                  <span>{{ item.value }}</span>
+                </div>
+                <RouterLink
+                  to="/organization/activities/create"
+                  class="org-toolbar-button org-toolbar-button--soft"
+                >
+                  新建活动
+                </RouterLink>
+              </div>
+            </section>
+
             <router-view v-slot="{ Component }">
-              <keep-alive :include="cachedComponents">
-                <component :is="Component" />
-              </keep-alive>
+              <transition
+                mode="out-in"
+                name="organization-page-fade"
+              >
+                <keep-alive :include="cachedComponents">
+                  <component
+                    :is="Component"
+                    class="organization-page-stage"
+                  />
+                </keep-alive>
+              </transition>
             </router-view>
           </div>
         </main>
       </div>
     </div>
 
-    <!-- 移动端侧边栏遮罩 -->
-    <div
-      v-if="isMobileSidebarOpen"
-      class="lg:hidden fixed inset-0 z-50 bg-black bg-opacity-50"
-      @click="isMobileSidebarOpen = false"
-    />
+    <transition name="organization-mobile-drawer">
+      <div
+        v-if="isMobileSidebarOpen"
+        class="fixed inset-0 z-40 bg-slate-950/35 backdrop-blur-sm lg:hidden"
+        @click="isMobileSidebarOpen = false"
+      />
+    </transition>
 
-    <!-- 移动端侧边栏 -->
-    <div
-      v-if="isMobileSidebarOpen"
-      class="lg:hidden fixed left-0 top-0 h-full w-80 bg-white z-50 transform transition-transform duration-300"
-      :class="{ 'translate-x-0': isMobileSidebarOpen, '-translate-x-full': !isMobileSidebarOpen }"
-    >
-      <div class="h-full flex flex-col">
-        <!-- 移动端头部 -->
-        <div class="p-4 border-b border-gray-200">
+    <transition name="organization-mobile-drawer">
+      <aside
+        v-if="isMobileSidebarOpen"
+        class="organization-mobile-drawer-panel fixed inset-y-0 left-0 z-50 w-[304px] max-w-[85vw] overflow-y-auto bg-white/95 px-5 py-6 backdrop-blur lg:hidden"
+      >
+        <div class="flex min-h-full flex-col gap-6">
           <div class="flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-              <div class="h-10 w-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center">
-                <Building2Icon class="h-6 w-6 text-white" />
+            <div class="flex items-center gap-3">
+              <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-[#ec5b13] to-[#c9470c] text-white">
+                <Building2Icon class="h-5 w-5" />
               </div>
-              <span class="text-xl font-bold text-blue-600">组织管理中心</span>
+              <div>
+                <p class="text-base font-black text-slate-900">
+                  组织管理中心
+                </p>
+                <p class="text-xs uppercase tracking-[0.2em] text-[#ec5b13]">
+                  Workbench
+                </p>
+              </div>
             </div>
             <button
-              class="p-2 rounded-lg text-gray-600 hover:text-blue-600"
+              class="rounded-full border border-slate-200 bg-white p-2 text-slate-600"
               @click="isMobileSidebarOpen = false"
             >
               <XIcon class="h-5 w-5" />
             </button>
           </div>
-        </div>
 
-        <!-- 用户信息 -->
-        <div class="p-4 border-b border-gray-100">
-          <div class="flex items-center space-x-3">
-            <div class="h-12 w-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
-              {{ userInitials }}
-            </div>
-            <div>
-              <p class="font-semibold text-gray-900">
-                {{ user?.realName || '组织管理者' }}
-              </p>
-              <p class="text-sm text-gray-500">
-                组织管理者
-              </p>
+          <div class="org-shell-panel p-4">
+            <div class="flex items-center gap-3">
+              <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#f08b53] to-[#ec5b13] text-lg font-bold text-white">
+                {{ userInitials }}
+              </div>
+              <div>
+                <p class="font-bold text-slate-900">
+                  {{ user?.realName || '组织管理者' }}
+                </p>
+                <p class="text-sm text-slate-500">
+                  Organization Admin
+                </p>
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- 导航菜单 -->
-        <div class="flex-1 p-4 overflow-y-auto">
           <OrganizationSidebar @close="isMobileSidebarOpen = false" />
-        </div>
 
-        <!-- 退出登录 -->
-        <div class="p-4 border-t border-gray-100">
           <button
-            class="w-full flex items-center space-x-2 p-3 text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-lg transition-colors duration-200"
+            class="mt-auto flex items-center justify-center gap-2 rounded-full border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-600"
             @click="handleLogout"
           >
             <LogOutIcon class="h-4 w-4" />
-            <span class="text-sm font-medium">退出登录</span>
+            退出登录
           </button>
         </div>
-      </div>
-    </div>
+      </aside>
+    </transition>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, onBeforeUnmount, ref } from 'vue'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/store/modules/auth'
-import { Building2Icon, MenuIcon, XIcon, LogOutIcon } from 'lucide-vue-next'
+import { Building2Icon, LogOutIcon, MenuIcon, XIcon } from 'lucide-vue-next'
 import OrganizationSidebar from '@/components/organization/OrganizationSidebar.vue'
 
+const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
+
 const user = computed(() => authStore.user)
-
-// 移动端侧边栏状态
 const isMobileSidebarOpen = ref(false)
+const SIDEBAR_STORAGE_KEY = 'organization_center_sidebar_width'
+const SIDEBAR_DEFAULT_WIDTH = 304
+const SIDEBAR_MIN_WIDTH = 256
+const SIDEBAR_MAX_WIDTH = 420
+const SIDEBAR_KEYBOARD_STEP = 16
 
-// 需要缓存的组件名称列表
-const cachedComponents = ref([
-  'OrganizationActivityManagement',
-  'OrganizationVolunteerManagement',
-  'OrganizationDataStatistics',
-  'OrganizationSettings'
-])
+const getInitialSidebarWidth = () => {
+  if (typeof window === 'undefined') return SIDEBAR_DEFAULT_WIDTH
+  const raw = window.localStorage.getItem(SIDEBAR_STORAGE_KEY)
+  const value = Number(raw)
+  if (!Number.isFinite(value)) return SIDEBAR_DEFAULT_WIDTH
+  return Math.min(SIDEBAR_MAX_WIDTH, Math.max(SIDEBAR_MIN_WIDTH, value))
+}
 
-// 计算用户名首字母
-const userInitials = computed(() => {
-  const name = user.value?.realName || '组织管理者'
-  return name.charAt(0)
+const sidebarWidth = ref(getInitialSidebarWidth())
+const isResizingSidebar = ref(false)
+let dragStartX = 0
+let dragStartWidth = sidebarWidth.value
+
+const desktopSidebarStyle = computed(() => ({
+  width: `${sidebarWidth.value}px`
+}))
+
+const clampSidebarWidth = (value: number) => Math.min(SIDEBAR_MAX_WIDTH, Math.max(SIDEBAR_MIN_WIDTH, value))
+
+const persistSidebarWidth = () => {
+  if (typeof window === 'undefined') return
+  try {
+    window.localStorage.setItem(SIDEBAR_STORAGE_KEY, String(sidebarWidth.value))
+  } catch (error) {
+    console.warn('无法持久化组织侧栏宽度', error)
+  }
+}
+
+const onSidebarResize = (event: MouseEvent) => {
+  if (!isResizingSidebar.value) return
+  const deltaX = event.clientX - dragStartX
+  sidebarWidth.value = clampSidebarWidth(dragStartWidth + deltaX)
+}
+
+const stopSidebarResize = () => {
+  if (!isResizingSidebar.value) return
+  isResizingSidebar.value = false
+  window.removeEventListener('mousemove', onSidebarResize)
+  window.removeEventListener('mouseup', stopSidebarResize)
+  document.body.classList.remove('organization-resizing-sidebar')
+  persistSidebarWidth()
+}
+
+const startSidebarResize = (event: MouseEvent) => {
+  if (event.button !== 0) return
+  isResizingSidebar.value = true
+  dragStartX = event.clientX
+  dragStartWidth = sidebarWidth.value
+  document.body.classList.add('organization-resizing-sidebar')
+  window.addEventListener('mousemove', onSidebarResize)
+  window.addEventListener('mouseup', stopSidebarResize)
+  event.preventDefault()
+}
+
+const resetSidebarWidth = () => {
+  sidebarWidth.value = SIDEBAR_DEFAULT_WIDTH
+  persistSidebarWidth()
+}
+
+const resizeSidebarBy = (delta: number) => {
+  sidebarWidth.value = clampSidebarWidth(sidebarWidth.value + delta)
+  persistSidebarWidth()
+}
+
+const shrinkSidebar = () => {
+  resizeSidebarBy(-SIDEBAR_KEYBOARD_STEP)
+}
+
+const expandSidebar = () => {
+  resizeSidebarBy(SIDEBAR_KEYBOARD_STEP)
+}
+
+const setSidebarToMin = () => {
+  sidebarWidth.value = SIDEBAR_MIN_WIDTH
+  persistSidebarWidth()
+}
+
+const setSidebarToMax = () => {
+  sidebarWidth.value = SIDEBAR_MAX_WIDTH
+  persistSidebarWidth()
+}
+
+const cachedComponents = [
+  'Dashboard',
+  'ActivityManagement',
+  'VolunteerManagement',
+  'Statistics',
+  'Settings'
+]
+
+const pageDescriptions: Record<string, string> = {
+  'organization-dashboard': '查看组织关键指标、核心任务优先级和高表现项目进展。',
+  'organization-info': '管理组织资质、简介和对外展示信息，保障资料完整可信。',
+  'organization-activities': '统一管理活动创建、执行和复盘，提升项目运营效率。',
+  'organization-volunteers': '维护志愿者档案、活跃度状态与参与表现。',
+  'organization-statistics': '从活动、志愿者与财务维度洞察整体运营表现。',
+  'organization-notifications': '集中处理平台消息、审核提醒和系统通知。',
+  'organization-settings': '管理组织账户安全、偏好配置与基础权限。',
+  'organization-members': '维护组织成员身份、分工与协作权限。',
+  'organization-activities-create': '创建新活动并配置流程、地点与参与要求。',
+  'organization-activities-review': '审核活动申请与关键节点，降低运营风险。',
+  'organization-volunteers-statistics': '分析志愿者参与趋势、留存和服务贡献。',
+  'organization-volunteers-evaluations': '管理评价反馈与改进建议，形成正向协作闭环。',
+  'organization-statistics-activities': '查看活动维度报表，评估执行质量与投入产出。',
+  'organization-statistics-volunteers': '查看志愿者结构、活跃人群和增长状态。',
+  'organization-statistics-financial': '查看资金流向、成本结构和筹资成果。',
+  'organization-notifications-announcements': '发布公告并追踪触达效果。',
+  'organization-settings-permissions': '配置组织角色权限与访问策略。'
+}
+
+const currentPage = computed(() => {
+  const routeName = String(route.name || 'organization-dashboard')
+  return {
+    title: String(route.meta.title || '组织管理中心'),
+    description: pageDescriptions[routeName] || '统一管理组织运营、成员协作和关键决策信息。'
+  }
 })
 
-// 处理退出登录
-const handleLogout = () => {
-  authStore.logout()
-  // 使用replace而不是push，避免用户点击后退按钮返回已退出的页面
+const userInitials = computed(() => (user.value?.realName || '组织管理者').charAt(0))
+
+const headerMeta = computed(() => [
+  { label: '当前身份', value: 'Organization Admin' },
+  {
+    label: '今日日期',
+    value: new Date().toLocaleDateString('zh-CN', {
+      month: '2-digit',
+      day: '2-digit',
+      weekday: 'short'
+    })
+  }
+])
+
+const handleLogout = async () => {
+  await authStore.logout()
   router.replace('/')
   isMobileSidebarOpen.value = false
 }
-</script>
 
-<style scoped>
-/* 自定义样式已通过Tailwind类实现 */
-</style>
+onBeforeUnmount(() => {
+  stopSidebarResize()
+})
+</script>

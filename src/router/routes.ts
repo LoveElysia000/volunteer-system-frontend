@@ -51,7 +51,7 @@ export const routes = [
     path: '/volunteer',
     name: 'volunteer',
     component: () => import('@/views/Volunteer/VolunteerLayout.vue'),
-    meta: { title: '志愿者中心', requiresAuth: true, role: 'volunteer' },
+    meta: { title: '志愿者中心', requiresAuth: true, role: 'volunteer', fullWidth: true, hideGlobalChrome: true },
     children: [
       {
         path: '',
@@ -137,7 +137,7 @@ export const routes = [
     path: '/organization',
     name: 'organization',
     component: () => import('@/views/Organization/OrganizationLayout.vue'),
-    meta: { title: '组织管理中心', requiresAuth: true, role: 'organization' },
+    meta: { title: '组织管理中心', requiresAuth: true, role: 'organization', fullWidth: true, hideGlobalChrome: true },
     children: [
       {
         path: '',

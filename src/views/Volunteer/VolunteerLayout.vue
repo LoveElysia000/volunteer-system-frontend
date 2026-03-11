@@ -1,221 +1,378 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
-    <div class="flex h-screen">
-      <!-- 侧边栏 -->
-      <div class="hidden lg:block w-64 xl:w-72 bg-white border-r border-gray-200 overflow-y-auto">
-        <div class="h-full flex flex-col">
-          <!-- Logo区域 -->
-          <div class="p-6 border-b border-gray-200">
-            <div class="flex items-center space-x-3">
-              <div class="h-10 w-10 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl flex items-center justify-center shadow-md">
-                <LeafIcon class="h-6 w-6 text-white" />
+  <div class="volunteer-shell">
+    <div class="volunteer-shell-main flex h-screen">
+      <aside
+        class="volunteer-nav-surface hidden shrink-0 overflow-y-auto lg:block"
+        :style="desktopSidebarStyle"
+      >
+        <div class="flex min-h-full flex-col gap-6 px-5 py-6">
+          <div class="rounded-[2rem] border border-emerald-100 bg-[linear-gradient(135deg,_rgba(16,185,129,0.08),_rgba(255,255,255,0.96))] p-5">
+            <div class="flex items-center gap-3">
+              <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-700 text-white shadow-lg">
+                <LeafIcon class="h-6 w-6" />
               </div>
               <div>
-                <span class="text-xl font-bold bg-gradient-to-r from-primary-600 to-primary-800 bg-clip-text text-transparent">
+                <p class="text-lg font-black tracking-tight text-slate-900">
                   环保志愿者
-                </span>
-                <p class="text-xs text-gray-500 font-medium">
+                </p>
+                <p class="text-xs font-medium uppercase tracking-[0.24em] text-emerald-700">
                   Volunteer Center
                 </p>
               </div>
             </div>
           </div>
 
-          <!-- 用户信息 -->
-          <div class="p-6 border-b border-gray-100">
-            <div class="flex items-center space-x-3">
-              <div class="h-12 w-12 bg-gradient-to-br from-primary-400 to-primary-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
+          <div class="volunteer-shell-panel p-5">
+            <div class="flex items-center gap-4">
+              <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-700 text-xl font-black text-white">
                 {{ userInitials }}
               </div>
-              <div class="flex-1 min-w-0">
-                <p class="font-semibold text-gray-900 truncate">
+              <div class="min-w-0 flex-1">
+                <p class="truncate text-base font-bold text-slate-900">
                   {{ user?.realName || '志愿者' }}
                 </p>
-                <p class="text-sm text-gray-500 truncate">
-                  志愿者
+                <p class="text-sm text-slate-500">
+                  志愿者工作台在线
                 </p>
-                <div class="flex items-center mt-1">
-                  <div class="h-2 w-16 bg-primary-200 rounded-full overflow-hidden">
+                <div class="mt-3 flex items-center gap-3">
+                  <div class="h-2 flex-1 rounded-full bg-emerald-100">
                     <div
-                      class="h-full bg-primary-500"
-                      :style="{ width: volunteerLevelPercentage + '%' }"
+                      class="h-full rounded-full bg-gradient-to-r from-emerald-500 to-emerald-700"
+                      :style="{ width: `${levelProgressPercentage}%` }"
                     />
                   </div>
-                  <span class="text-xs text-gray-500 ml-2">Lv.{{ volunteerLevel }}</span>
+                  <span class="text-xs font-semibold text-slate-500">Lv.{{ volunteerLevel }}</span>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- 导航菜单 -->
-          <div class="flex-1 p-4">
-            <VolunteerSidebar />
-          </div>
+          <VolunteerSidebar
+            :sidebar-width="sidebarWidth"
+            :enable-compact="true"
+          />
 
-          <!-- 退出登录 -->
-          <div class="p-4 border-t border-gray-100">
+          <div class="mt-auto volunteer-shell-panel p-4">
             <button
-              class="w-full flex items-center space-x-2 p-3 text-gray-600 hover:text-primary-600 hover:bg-gray-50 rounded-lg transition-colors duration-200"
+              class="flex w-full items-center justify-center gap-2 rounded-full border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-600 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700"
               @click="handleLogout"
             >
               <LogOutIcon class="h-4 w-4" />
-              <span class="text-sm font-medium">退出登录</span>
+              退出登录
             </button>
           </div>
         </div>
-      </div>
+      </aside>
+      <div
+        class="volunteer-resize-handle hidden lg:flex"
+        aria-label="调整导航宽度"
+        aria-orientation="vertical"
+        aria-valuemax="420"
+        aria-valuemin="256"
+        :aria-valuenow="sidebarWidth"
+        role="separator"
+        tabindex="0"
+        @keydown.left.prevent="shrinkSidebar"
+        @keydown.right.prevent="expandSidebar"
+        @keydown.home.prevent="setSidebarToMin"
+        @keydown.end.prevent="setSidebarToMax"
+        @mousedown="startSidebarResize"
+        @dblclick="resetSidebarWidth"
+      />
 
-      <!-- 主内容区域 -->
-      <div class="flex-1 flex flex-col overflow-hidden">
-        <!-- 移动端头部 -->
-        <div class="lg:hidden bg-white border-b border-gray-200 shadow-sm">
-          <div class="px-4 py-3 flex items-center justify-between">
+      <div class="flex min-w-0 flex-1 flex-col overflow-hidden">
+        <div class="border-b border-white/70 bg-white/75 px-4 py-3 backdrop-blur lg:hidden">
+          <div class="flex items-center justify-between">
             <button
-              class="p-2 rounded-lg text-gray-600 hover:text-primary-600 hover:bg-gray-50"
+              class="rounded-full border border-slate-200 bg-white p-2 text-slate-600"
               @click="isMobileSidebarOpen = true"
             >
               <MenuIcon class="h-5 w-5" />
             </button>
-            <div class="flex items-center space-x-2">
-              <div class="h-8 w-8 bg-gradient-to-br from-primary-400 to-primary-600 rounded-full flex items-center justify-center text-white font-medium">
+            <div class="flex items-center gap-3">
+              <div class="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-emerald-400 to-emerald-700 font-bold text-white">
                 {{ userInitials }}
               </div>
-              <span class="text-sm font-medium text-gray-700">{{ user?.realName || '志愿者' }}</span>
+              <p class="text-sm font-semibold text-slate-700">
+                {{ currentPage.title }}
+              </p>
             </div>
           </div>
         </div>
 
-        <!-- 主要内容 -->
-        <main class="flex-1 overflow-y-auto">
-          <div class="p-4 lg:p-8 max-w-[calc(100vw-18rem)] xl:max-w-[calc(100vw-20rem)] 2xl:max-w-[1800px] mx-auto">
+        <main class="min-w-0 flex-1 overflow-y-auto">
+          <div class="volunteer-content-grid">
+            <section class="volunteer-context-strip">
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
+                  志愿者中心
+                </p>
+                <div class="mt-2 flex flex-wrap items-center gap-3">
+                  <h2 class="text-xl font-black tracking-tight text-slate-900">
+                    {{ currentPage.title }}
+                  </h2>
+                  <span class="hidden h-1.5 w-1.5 rounded-full bg-emerald-500/60 sm:block" />
+                  <p class="max-w-2xl text-sm text-slate-500">
+                    {{ currentPage.description }}
+                  </p>
+                </div>
+              </div>
+
+              <div class="flex flex-wrap items-center gap-3">
+                <div
+                  v-for="item in headerMeta"
+                  :key="item.label"
+                  class="rounded-full border border-white/80 bg-white/85 px-3 py-2 text-xs text-slate-500 shadow-[0_10px_28px_-24px_rgba(15,23,42,0.28)]"
+                >
+                  <span class="font-semibold text-slate-700">{{ item.label }}</span>
+                  <span class="mx-1 text-slate-300">/</span>
+                  <span>{{ item.value }}</span>
+                </div>
+                <RouterLink
+                  to="/volunteer/activities"
+                  class="volunteer-toolbar-button volunteer-toolbar-button--soft"
+                >
+                  查看活动
+                </RouterLink>
+              </div>
+            </section>
+
             <router-view v-slot="{ Component }">
-              <keep-alive :include="cachedComponents">
-                <component :is="Component" />
-              </keep-alive>
+              <transition
+                mode="out-in"
+                name="volunteer-page-fade"
+              >
+                <keep-alive :include="cachedComponents">
+                  <component
+                    :is="Component"
+                    class="volunteer-page-stage"
+                  />
+                </keep-alive>
+              </transition>
             </router-view>
           </div>
         </main>
       </div>
     </div>
 
-    <!-- 移动端侧边栏遮罩 -->
-    <div
-      v-if="isMobileSidebarOpen"
-      class="lg:hidden fixed inset-0 z-50 bg-black bg-opacity-50"
-      @click="isMobileSidebarOpen = false"
-    />
+    <transition name="volunteer-mobile-drawer">
+      <div
+        v-if="isMobileSidebarOpen"
+        class="fixed inset-0 z-40 bg-slate-950/35 backdrop-blur-sm lg:hidden"
+        @click="isMobileSidebarOpen = false"
+      />
+    </transition>
 
-    <!-- 移动端侧边栏 -->
-    <div
-      v-if="isMobileSidebarOpen"
-      class="lg:hidden fixed left-0 top-0 h-full w-80 bg-white z-50 transform transition-transform duration-300"
-      :class="{ 'translate-x-0': isMobileSidebarOpen, '-translate-x-full': !isMobileSidebarOpen }"
-    >
-      <div class="h-full flex flex-col">
-        <!-- 移动端头部 -->
-        <div class="p-4 border-b border-gray-200">
+    <transition name="volunteer-mobile-drawer">
+      <aside
+        v-if="isMobileSidebarOpen"
+        class="volunteer-mobile-drawer-panel fixed inset-y-0 left-0 z-50 w-[302px] max-w-[85vw] overflow-y-auto bg-white/95 px-5 py-6 backdrop-blur lg:hidden"
+      >
+        <div class="flex min-h-full flex-col gap-6">
           <div class="flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-              <div class="h-10 w-10 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl flex items-center justify-center">
-                <LeafIcon class="h-6 w-6 text-white" />
+            <div class="flex items-center gap-3">
+              <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-700 text-white">
+                <LeafIcon class="h-5 w-5" />
               </div>
-              <span class="text-xl font-bold text-primary-600">志愿者中心</span>
+              <div>
+                <p class="text-base font-black text-slate-900">
+                  志愿者中心
+                </p>
+                <p class="text-xs uppercase tracking-[0.2em] text-emerald-700">
+                  Workbench
+                </p>
+              </div>
             </div>
             <button
-              class="p-2 rounded-lg text-gray-600 hover:text-primary-600"
+              class="rounded-full border border-slate-200 bg-white p-2 text-slate-600"
               @click="isMobileSidebarOpen = false"
             >
               <XIcon class="h-5 w-5" />
             </button>
           </div>
-        </div>
 
-        <!-- 用户信息 -->
-        <div class="p-4 border-b border-gray-100">
-          <div class="flex items-center space-x-3">
-            <div class="h-12 w-12 bg-gradient-to-br from-primary-400 to-primary-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
-              {{ userInitials }}
-            </div>
-            <div>
-              <p class="font-semibold text-gray-900">
-                {{ user?.realName || '志愿者' }}
-              </p>
-              <p class="text-sm text-gray-500">
-                志愿者
-              </p>
+          <div class="volunteer-shell-panel p-4">
+            <div class="flex items-center gap-3">
+              <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-700 text-lg font-bold text-white">
+                {{ userInitials }}
+              </div>
+              <div>
+                <p class="font-bold text-slate-900">
+                  {{ user?.realName || '志愿者' }}
+                </p>
+                <p class="text-sm text-slate-500">
+                  Lv.{{ volunteerLevel }} 志愿者
+                </p>
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- 导航菜单 -->
-        <div class="flex-1 p-4">
-          <VolunteerSidebar @close="isMobileSidebarOpen = false" />
-        </div>
+          <VolunteerSidebar
+            :sidebar-width="302"
+            :enable-compact="false"
+            @close="isMobileSidebarOpen = false"
+          />
 
-        <!-- 退出登录 -->
-        <div class="p-4 border-t border-gray-100">
           <button
-            class="w-full flex items-center space-x-2 p-3 text-gray-600 hover:text-primary-600 hover:bg-gray-50 rounded-lg transition-colors duration-200"
+            class="mt-auto flex items-center justify-center gap-2 rounded-full border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-600"
             @click="handleLogout"
           >
             <LogOutIcon class="h-4 w-4" />
-            <span class="text-sm font-medium">退出登录</span>
+            退出登录
           </button>
         </div>
-      </div>
-    </div>
+      </aside>
+    </transition>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, onBeforeUnmount, ref } from 'vue'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/store/modules/auth'
-import { LeafIcon, MenuIcon, XIcon, LogOutIcon } from 'lucide-vue-next'
+import { useVolunteerMetrics } from '@/composables/useVolunteerMetrics'
+import { LeafIcon, LogOutIcon, MenuIcon, XIcon } from 'lucide-vue-next'
 import VolunteerSidebar from '@/components/volunteer/VolunteerSidebar.vue'
 
+const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
-const user = computed(() => authStore.user)
-
-// 移动端侧边栏状态
+const { user, points, volunteerLevel, levelProgressPercentage } = useVolunteerMetrics()
 const isMobileSidebarOpen = ref(false)
+const SIDEBAR_STORAGE_KEY = 'volunteer_center_sidebar_width'
+const SIDEBAR_DEFAULT_WIDTH = 296
+const SIDEBAR_MIN_WIDTH = 256
+const SIDEBAR_MAX_WIDTH = 420
+const SIDEBAR_KEYBOARD_STEP = 16
 
-// 需要缓存的组件名称列表
-const cachedComponents = ref([
+const getInitialSidebarWidth = () => {
+  if (typeof window === 'undefined') return SIDEBAR_DEFAULT_WIDTH
+  const raw = window.localStorage.getItem(SIDEBAR_STORAGE_KEY)
+  const value = Number(raw)
+  if (!Number.isFinite(value)) return SIDEBAR_DEFAULT_WIDTH
+  return Math.min(SIDEBAR_MAX_WIDTH, Math.max(SIDEBAR_MIN_WIDTH, value))
+}
+
+const sidebarWidth = ref(getInitialSidebarWidth())
+const isResizingSidebar = ref(false)
+let dragStartX = 0
+let dragStartWidth = sidebarWidth.value
+
+const desktopSidebarStyle = computed(() => ({
+  width: `${sidebarWidth.value}px`
+}))
+
+const clampSidebarWidth = (value: number) => Math.min(SIDEBAR_MAX_WIDTH, Math.max(SIDEBAR_MIN_WIDTH, value))
+
+const persistSidebarWidth = () => {
+  if (typeof window === 'undefined') return
+  try {
+    window.localStorage.setItem(SIDEBAR_STORAGE_KEY, String(sidebarWidth.value))
+  } catch (error) {
+    console.warn('无法持久化侧栏宽度', error)
+  }
+}
+
+const onSidebarResize = (event: MouseEvent) => {
+  if (!isResizingSidebar.value) return
+  const deltaX = event.clientX - dragStartX
+  sidebarWidth.value = clampSidebarWidth(dragStartWidth + deltaX)
+}
+
+const stopSidebarResize = () => {
+  if (!isResizingSidebar.value) return
+  isResizingSidebar.value = false
+  window.removeEventListener('mousemove', onSidebarResize)
+  window.removeEventListener('mouseup', stopSidebarResize)
+  document.body.classList.remove('volunteer-resizing-sidebar')
+  persistSidebarWidth()
+}
+
+const startSidebarResize = (event: MouseEvent) => {
+  if (event.button !== 0) return
+  isResizingSidebar.value = true
+  dragStartX = event.clientX
+  dragStartWidth = sidebarWidth.value
+  document.body.classList.add('volunteer-resizing-sidebar')
+  window.addEventListener('mousemove', onSidebarResize)
+  window.addEventListener('mouseup', stopSidebarResize)
+  event.preventDefault()
+}
+
+const resetSidebarWidth = () => {
+  sidebarWidth.value = SIDEBAR_DEFAULT_WIDTH
+  persistSidebarWidth()
+}
+
+const resizeSidebarBy = (delta: number) => {
+  sidebarWidth.value = clampSidebarWidth(sidebarWidth.value + delta)
+  persistSidebarWidth()
+}
+
+const shrinkSidebar = () => {
+  resizeSidebarBy(-SIDEBAR_KEYBOARD_STEP)
+}
+
+const expandSidebar = () => {
+  resizeSidebarBy(SIDEBAR_KEYBOARD_STEP)
+}
+
+const setSidebarToMin = () => {
+  sidebarWidth.value = SIDEBAR_MIN_WIDTH
+  persistSidebarWidth()
+}
+
+const setSidebarToMax = () => {
+  sidebarWidth.value = SIDEBAR_MAX_WIDTH
+  persistSidebarWidth()
+}
+
+const cachedComponents = [
   'VolunteerActivities',
   'VolunteerMyRegistrations',
   'VolunteerHistoryActivities',
   'VolunteerAchievements',
   'VolunteerRecords'
+]
+
+const pageDescriptions: Record<string, string> = {
+  'volunteer-dashboard': '总览你的服务状态、成长进度和本周待完成任务。',
+  'volunteer-activities': '浏览推荐项目、管理报名状态，并快速筛选适合你的环保活动。',
+  'volunteer-my-registrations': '查看已经预约的活动，关注时间、地点和行前提醒。',
+  'volunteer-history-activities': '回顾已完成项目，沉淀稳定贡献记录和高频参与类型。',
+  'volunteer-records': '集中查看服务记录、积分和可导出的参与明细。',
+  'volunteer-records-statistics': '从月份、主题和阶段观察你的服务时长和投入趋势。',
+  'volunteer-records-reviews': '查看组织反馈、协作评价和后续提升建议。',
+  'volunteer-achievements': '整理你的徽章墙、阶段成就和接下来可冲刺的里程碑。',
+  'volunteer-achievements-levels': '查看升级节奏、当前等级进度和下一阶段目标。',
+  'volunteer-achievements-leaderboard': '了解你的排名位置、连续服务表现和领先差距。',
+  'volunteer-profile': '维护个人资料、服务偏好和志愿者展示信息。',
+  'volunteer-settings': '管理账户安全、隐私偏好和平台使用设置。',
+  'volunteer-settings-notifications': '配置活动提醒、系统消息和不同渠道的通知策略。'
+}
+
+const currentPage = computed(() => {
+  const routeName = String(route.name || 'volunteer-dashboard')
+  return {
+    title: String(route.meta.title || '志愿者中心'),
+    description: pageDescriptions[routeName] || '统一管理你的志愿者任务、记录和成长信息。'
+  }
+})
+
+const userInitials = computed(() => (user.value?.realName || '志愿者').charAt(0))
+
+const headerMeta = computed(() => [
+  { label: '当前身份', value: '环保志愿者', detail: '已登录工作台' },
+  { label: '成长等级', value: `Lv.${volunteerLevel.value}`, detail: `${points.value} 当前积分` }
 ])
 
-// 计算用户名首字母
-const userInitials = computed(() => {
-  const name = user.value?.realName || '志愿者'
-  return name.charAt(0)
-})
-
-// 计算志愿者等级
-const volunteerLevel = computed(() => {
-  const hours = user.value?.totalHours || 0
-  return Math.floor(hours / 10) + 1
-})
-
-const volunteerLevelPercentage = computed(() => {
-  const hours = user.value?.totalHours || 0
-  return (hours % 10) * 10
-})
-
-// 处理退出登录
-const handleLogout = () => {
-  authStore.logout()
-  // 使用replace而不是push，避免用户点击后退按钮返回已退出的页面
+const handleLogout = async () => {
+  await authStore.logout()
   router.replace('/')
   isMobileSidebarOpen.value = false
 }
-</script>
 
-<style scoped>
-/* 自定义样式已通过Tailwind类实现 */
-</style>
+onBeforeUnmount(() => {
+  stopSidebarResize()
+})
+</script>

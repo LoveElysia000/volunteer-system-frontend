@@ -1,55 +1,59 @@
 <template>
-  <div class="menu-item">
-    <!-- 菜单项主体 -->
-    <div
-      class="menu-item-main"
-      :class="{
-        'menu-item-active': isActive,
-        'menu-item-has-children': hasChildren,
-        'menu-item-expanded': isExpanded
-      }"
+  <div class="menu-item w-full">
+    <button
+      type="button"
+      class="menu-item-main relative flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium transition-all duration-200"
+      :class="mainClass"
+      :disabled="item.disabled"
+      :aria-current="!hasChildren && isActive ? 'page' : undefined"
+      :aria-expanded="hasChildren ? String(isExpanded) : undefined"
+      :aria-disabled="item.disabled ? 'true' : undefined"
       @click="handleClick"
     >
-      <!-- 左侧图标 -->
-      <div class="menu-item-icon">
+      <span
+        class="absolute inset-y-2 left-2 w-1 rounded-full transition-all duration-200"
+        :class="isActive ? 'bg-[#ec5b13] opacity-100' : 'bg-transparent opacity-0'"
+      />
+
+      <div
+        class="menu-item-icon flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
+        :class="iconWrapClass"
+      >
         <component
           :is="item.icon"
           v-if="item.icon"
           class="h-4 w-4"
-          :class="isActive ? 'text-blue-600' : 'text-gray-400'"
         />
       </div>
 
-      <!-- 菜单标签 -->
-      <span class="menu-item-label flex-1 truncate">{{ item.label }}</span>
-
-      <!-- 右侧内容 -->
-      <div class="menu-item-right">
-        <!-- 徽章 -->
-        <span
-          v-if="item.badge"
-          class="menu-item-badge"
-          :class="item.badgeClass || 'bg-gray-100 text-gray-600'"
-        >
-          {{ item.badge }}
-        </span>
-
-        <!-- 展开箭头（有子菜单时显示） -->
-        <ChevronRightIcon
-          v-if="hasChildren"
-          class="menu-item-arrow h-3 w-3 transition-transform duration-200"
-          :class="isExpanded ? 'rotate-90' : ''"
-        />
+      <div class="min-w-0 flex-1">
+        <p class="truncate font-semibold leading-5">
+          {{ item.label }}
+        </p>
       </div>
-    </div>
 
-    <!-- 子菜单 -->
+      <span
+        v-if="item.badge"
+        class="menu-item-badge shrink-0 rounded-full px-2 py-1 text-[11px] font-semibold"
+        :class="item.badgeClass || 'bg-[#fff1ea] text-[#ec5b13]'"
+      >
+        {{ item.badge }}
+      </span>
+
+      <ChevronRightIcon
+        v-if="hasChildren"
+        class="h-4 w-4 shrink-0 transition-transform duration-200"
+        :class="isExpanded ? 'rotate-90 text-[#ec5b13]' : 'text-slate-400'"
+      />
+    </button>
+
     <SubMenu
       v-if="hasChildren"
       :items="item.children"
       :expanded="isExpanded"
       :level="level + 1"
       @item-click="$emit('item-click', $event)"
+      @toggle-expand="$emit('toggle-expand', $event)"
     />
   </div>
 </template>
@@ -72,13 +76,11 @@ interface MenuItem {
   disabled?: boolean
 }
 
-interface Props {
+const props = withDefaults(defineProps<{
   item: MenuItem
   expanded?: boolean
   level?: number
-}
-
-const props = withDefaults(defineProps<Props>(), {
+}>(), {
   expanded: false,
   level: 0
 })
@@ -89,74 +91,40 @@ const emit = defineEmits<{
 }>()
 
 const route = useRoute()
-
-// 计算属性
-const hasChildren = computed(() => props.item.children && props.item.children.length > 0)
+const hasChildren = computed(() => Boolean(props.item.children?.length))
 const isExpanded = computed(() => props.expanded)
+const isActive = computed(() => isMenuActive(props.item.to || '', route.path, hasChildren.value, props.item.children))
 
-// 检查是否激活
-const isActive = computed(() => {
-  // 使用新的路径匹配逻辑
-  return isMenuActive(props.item.to, route.path, hasChildren.value, props.item.children)
+const mainClass = computed(() => {
+  if (props.item.disabled) {
+    return 'cursor-not-allowed bg-slate-50 text-slate-300'
+  }
+
+  if (isActive.value) {
+    return 'cursor-pointer bg-[#fff3ec] pl-6 text-[#8a3d14] shadow-[inset_0_0_0_1px_rgba(236,91,19,0.18)]'
+  }
+
+  return 'cursor-pointer text-slate-600 hover:bg-slate-50 hover:pl-5 hover:text-slate-900'
 })
 
-// 处理点击事件
+const iconWrapClass = computed(() => {
+  if (isActive.value) {
+    return 'bg-[#ffe8da] text-[#ec5b13]'
+  }
+
+  return 'bg-slate-100 text-slate-500'
+})
+
 const handleClick = () => {
   if (props.item.disabled) return
 
   if (hasChildren.value) {
-    // 有子菜单时切换展开状态
     emit('toggle-expand', props.item.key)
-  } else if (props.item.to) {
-    // 无子菜单时触发点击事件
+    return
+  }
+
+  if (props.item.to) {
     emit('item-click', props.item)
   }
 }
 </script>
-
-<style scoped>
-.menu-item {
-  @apply w-full;
-}
-
-.menu-item-main {
-  @apply flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-all duration-200 cursor-pointer;
-  @apply text-gray-600 hover:text-blue-600 hover:bg-gray-50;
-}
-
-.menu-item-main.menu-item-active {
-  @apply bg-blue-50 text-blue-600 border-r-2 border-blue-600;
-}
-
-.menu-item-main.menu-item-has-children {
-  @apply pr-2;
-}
-
-.menu-item-icon {
-  @apply mr-3 flex-shrink-0;
-}
-
-.menu-item-label {
-  @apply truncate;
-}
-
-.menu-item-right {
-  @apply ml-auto flex items-center space-x-1;
-}
-
-.menu-item-badge {
-  @apply px-1.5 py-0.5 text-xs font-medium rounded-full;
-}
-
-.menu-item-arrow {
-  @apply text-gray-400 transition-transform duration-200;
-}
-
-.menu-item-main:hover .menu-item-arrow {
-  @apply text-gray-600;
-}
-
-.menu-item-main.menu-item-active .menu-item-arrow {
-  @apply text-blue-600;
-}
-</style>

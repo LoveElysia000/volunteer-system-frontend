@@ -1,289 +1,371 @@
 <template>
-  <div class="space-y-8">
-    <!-- 欢迎区域 -->
-    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 hover:shadow-xl transition-shadow duration-300">
-      <div class="space-y-4">
-        <div>
-          <h1 class="text-3xl font-bold text-gray-900">
-            欢迎回来，{{ user?.realName || '组织管理者' }}！
-          </h1>
-          <p class="mt-2 text-lg text-gray-600">
-            管理您的组织，创造更大的环保价值
-          </p>
-        </div>
-        <div class="flex items-center text-sm text-gray-500">
-          <CalendarIcon class="h-4 w-4 mr-2" />
-          <span>今天是 {{ currentDate }}</span>
-        </div>
-      </div>
-    </div>
+  <div class="space-y-6">
+    <OrganizationPageHeader
+      eyebrow="Management Cockpit"
+      title="System Overview"
+      description="Good morning. Track organization momentum, critical approvals, and high-performing projects from one place."
+      :meta-items="headerMeta"
+    >
+      <template #actions>
+        <label class="hidden items-center gap-2 rounded-full border border-[#ffd9c4] bg-white px-4 py-2 text-sm text-slate-500 xl:flex">
+          <SearchIcon class="h-4 w-4 text-slate-400" />
+          <input
+            v-model.trim="searchKeyword"
+            type="text"
+            class="w-56 border-none bg-transparent p-0 text-sm text-slate-700 outline-none"
+            placeholder="Search project, volunteer..."
+          >
+        </label>
 
-    <!-- 快速操作 -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      <!-- 创建活动 -->
-      <router-link
-        to="/organization/activities/create"
-        class="gradient-card bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 p-4 md:p-5 lg:p-6"
-      >
-        <div class="flex items-center justify-between">
-          <div>
-            <h3 class="gradient-card-text text-sm md:text-base lg:text-lg font-semibold">
-              创建活动
-            </h3>
-            <p class="gradient-card-text text-blue-100 text-xs md:text-sm mt-1">
-              组织新的志愿者活动
-            </p>
-          </div>
-          <PlusIcon class="h-6 md:h-7 lg:h-8 w-6 md:w-7 lg:w-8 text-blue-200" />
-        </div>
-        <div class="gradient-card-text mt-4 text-xs md:text-sm">
-          点击开始创建
-        </div>
-      </router-link>
-
-      <!-- 管理志愿者 -->
-      <router-link
-        to="/organization/volunteers"
-        class="gradient-card bg-gradient-to-br from-green-500 to-green-600 rounded-2xl text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 p-4 md:p-5 lg:p-6"
-      >
-        <div class="flex items-center justify-between">
-          <div>
-            <h3 class="gradient-card-text text-sm md:text-base lg:text-lg font-semibold">
-              管理志愿者
-            </h3>
-            <p class="gradient-card-text text-green-100 text-xs md:text-sm mt-1">
-              查看和管理志愿者信息
-            </p>
-          </div>
-          <UsersIcon class="h-6 md:h-7 lg:h-8 w-6 md:w-7 lg:w-8 text-green-200" />
-        </div>
-        <div class="gradient-card-text mt-4 text-xs md:text-sm">
-          查看志愿者列表
-        </div>
-      </router-link>
-
-      <!-- 数据统计 -->
-      <router-link
-        to="/organization/statistics"
-        class="gradient-card bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 p-4 md:p-5 lg:p-6"
-      >
-        <div class="flex items-center justify-between">
-          <div>
-            <h3 class="gradient-card-text text-sm md:text-base lg:text-lg font-semibold">
-              数据统计
-            </h3>
-            <p class="gradient-card-text text-purple-100 text-xs md:text-sm mt-1">
-              查看活动与志愿者统计
-            </p>
-          </div>
-          <BarChartIcon class="h-6 md:h-7 lg:h-8 w-6 md:w-7 lg:w-8 text-purple-200" />
-        </div>
-        <div class="gradient-card-text mt-4 text-xs md:text-sm">
-          查看详细报告
-        </div>
-      </router-link>
-
-      <!-- 组织信息 -->
-      <router-link
-        to="/organization/organization-info"
-        class="gradient-card bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-2xl text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 p-4 md:p-5 lg:p-6"
-      >
-        <div class="flex items-center justify-between">
-          <div>
-            <h3 class="gradient-card-text text-sm md:text-base lg:text-lg font-semibold">
-              组织信息
-            </h3>
-            <p class="gradient-card-text text-indigo-100 text-xs md:text-sm mt-1">
-              完善组织基本信息
-            </p>
-          </div>
-          <BuildingIcon class="h-6 md:h-7 lg:h-8 w-6 md:w-7 lg:w-8 text-indigo-200" />
-        </div>
-        <div class="gradient-card-text mt-4 text-xs md:text-sm">
-          更新组织资料
-        </div>
-      </router-link>
-    </div>
-
-    <!-- 数据概览 -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      <!-- 活跃志愿者 - 添加参与率 -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 card-hover">
-        <div class="flex items-center">
-          <CircularProgress
-            :percentage="85"
-            :size="56"
-            :stroke-width="4"
-            progress-color="#3b82f6"
-            text-color-class="text-xs font-bold text-blue-600"
-            class="mr-4 card-icon"
-          />
-          <div>
-            <p class="text-sm font-medium text-gray-600">
-              活跃志愿者
-            </p>
-            <p class="text-2xl font-bold text-gray-900">
-              158
-            </p>
-            <p class="text-xs text-green-600 mt-1">
-              <TrendingUpIcon class="h-3 w-3 inline mr-1" />
-              参与率 85%
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <!-- 近期活动 - 添加完成进度 -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 card-hover">
-        <div class="flex items-center">
-          <div class="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center mr-4 card-icon">
-            <CalendarIcon class="h-6 w-6 text-green-600" />
-          </div>
-          <div class="flex-1">
-            <p class="text-sm font-medium text-gray-600">
-              近期活动
-            </p>
-            <p class="text-2xl font-bold text-gray-900">
-              8
-            </p>
-            <div class="flex items-center gap-2 mt-1">
-              <div class="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                <div
-                  class="h-full bg-green-500 rounded-full transition-all duration-1000"
-                  style="width: 75%"
-                />
-              </div>
-              <span class="text-xs text-gray-500">6/8完成</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 服务总时长 - 添加月度目标 -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 card-hover">
-        <div class="flex items-center">
-          <CircularProgress
-            :current="245"
-            :max="300"
-            :size="56"
-            :stroke-width="4"
-            progress-color="#f97316"
-            text-color-class="text-xs font-bold text-orange-600"
-            class="mr-4 card-icon"
-          />
-          <div>
-            <p class="text-sm font-medium text-gray-600">
-              服务总时长
-            </p>
-            <p class="text-2xl font-bold text-gray-900">
-              245h
-            </p>
-            <p class="text-xs text-orange-600 mt-1">
-              本月目标 81%
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <!-- 待办事项 - 添加紧迫度分布 -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 card-hover">
-        <div class="flex items-center">
-          <div class="h-12 w-12 bg-red-100 rounded-lg flex items-center justify-center mr-4 card-icon">
-            <AlertCircleIcon class="h-6 w-6 text-red-600" />
-          </div>
-          <div class="flex-1">
-            <p class="text-sm font-medium text-gray-600">
-              待办事项
-            </p>
-            <p class="text-2xl font-bold text-gray-900">
-              5
-            </p>
-            <div class="flex items-center gap-1 mt-1">
-              <span class="px-1.5 py-0.5 bg-red-100 text-red-600 text-xs rounded">3急</span>
-              <span class="px-1.5 py-0.5 bg-yellow-100 text-yellow-600 text-xs rounded">2普</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 待办事项提醒 -->
-    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-      <div class="flex items-center justify-between mb-4">
-        <h2 class="text-2xl font-bold text-gray-900">
-          待办事项
-        </h2>
-        <button class="text-blue-600 hover:text-blue-700 font-medium flex items-center">
-          查看全部
-          <ChevronRightIcon class="h-4 w-4 ml-1" />
+        <button
+          class="org-toolbar-button disabled:cursor-not-allowed disabled:opacity-60"
+          :disabled="isExporting"
+          @click="handleExport"
+        >
+          <DownloadIcon class="h-4 w-4" />
+          {{ isExporting ? 'Exporting...' : 'Export' }}
         </button>
-      </div>
 
-      <div class="space-y-3">
-        <div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg">
-          <div class="flex items-center">
-            <div class="h-3 w-3 bg-red-500 rounded-full mr-3" />
-            <span class="text-sm text-gray-700">3个活动申请等待审核</span>
-          </div>
-          <span class="text-xs text-gray-500">今天</span>
-        </div>
+        <RouterLink
+          to="/organization/activities/create"
+          class="org-toolbar-button org-toolbar-button--soft"
+        >
+          <PlusIcon class="h-4 w-4" />
+          New Project
+        </RouterLink>
+      </template>
+    </OrganizationPageHeader>
 
-        <div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg">
-          <div class="flex items-center">
-            <div class="h-3 w-3 bg-yellow-500 rounded-full mr-3" />
-            <span class="text-sm text-gray-700">组织信息需要完善</span>
-          </div>
-          <span class="text-xs text-gray-500">2天前</span>
-        </div>
+    <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <OrganizationMetricCard
+        v-for="metric in organizationKpiMetrics"
+        :key="metric.key"
+        :label="metric.label"
+        :value="metric.value"
+        :detail="metric.detail"
+        :tone="metric.tone"
+      >
+        <template #icon>
+          <component
+            :is="metricIconMap[metric.key] || BarChart3Icon"
+            class="h-6 w-6"
+          />
+        </template>
 
-        <div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg">
-          <div class="flex items-center">
-            <div class="h-3 w-3 bg-blue-500 rounded-full mr-3" />
-            <span class="text-sm text-gray-700">7名新志愿者加入</span>
-          </div>
-          <span class="text-xs text-gray-500">3天前</span>
+        <div
+          class="mt-4 flex items-center text-xs font-semibold"
+          :class="metricTrendClass(metric.trend)"
+        >
+          <TrendingUpIcon
+            v-if="metric.trend.startsWith('+')"
+            class="mr-1 h-3.5 w-3.5"
+          />
+          <MinusIcon
+            v-else
+            class="mr-1 h-3.5 w-3.5"
+          />
+          {{ metric.trend }} vs last period
         </div>
-      </div>
+      </OrganizationMetricCard>
     </div>
+
+    <div class="grid gap-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(320px,1fr)]">
+      <OrganizationSectionCard
+        class="organization-impact-trend"
+        title="Environmental Impact Trends"
+        description="Measured across all active projects"
+      >
+        <template #header>
+          <label class="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-600">
+            <span class="h-2 w-2 rounded-full bg-[#ec5b13]" />
+            <select
+              v-model="selectedTrendRange"
+              class="border-none bg-transparent p-0 pr-5 text-xs font-semibold text-slate-600 focus:ring-0"
+            >
+              <option value="12m">
+                Last 12 months
+              </option>
+              <option value="qtr">
+                Last Quarter
+              </option>
+              <option value="ytd">
+                Year to Date
+              </option>
+            </select>
+          </label>
+        </template>
+
+        <div class="flex min-h-[280px] items-end gap-3 border-b border-slate-100 pb-5">
+          <div
+            v-for="row in trendRowsForView"
+            :key="`${selectedTrendRange}-${row.month}`"
+            class="group flex min-w-0 flex-1 flex-col items-center gap-2"
+          >
+            <div
+              class="w-full rounded-t-xl transition-all duration-200"
+              :class="row.highlight ? 'bg-[#ec5b13] shadow-[0_18px_36px_-30px_rgba(236,91,19,0.85)]' : 'bg-[#ffd7c1] group-hover:bg-[#f8b28a]'"
+              :style="{ height: `${Math.max(row.value, 18)}%` }"
+            />
+            <span
+              class="text-[10px] font-bold"
+              :class="row.highlight ? 'text-[#ec5b13]' : 'text-slate-400'"
+            >
+              {{ row.month }}
+            </span>
+          </div>
+        </div>
+
+        <div class="mt-4 flex items-center gap-4 text-xs font-medium text-slate-500">
+          <div class="flex items-center gap-2">
+            <span class="h-3 w-3 rounded-full bg-[#ec5b13]" /> Current Period
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="h-3 w-3 rounded-full bg-slate-300" /> Last Period
+          </div>
+        </div>
+      </OrganizationSectionCard>
+
+      <OrganizationSectionCard
+        class="organization-critical-tasks"
+        title="Critical Tasks"
+        description="Prioritize approvals and execution blockers"
+        tone="soft"
+      >
+        <template #header>
+          <RouterLink
+            to="/organization/activities/review"
+            class="text-xs font-bold text-[#ec5b13] hover:underline"
+          >
+            View all
+          </RouterLink>
+        </template>
+
+        <transition-group
+          name="organization-list-rise"
+          tag="div"
+          class="space-y-5"
+        >
+          <div
+            v-for="task in filteredCriticalTaskRows"
+            :key="task.key"
+            class="rounded-2xl border border-white/70 bg-white/90 p-4"
+          >
+            <div class="mb-2 flex items-center justify-between gap-3">
+              <p class="text-sm font-bold text-slate-800">
+                {{ task.title }}
+              </p>
+              <span
+                class="rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-[0.14em]"
+                :class="taskStatusClass(task.tone)"
+              >
+                {{ task.status }}
+              </span>
+            </div>
+
+            <div class="h-2 overflow-hidden rounded-full bg-slate-100">
+              <div
+                class="h-full rounded-full"
+                :class="taskProgressClass(task.tone)"
+                :style="{ width: `${task.progress}%` }"
+              />
+            </div>
+
+            <p class="mt-2 text-xs text-slate-500">
+              {{ task.detail }}
+            </p>
+          </div>
+        </transition-group>
+        <p
+          v-if="!filteredCriticalTaskRows.length"
+          class="rounded-2xl border border-dashed border-slate-200 bg-white/70 px-4 py-6 text-center text-sm text-slate-500"
+        >
+          No critical tasks matched your search.
+        </p>
+
+        <RouterLink
+          to="/organization/activities"
+          class="mt-5 flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-[#ffd2ba] hover:text-[#ec5b13]"
+        >
+          Manage all tasks
+          <ArrowRightIcon class="h-4 w-4" />
+        </RouterLink>
+      </OrganizationSectionCard>
+    </div>
+
+    <OrganizationSectionCard
+      class="organization-top-projects"
+      title="Top Performing Projects"
+      description="Highlights from ongoing programs with the strongest execution rhythm"
+    >
+      <transition-group
+        name="organization-list-rise"
+        tag="div"
+        class="grid gap-5 md:grid-cols-2 xl:grid-cols-3"
+      >
+        <article
+          v-for="project in filteredTopProjectRows"
+          :key="project.key"
+          class="organization-surface-lift overflow-hidden rounded-[1.35rem] border border-slate-200 bg-white"
+        >
+          <div
+            class="relative h-36 bg-gradient-to-br"
+            :class="project.imageClass"
+          >
+            <div class="absolute right-3 top-3 rounded-lg bg-white/90 px-2 py-1 text-xs font-bold text-slate-700">
+              ★ {{ project.rating.toFixed(1) }}
+            </div>
+            <div class="absolute left-3 top-3 rounded-full bg-black/20 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-white">
+              {{ project.category }}
+            </div>
+          </div>
+
+          <div class="space-y-4 p-5">
+            <div>
+              <h3 class="text-lg font-bold text-slate-900">
+                {{ project.title }}
+              </h3>
+              <p class="mt-2 text-sm leading-6 text-slate-500">
+                {{ project.summary }}
+              </p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 text-sm">
+              <div>
+                <p class="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+                  Volunteers
+                </p>
+                <p class="font-bold text-slate-800">
+                  {{ project.volunteers.toLocaleString('en-US') }}
+                </p>
+              </div>
+              <div>
+                <p class="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+                  Completion
+                </p>
+                <p class="font-bold text-slate-800">
+                  {{ project.completion }}%
+                </p>
+              </div>
+            </div>
+
+            <RouterLink
+              to="/organization/activities"
+              class="inline-flex items-center gap-1 text-sm font-bold text-[#ec5b13] hover:underline"
+            >
+              Details
+              <ArrowRightIcon class="h-4 w-4" />
+            </RouterLink>
+          </div>
+        </article>
+      </transition-group>
+      <p
+        v-if="!filteredTopProjectRows.length"
+        class="rounded-2xl border border-dashed border-slate-200 bg-white/75 px-4 py-7 text-center text-sm text-slate-500"
+      >
+        No top project matched your current search.
+      </p>
+    </OrganizationSectionCard>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
-import { useAuthStore } from '@/store/modules/auth'
+import { computed, ref } from 'vue'
+import { RouterLink } from 'vue-router'
 import {
-  CalendarIcon,
-  ChevronRightIcon,
+  ArrowRightIcon,
+  BarChart3Icon,
+  CircleDollarSignIcon,
+  DownloadIcon,
+  LeafIcon,
+  MinusIcon,
   PlusIcon,
-  BarChartIcon,
-  UsersIcon,
-  ClockIcon,
+  RocketIcon,
+  SearchIcon,
   TrendingUpIcon,
-  AlertCircleIcon,
-  BuildingIcon
+  UsersIcon
 } from 'lucide-vue-next'
-import CircularProgress from '@/components/ui/CircularProgress.vue'
+import OrganizationPageHeader from '@/components/organization/OrganizationPageHeader.vue'
+import OrganizationSectionCard from '@/components/organization/OrganizationSectionCard.vue'
+import OrganizationMetricCard from '@/components/organization/OrganizationMetricCard.vue'
+import { useOrganizationDashboardMetrics } from '@/composables/useOrganizationDashboardMetrics'
 
-const authStore = useAuthStore()
-const user = computed(() => authStore.user)
+const {
+  user,
+  organizationKpiMetrics,
+  organizationImpactTrendRows,
+  criticalTaskRows,
+  topProjectRows,
+  currentDateLabel
+} = useOrganizationDashboardMetrics()
 
-// 计算当前日期
-const currentDate = computed(() => {
-  const now = new Date()
-  return now.toLocaleDateString('zh-CN', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    weekday: 'long'
+const searchKeyword = ref('')
+const selectedTrendRange = ref<'12m' | 'qtr' | 'ytd'>('12m')
+const isExporting = ref(false)
+
+const normalizeKeyword = (value: string) => value.trim().toLowerCase()
+
+const trendRowsForView = computed(() => {
+  if (selectedTrendRange.value === 'qtr') {
+    return organizationImpactTrendRows.value.slice(-4)
+  }
+  if (selectedTrendRange.value === 'ytd') {
+    return organizationImpactTrendRows.value.slice(0, 6)
+  }
+  return organizationImpactTrendRows.value
+})
+
+const filteredCriticalTaskRows = computed(() => {
+  const keyword = normalizeKeyword(searchKeyword.value)
+  if (!keyword) return criticalTaskRows.value
+
+  return criticalTaskRows.value.filter(task => {
+    return normalizeKeyword(`${task.title} ${task.detail} ${task.status}`).includes(keyword)
   })
 })
 
-// 模拟加载数据
-onMounted(() => {
-  console.log('组织管理者数据总览已加载')
-})
-</script>
+const filteredTopProjectRows = computed(() => {
+  const keyword = normalizeKeyword(searchKeyword.value)
+  if (!keyword) return topProjectRows.value
 
-<style scoped>
-/* 自定义样式已通过Tailwind类实现 */
-</style>
+  return topProjectRows.value.filter(project => {
+    return normalizeKeyword(`${project.title} ${project.summary} ${project.category}`).includes(keyword)
+  })
+})
+
+const headerMeta = computed(() => [
+  { label: 'Admin', value: user.value?.realName || 'Organization Admin', detail: 'Online' },
+  { label: 'Date', value: currentDateLabel.value, detail: 'Local workspace time' }
+])
+
+const metricIconMap: Record<string, any> = {
+  'active-projects': RocketIcon,
+  volunteers: UsersIcon,
+  'co2-offset': LeafIcon,
+  'funds-raised': CircleDollarSignIcon
+}
+
+const metricTrendClass = (trend: string) => {
+  return trend.startsWith('+')
+    ? 'text-emerald-600'
+    : 'text-slate-500'
+}
+
+const taskStatusClass = (tone: 'green' | 'amber' | 'orange') => {
+  if (tone === 'green') return 'bg-emerald-100 text-emerald-700'
+  if (tone === 'amber') return 'bg-amber-100 text-amber-700'
+  return 'bg-[#ffe6d7] text-[#c94f14]'
+}
+
+const taskProgressClass = (tone: 'green' | 'amber' | 'orange') => {
+  if (tone === 'green') return 'bg-emerald-500'
+  if (tone === 'amber') return 'bg-amber-500'
+  return 'bg-[#ec5b13]'
+}
+
+const handleExport = async () => {
+  if (isExporting.value) return
+  isExporting.value = true
+  await new Promise(resolve => setTimeout(resolve, 520))
+  isExporting.value = false
+}
+</script>

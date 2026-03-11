@@ -1,36 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-
-interface Activity {
-  id: number
-  title: string
-  description: string
-  type: 'cleaning' | 'planting' | 'education' | 'other'
-  location: string
-  latitude?: number
-  longitude?: number
-  startTime: string
-  endTime: string
-  maxParticipants: number
-  currentParticipants: number
-  status: 'draft' | 'published' | 'ongoing' | 'completed' | 'cancelled'
-  organizerId: number
-  pointsReward: number
-  requirements?: string
-  contactInfo?: Record<string, any>
-  createdAt: string
-  updatedAt: string
-}
-
-interface ActivityFilters {
-  type?: string
-  status?: string
-  location?: string
-  dateRange?: {
-    start: string
-    end: string
-  }
-}
+import type { Activity, ActivityFilters } from '@/types/activity'
 
 export const useActivitiesStore = defineStore('activities', () => {
   // 状态
@@ -42,6 +12,9 @@ export const useActivitiesStore = defineStore('activities', () => {
   // Actions
   const fetchActivities = async (newFilters?: ActivityFilters) => {
     loading.value = true
+    if (newFilters) {
+      filters.value = { ...filters.value, ...newFilters }
+    }
 
     // 模拟API调用
     return new Promise<void>((resolve) => {
@@ -101,6 +74,7 @@ export const useActivitiesStore = defineStore('activities', () => {
     // 模拟创建活动
     return new Promise<void>((resolve) => {
       setTimeout(() => {
+        void activityData
         resolve()
       }, 1000)
     })
@@ -110,6 +84,7 @@ export const useActivitiesStore = defineStore('activities', () => {
     // 模拟报名活动
     return new Promise<void>((resolve) => {
       setTimeout(() => {
+        void activityId
         resolve()
       }, 500)
     })
