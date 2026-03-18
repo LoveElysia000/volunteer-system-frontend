@@ -3,7 +3,7 @@ import { tokenManager } from '@/utils/token'
 import type { ApiError, InternalRequestConfig } from './types'
 
 // API基础配置
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:1109'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/'
 const API_TIMEOUT = 30000 // 30秒
 
 // 创建axios实例
