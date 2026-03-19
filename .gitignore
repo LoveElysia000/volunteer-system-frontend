@@ -115,3 +115,6 @@ dist
 # Vite config build artifacts
 vite.config.js
 vite.config.d.ts
+
+# macOS Finder metadata
+.DS_Store

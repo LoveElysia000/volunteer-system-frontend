@@ -48,6 +48,55 @@ npm run dev
 
 默认开发地址：`http://localhost:3000`
 
+## 生产部署
+
+当前仓库已经包含前端上线所需的基础部署文件，位于 [`deploy/`](/Users/Ein/project2/volunteer-system-frontend/deploy)。
+
+### 当前生产 API 配置
+
+当前内测阶段默认使用：
+
+```env
+VITE_API_BASE_URL=http://eco.volunteer.com
+```
+
+后端 HTTPS 证书生效后，需切换为：
+
+```env
+VITE_API_BASE_URL=https://eco.volunteer.com
+```
+
+### 仓库内已有的部署文件
+
+- [`deploy/nginx.http.conf`](/Users/Ein/project2/volunteer-system-frontend/deploy/nginx.http.conf)
+- [`deploy/nginx.https.conf`](/Users/Ein/project2/volunteer-system-frontend/deploy/nginx.https.conf)
+- [`deploy/deploy.env.example`](/Users/Ein/project2/volunteer-system-frontend/deploy/deploy.env.example)
+- [`deploy/server-setup.sh`](/Users/Ein/project2/volunteer-system-frontend/deploy/server-setup.sh)
+- [`deploy/README.md`](/Users/Ein/project2/volunteer-system-frontend/deploy/README.md)
+
+### GitHub Actions
+
+- [`ci.yml`](/Users/Ein/project2/volunteer-system-frontend/.github/workflows/ci.yml)
+  - 负责安装依赖、执行 lint、构建并上传 `dist` artifact
+- [`cd.yml`](/Users/Ein/project2/volunteer-system-frontend/.github/workflows/cd.yml)
+  - 仅在 `main` 分支 CI 成功后触发，下载 artifact 并部署到服务器
+
+### 需要提前准备的 GitHub Secrets
+
+- `SERVER_HOST`
+- `SERVER_PORT`
+- `SERVER_USER`
+- `SERVER_SSH_KEY`
+- `SERVER_PATH`
+- `VITE_API_BASE_URL`
+  - 可选，不配置时默认使用 `http://eco.volunteer.com`
+
+### 仍需人工确认的真实值
+
+- 前端正式访问域名
+- 服务器实际部署目录
+- 部署用户是否有权限执行 `sudo nginx -t` 和 `sudo systemctl reload nginx`
+
 ## 环境变量
 
 项目通过 `VITE_API_BASE_URL` 指定后端 API 地址。

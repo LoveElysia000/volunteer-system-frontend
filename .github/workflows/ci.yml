@@ -1,0 +1,72 @@
+name: Frontend CI
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+  pull_request:
+
+concurrency:
+  group: frontend-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run lint
+        run: npm run lint
+
+  build-and-package:
+    if: ${{ github.event_name == 'pull_request' || github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate production API base URL
+        env:
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
+        run: |
+          if [ -z "$VITE_API_BASE_URL" ]; then
+            echo "VITE_API_BASE_URL secret is required for production builds." >&2
+            exit 1
+          fi
+        shell: bash
+
+      - name: Run build
+        run: npm run build
+        env:
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
+
+      - name: Upload dist artifact
+        if: ${{ github.ref == 'refs/heads/main' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: dist
+          if-no-files-found: error
