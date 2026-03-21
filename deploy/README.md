@@ -4,33 +4,16 @@ This directory contains the files the server or operations side needs for the fr
 
 ## Files
 
-- `nginx.http.conf`
-  - Use this for temporary HTTP-only internal testing.
-- `nginx.https.conf`
-  - Use this after the frontend domain has a valid TLS certificate.
 - `deploy.env.example`
   - Copy to `deploy.env` and replace placeholders with the real deployment values.
 - `server-setup.sh`
-  - Prepares the deploy directory and prints the exact Nginx installation steps.
+  - Prepares the deploy directory for static frontend files.
 
 ## What Must Be Copied To The Server
 
-1. One Nginx site config file
-   - Copy either `nginx.http.conf` or `nginx.https.conf` to:
-     - `/etc/nginx/conf.d/volunteer-system-frontend.conf`
-     - or `/etc/nginx/sites-available/volunteer-system-frontend`
-2. Frontend build output
+1. Frontend build output
    - Upload the contents of `dist/` to:
      - `/var/www/volunteer-system-frontend`
-
-## Values To Replace Before Using
-
-In both Nginx templates, replace:
-
-- `your-frontend-domain.com`
-  - The final frontend website domain, not the backend API domain.
-- `/var/www/volunteer-system-frontend`
-  - The real deployment directory if your server uses a different path.
 
 ## Backend API Configuration
 
@@ -50,32 +33,22 @@ VITE_API_BASE_URL=https://eco.volunteer.com
 
 ## Server Checklist
 
-- Nginx installed
 - Deployment directory created
-- Frontend domain resolved to the server
-- HTTPS certificate ready if using `nginx.https.conf`
-- Nginx reloaded after the config is installed
+- Static file server is configured separately if needed
 
 ## Example Commands
 
 ```bash
 sudo mkdir -p /var/www/volunteer-system-frontend
 sudo chown -R deploy:deploy /var/www/volunteer-system-frontend
-sudo cp deploy/nginx.http.conf /etc/nginx/conf.d/volunteer-system-frontend.conf
-sudo nginx -t
-sudo systemctl reload nginx
 ```
 
 ## Recommended Preparation Flow
 
 1. Copy `deploy/deploy.env.example` to `deploy/deploy.env`
-2. Fill in the real frontend domain and deployment path
+2. Fill in the real deployment path
 3. Run:
 
 ```bash
 bash deploy/server-setup.sh deploy/deploy.env
 ```
-
-4. Copy the selected Nginx file to the server config path
-5. Replace the placeholders in the copied Nginx file
-6. Reload Nginx
