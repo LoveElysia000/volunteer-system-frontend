@@ -14,9 +14,7 @@ fi
 # shellcheck disable=SC1090
 source "$ENV_FILE"
 
-: "${FRONTEND_DOMAIN:?FRONTEND_DOMAIN is required}"
 : "${DEPLOY_PATH:?DEPLOY_PATH is required}"
-: "${NGINX_CONFIG_PATH:?NGINX_CONFIG_PATH is required}"
 
 sudo mkdir -p "$DEPLOY_PATH"
 
@@ -25,19 +23,4 @@ if id -u deploy >/dev/null 2>&1; then
 fi
 
 echo "Deployment directory ready: $DEPLOY_PATH"
-echo "Choose one of the following Nginx templates and copy it to:"
-echo "  $NGINX_CONFIG_PATH"
-echo
-echo "For HTTP internal testing:"
-echo "  sudo cp \"$SCRIPT_DIR/nginx.http.conf\" \"$NGINX_CONFIG_PATH\""
-echo
-echo "For HTTPS production:"
-echo "  sudo cp \"$SCRIPT_DIR/nginx.https.conf\" \"$NGINX_CONFIG_PATH\""
-echo
-echo "Before reloading Nginx, replace these placeholders in the copied file:"
-echo "  your-frontend-domain.com -> $FRONTEND_DOMAIN"
-echo "  /var/www/volunteer-system-frontend -> $DEPLOY_PATH"
-echo
-echo "Then run:"
-echo "  sudo nginx -t"
-echo "  sudo systemctl reload nginx"
+echo "Upload the contents of dist/ to this directory during deployment."

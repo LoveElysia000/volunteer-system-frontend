@@ -68,17 +68,14 @@ VITE_API_BASE_URL=https://eco.volunteer.com
 
 ### 仓库内已有的部署文件
 
-- [`deploy/nginx.http.conf`](/Users/Ein/project2/volunteer-system-frontend/deploy/nginx.http.conf)
-- [`deploy/nginx.https.conf`](/Users/Ein/project2/volunteer-system-frontend/deploy/nginx.https.conf)
 - [`deploy/deploy.env.example`](/Users/Ein/project2/volunteer-system-frontend/deploy/deploy.env.example)
 - [`deploy/server-setup.sh`](/Users/Ein/project2/volunteer-system-frontend/deploy/server-setup.sh)
 - [`deploy/README.md`](/Users/Ein/project2/volunteer-system-frontend/deploy/README.md)
 
 ### 仍需人工确认的真实值
 
-- 前端正式访问域名
 - 服务器实际部署目录
-- 部署用户是否有权限执行 `sudo nginx -t` 和 `sudo systemctl reload nginx`
+- 服务器上的静态文件服务配置
 
 ## 环境变量
 
