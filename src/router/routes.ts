@@ -72,6 +72,12 @@ export const routes = [
         meta: { title: '我的报名' }
       },
       {
+        path: 'activities/:id',
+        name: 'volunteer-activity-detail',
+        component: () => import('@/views/Volunteer/ActivityDetail.vue'),
+        meta: { title: '活动详情' }
+      },
+      {
         path: 'activities/history',
         name: 'volunteer-history-activities',
         component: () => import('@/views/Volunteer/HistoryActivities.vue'),

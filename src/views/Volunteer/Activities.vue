@@ -99,7 +99,7 @@
                 余量 {{ item.remainingSeats }} / {{ item.capacity }}
               </span>
               <span class="font-semibold text-emerald-700">
-                +{{ item.points }} 积分
+                {{ item.orgName || item.tag || '活动任务' }}
               </span>
             </div>
           </article>
@@ -111,6 +111,13 @@
       title="活动列表"
       description="显示当前筛选结果，并保持报名、查看、取消操作在同一层级。"
     >
+      <div
+        v-if="loading"
+        class="mb-4 rounded-[1.5rem] border border-dashed border-slate-200 bg-slate-50/80 px-4 py-8 text-center text-sm text-slate-500"
+      >
+        正在加载活动列表...
+      </div>
+
       <div class="mb-4 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-500">
         <p>
           当前共找到
@@ -155,17 +162,18 @@
                 <span>{{ activity.location }}</span>
                 <span>{{ activity.duration }} 小时</span>
                 <span>{{ activity.participants }}/{{ activity.capacity }} 名额</span>
-                <span class="font-semibold text-emerald-700">+{{ activity.points }} 积分</span>
+                <span class="font-semibold text-emerald-700">{{ activity.orgName || activity.tag || '活动任务' }}</span>
               </div>
             </div>
 
             <div class="flex flex-wrap gap-3 xl:justify-end">
               <button
                 v-if="activity.userRegistrationStatus !== 'registered' && activity.status === 'upcoming'"
-                class="rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700"
+                class="rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+                :disabled="actionActivityId === activity.id"
                 @click="handleRegister(activity.id)"
               >
-                立即报名
+                {{ actionActivityId === activity.id ? '处理中...' : '立即报名' }}
               </button>
               <button
                 v-else
@@ -176,10 +184,11 @@
               </button>
               <button
                 v-if="activity.userRegistrationStatus === 'registered'"
-                class="volunteer-toolbar-button text-rose-600 hover:border-rose-200 hover:text-rose-700"
+                class="volunteer-toolbar-button text-rose-600 hover:border-rose-200 hover:text-rose-700 disabled:cursor-not-allowed disabled:opacity-60"
+                :disabled="actionActivityId === activity.id"
                 @click="handleCancel(activity.id)"
               >
-                取消报名
+                {{ actionActivityId === activity.id ? '处理中...' : '取消报名' }}
               </button>
             </div>
           </div>
@@ -209,11 +218,13 @@ import VolunteerPageHeader from '@/components/volunteer/VolunteerPageHeader.vue'
 import VolunteerSectionCard from '@/components/volunteer/VolunteerSectionCard.vue'
 import VolunteerSummaryCard from '@/components/volunteer/VolunteerSummaryCard.vue'
 import VolunteerStatusBadge from '@/components/volunteer/VolunteerStatusBadge.vue'
-import { volunteerActivities } from '@/data/volunteerCenter'
+import { activitiesApi, mapActivityItemToVolunteerView, mapMyActivityItemToVolunteerView } from '@/api/activities'
+import { useMessageStore } from '@/store/modules/messages'
 import { usePageStateStore } from '@/store/modules/pageState'
-import type { VolunteerActivityItem, VolunteerTone } from '@/data/volunteerCenter'
+import type { VolunteerTone } from '@/data/volunteerCenter'
+import type { VolunteerActivityViewItem } from '@/types/activity'
 
-type ActivityTab = 'all' | VolunteerActivityItem['status']
+type ActivityTab = 'all' | VolunteerActivityViewItem['status']
 
 interface FilterTab {
   id: ActivityTab
@@ -234,9 +245,13 @@ interface ActivityPriorityItem extends VolunteerActivityItem {
 
 const route = useRoute()
 const router = useRouter()
+const messageStore = useMessageStore()
 const pageStateStore = usePageStateStore()
 const activeTab = ref<ActivityTab>(pageStateStore.state.volunteerActivities.activeTab as ActivityTab || 'all')
 const searchQuery = ref(pageStateStore.state.volunteerActivities.searchQuery || '')
+const loading = ref(false)
+const actionActivityId = ref<number | null>(null)
+const activityRows = ref<VolunteerActivityViewItem[]>([])
 
 const filterTabs: FilterTab[] = [
   { id: 'all', label: '全部' },
@@ -254,6 +269,7 @@ watch(() => route.query, (query) => {
   else activeTab.value = 'all'
   if (typeof query.search === 'string') searchQuery.value = query.search
   else searchQuery.value = ''
+  void loadActivities()
 }, { immediate: true })
 
 watch([activeTab, searchQuery], ([tab, search]) => {
@@ -264,16 +280,16 @@ watch([activeTab, searchQuery], ([tab, search]) => {
   pageStateStore.updateVolunteerActivitiesState({ activeTab: tab, searchQuery: search })
 })
 
-const filteredActivities = computed(() => volunteerActivities.filter((activity) => {
+const filteredActivities = computed(() => activityRows.value.filter((activity) => {
   const tabMatch = activeTab.value === 'all' || activity.status === activeTab.value
   const keyword = searchQuery.value.trim().toLowerCase()
   const searchMatch = !keyword || [activity.title, activity.description, activity.location].some((field) => field.toLowerCase().includes(keyword))
   return tabMatch && searchMatch
 }))
 
-const upcomingCount = computed(() => volunteerActivities.filter(item => item.status === 'upcoming').length)
-const registeredCount = computed(() => volunteerActivities.filter(item => item.userRegistrationStatus === 'registered').length)
-const completedCount = computed(() => volunteerActivities.filter(item => item.status === 'completed').length)
+const upcomingCount = computed(() => activityRows.value.filter(item => item.status === 'upcoming').length)
+const registeredCount = computed(() => activityRows.value.filter(item => item.userRegistrationStatus === 'registered').length)
+const completedCount = computed(() => activityRows.value.filter(item => item.status === 'completed').length)
 
 const activityPulseCards = computed<ActivityPulseCard[]>(() => [
   {
@@ -297,7 +313,7 @@ const activityPulseCards = computed<ActivityPulseCard[]>(() => [
 ])
 
 const activityPriorityQueue = computed<ActivityPriorityItem[]>(() => {
-  return volunteerActivities
+  return activityRows.value
     .filter((item) => item.status !== 'completed')
     .map((item) => {
       const remainingSeats = Math.max(item.capacity - item.participants, 0)
@@ -322,15 +338,97 @@ const setActiveTab = (tab: ActivityTab) => {
   activeTab.value = tab
 }
 
+const loadActivities = async () => {
+  loading.value = true
+
+  try {
+    const [activitiesResponse, myActivitiesResponse] = await Promise.all([
+      activitiesApi.list({
+        page: 1,
+        pageSize: 100,
+        keyword: searchQuery.value.trim() || undefined,
+        sortBy: 'start_time',
+        sortOrder: 'asc'
+      }),
+      activitiesApi.myActivities({
+        page: 1,
+        pageSize: 100
+      })
+    ])
+
+    if (activitiesResponse.code !== 200) {
+      throw new Error(activitiesResponse.msg || '获取活动列表失败')
+    }
+
+    if (myActivitiesResponse.code !== 200) {
+      throw new Error(myActivitiesResponse.msg || '获取我的活动失败')
+    }
+
+    const myActivityMap = new Map(myActivitiesResponse.data.list.map(item => [item.id, item]))
+    const mergedRows = activitiesResponse.data.list.map(item =>
+      mapActivityItemToVolunteerView(item, myActivityMap.get(item.id))
+    )
+
+    const missingMyRows = myActivitiesResponse.data.list
+      .filter(item => !activitiesResponse.data.list.some(activity => activity.id === item.id))
+      .map(mapMyActivityItemToVolunteerView)
+
+    activityRows.value = [...mergedRows, ...missingMyRows]
+  } catch (error: any) {
+    console.error('加载志愿者活动失败:', error)
+    messageStore.error(error.message || '加载活动失败，请稍后重试')
+    activityRows.value = []
+  } finally {
+    loading.value = false
+  }
+}
+
 const clearFilters = () => {
   activeTab.value = 'all'
   searchQuery.value = ''
   pageStateStore.resetVolunteerActivitiesState()
 }
 
-const getStatusText = (status: VolunteerActivityItem['status']) => ({ upcoming: '可报名', registered: '已报名', completed: '已完成' }[status] || status)
-const getStatusTone = (status: VolunteerActivityItem['status']) => ({ upcoming: 'green', registered: 'blue', completed: 'slate' }[status] || 'slate') as 'green' | 'blue' | 'slate'
-const handleRegister = (id: number) => console.log('报名活动:', id)
-const handleViewDetails = (id: number) => console.log('查看详情:', id)
-const handleCancel = (id: number) => console.log('取消报名:', id)
+const getStatusText = (status: VolunteerActivityViewItem['status']) => ({ upcoming: '可报名', registered: '已报名', completed: '已完成' }[status] || status)
+const getStatusTone = (status: VolunteerActivityViewItem['status']) => ({ upcoming: 'green', registered: 'blue', completed: 'slate' }[status] || 'slate') as 'green' | 'blue' | 'slate'
+
+const handleRegister = async (id: number) => {
+  actionActivityId.value = id
+
+  try {
+    const response = await activitiesApi.signup(id)
+    if (response.code !== 200 || response.data.success === false) {
+      throw new Error(response.msg || '报名失败')
+    }
+    messageStore.success('报名成功')
+    await loadActivities()
+  } catch (error: any) {
+    console.error('报名活动失败:', error)
+    messageStore.error(error.message || '报名失败，请稍后重试')
+  } finally {
+    actionActivityId.value = null
+  }
+}
+
+const handleViewDetails = async (id: number) => {
+  await router.push(`/volunteer/activities/${id}`)
+}
+
+const handleCancel = async (id: number) => {
+  actionActivityId.value = id
+
+  try {
+    const response = await activitiesApi.cancel(id)
+    if (response.code !== 200 || response.data.success === false) {
+      throw new Error(response.msg || '取消报名失败')
+    }
+    messageStore.success('已取消报名')
+    await loadActivities()
+  } catch (error: any) {
+    console.error('取消报名失败:', error)
+    messageStore.error(error.message || '取消报名失败，请稍后重试')
+  } finally {
+    actionActivityId.value = null
+  }
+}
 </script>

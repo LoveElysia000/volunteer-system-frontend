@@ -54,15 +54,19 @@ apiClient.interceptors.response.use(
         const { authApi } = await import('./auth')
         const response = await authApi.refreshToken({ refreshToken })
 
+        if (response.code !== 200) {
+          throw new Error(response.msg || '刷新token失败')
+        }
+
         // 更新token
         tokenManager.setTokens(
-          response.token,
-          response.refreshToken,
-          response.expiresAt
+          response.data.token,
+          response.data.refreshToken,
+          response.data.expiresAt
         )
 
         // 更新请求头
-        originalRequest.headers.Authorization = `Bearer ${response.token}`
+        originalRequest.headers.Authorization = `Bearer ${response.data.token}`
 
         // 重试原请求
         return apiClient(originalRequest)

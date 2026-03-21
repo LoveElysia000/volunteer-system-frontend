@@ -6,7 +6,8 @@ import type {
   LogoutResponse,
   RefreshTokenRequest,
   RefreshTokenResponse,
-  RegisterRequest,
+  VolunteerRegisterRequest,
+  OrganizationRegisterRequest,
   RegisterResponse
 } from '@/types/auth'
 
@@ -33,8 +34,13 @@ export const authApi = {
     return http.post<RefreshTokenResponse>('/api/refresh', data, { skipAuth: true, skipRefresh: true })
   },
 
-  // 用户注册
-  register: (data: RegisterRequest): Promise<RegisterResponse> => {
-    return http.post<RegisterResponse>('/api/register', data, { skipAuth: true })
+  // 志愿者注册
+  registerVolunteer: (data: VolunteerRegisterRequest): Promise<RegisterResponse> => {
+    return http.post<RegisterResponse>('/api/volunteer/register', data, { skipAuth: true })
+  },
+
+  // 组织管理员注册
+  registerOrganization: (data: OrganizationRegisterRequest): Promise<RegisterResponse> => {
+    return http.post<RegisterResponse>('/api/organization/register', data, { skipAuth: true })
   }
 }

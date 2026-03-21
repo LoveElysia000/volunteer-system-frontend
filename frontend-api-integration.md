@@ -146,7 +146,7 @@ Authorization: Bearer <accessToken>
 | `POST /api/audits/approval` | `id` |
 | `POST /api/audits/rejection` | `id` |
 | `POST /api/audits/batch-decision` | `ids, action` |
-| `POST /api/memberships/join` | `organizationId` |
+| `POST /api/memberships/join` | `volunteerId, organizationId` |
 | `POST /api/memberships/leave` | `membershipId` |
 | `POST /api/memberships/status/update` | `membershipId, status` |
 | `POST /api/work-hours/void` | `signupId, reason, idempotencyKey` |
@@ -195,7 +195,7 @@ Authorization: Bearer <accessToken>
   "email": "a@test.com",
   "password": "123456",
   "age": 20,
-  "gender": "male",
+  "gender": "男",
   "username": "zhangsan"
 }
 ```
@@ -215,7 +215,8 @@ Authorization: Bearer <accessToken>
   "email": "org@test.com",
   "password": "123456",
   "organizationName": "环保协会",
-  "code": "9133XXXXXXXXXXXXXX"
+  "code": "9133XXXXXXXXXXXXXX",
+  "username": "green-org"
 }
 ```
 
@@ -229,8 +230,8 @@ Authorization: Bearer <accessToken>
 
 ```json
 {
-  "loginType": "username",
-  "identifier": "zhangsan",
+  "loginType": "email",
+  "identifier": "a@test.com",
   "password": "123456",
   "identity": "volunteer"
 }
@@ -250,7 +251,7 @@ Authorization: Bearer <accessToken>
     "username": "zhangsan",
     "email": "a@test.com",
     "phone": "13800000000",
-    "displayName": "张三",
+    "displayName": "zhangsan",
     "avatarUrl": "",
     "identity": "volunteer",
     "createdAt": 1710000000,
@@ -258,6 +259,11 @@ Authorization: Bearer <accessToken>
   }
 }
 ```
+
+- 说明：
+  `loginType` 当前只支持 `email` 和 `phone`
+  `phone` 为解密后的手机号；若底层解密失败则返回空字符串
+  `displayName` 当前默认取用户名
 
 ### 3.4 登出
 
@@ -394,11 +400,11 @@ Authorization: Bearer <accessToken>
   "organizationCode": "ORG001",
   "contactPerson": "李四",
   "contactPhone": "13800000001",
-  "email": "org@test.com",
+  "email": "",
   "address": "上海",
   "status": 1,
-  "organizationType": "ngo",
-  "region": "上海",
+  "organizationType": "",
+  "region": "",
   "createdAt": "2026-03-20 10:00:00"
 }
 ```
@@ -413,18 +419,23 @@ Authorization: Bearer <accessToken>
   "organizationCode": "ORG001",
   "contactPerson": "李四",
   "contactPhone": "13800000001",
-  "email": "org@test.com",
+  "email": "",
   "address": "上海",
   "status": 1,
-  "organizationType": "ngo",
-  "region": "上海",
+  "organizationType": "",
+  "region": "",
   "description": "组织简介",
-  "websiteUrl": "https://example.com",
+  "websiteUrl": "",
   "logoUrl": "",
   "createdAt": "2026-03-20 10:00:00",
   "updatedAt": "2026-03-20 10:00:00"
 }
 ```
+
+- 说明：
+  `POST /api/organizations/create` 当前任何已登录账号都可调用
+  当前组织列表/详情返回里的 `email`、`organizationType`、`region`、`websiteUrl` 默认为空字符串
+  `create/update` 接口虽然接收 `email`、`organizationType`、`region`、`websiteUrl`，但当前后端未持久化这些字段，前端联调时不要依赖回显
 
 ---
 
@@ -442,6 +453,9 @@ Authorization: Bearer <accessToken>
 `MemberInfo` 主要字段：`membershipId, volunteerId, volunteerName, volunteerCode, organizationId, organizationName, status, role, position, motivation, expectedHours, joinDate, reviewDate, reviewComment, leaveDate, leaveReason, createdAt, updatedAt`
 
 `OrganizationMemberInfo` 主要字段：`membershipId, organizationId, organizationName, organizationCode, status, role, position, joinDate, reviewDate, reviewComment, createdAt, updatedAt`
+
+- 说明：
+  `POST /api/memberships/join` 里的 `volunteerId` 需要传当前登录志愿者本人 ID；若传其他 ID 会被拒绝
 
 ---
 
@@ -645,6 +659,47 @@ data: {"finish_reason":"stop"}
 - 多数字段是可选的，联调时建议只传当前页面真实需要的字段
 - 活动、审核、工时等模块里有较多状态码，前端最好统一做枚举映射
 
+### 15.3 当前前端接入状态（`feat-auth-api-alignment`）
+
+以下状态基于当前前端分支代码，便于后续逐项联调检查：
+
+**已接入**
+
+- `POST /api/volunteer/register`
+- `POST /api/organization/register`
+- `POST /api/login`
+- `POST /api/logout`
+- `POST /api/refresh`
+- `POST /api/activities`
+- `GET /api/activities/:id`
+- `POST /api/activities/my`
+- `POST /api/activities/signup`
+- `POST /api/activities/cancel`
+- `POST /api/activities/checkin`
+- `POST /api/activities/checkout`
+- `GET /api/volunteers/my/profile/:id`
+- `GET /api/volunteers/home/summary`
+- `PUT /api/volunteers/:id`
+- `POST /api/volunteers/real-name/submit`
+- `GET /api/notifications`
+- `POST /api/notifications/read`
+- `POST /api/organizations/list`
+- `GET /api/organizations/:id`
+- `PUT /api/organizations/:id`
+- `POST /api/activities/create`
+- `PUT /api/activities/:id`
+- `DELETE /api/activities/:id`
+- `POST /api/activities/cancel/:id`
+- `POST /api/activities/finish/:id`
+- `POST /api/activities/attendance-codes/generate/:id`
+- `POST /api/activities/attendance-codes/reset/:id`
+- `GET /api/activities/attendance-codes/:id`
+- `POST /api/activities/supplement-attendance`
+
+**相关功能尚未接入**
+
+- 暂无
+
 ---
 
 ## 16. 文档边界说明
@@ -673,8 +728,8 @@ Content-Type: application/json
 
 ```json
 {
-  "loginType": "username",
-  "identifier": "zhangsan",
+  "loginType": "phone",
+  "identifier": "13800000000",
   "password": "123456",
   "identity": "volunteer"
 }

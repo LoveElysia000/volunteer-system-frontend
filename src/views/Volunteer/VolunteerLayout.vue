@@ -227,9 +227,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/store/modules/auth'
+import { useVolunteerStore } from '@/store/modules/volunteer'
 import { useVolunteerMetrics } from '@/composables/useVolunteerMetrics'
 import { LeafIcon, LogOutIcon, MenuIcon, XIcon } from 'lucide-vue-next'
 import VolunteerSidebar from '@/components/volunteer/VolunteerSidebar.vue'
@@ -237,6 +238,7 @@ import VolunteerSidebar from '@/components/volunteer/VolunteerSidebar.vue'
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
+const volunteerStore = useVolunteerStore()
 const { user, points, volunteerLevel, levelProgressPercentage } = useVolunteerMetrics()
 const isMobileSidebarOpen = ref(false)
 const SIDEBAR_STORAGE_KEY = 'volunteer_center_sidebar_width'
@@ -338,6 +340,7 @@ const cachedComponents = [
 const pageDescriptions: Record<string, string> = {
   'volunteer-dashboard': '总览你的服务状态、成长进度和本周待完成任务。',
   'volunteer-activities': '浏览推荐项目、管理报名状态，并快速筛选适合你的环保活动。',
+  'volunteer-activity-detail': '查看单个活动的时间、地点、报名状态和服务信息。',
   'volunteer-my-registrations': '查看已经预约的活动，关注时间、地点和行前提醒。',
   'volunteer-history-activities': '回顾已完成项目，沉淀稳定贡献记录和高频参与类型。',
   'volunteer-records': '集中查看服务记录、积分和可导出的参与明细。',
@@ -371,6 +374,19 @@ const handleLogout = async () => {
   router.replace('/')
   isMobileSidebarOpen.value = false
 }
+
+onMounted(async () => {
+  if (!user.value?.id) return
+
+  try {
+    await Promise.all([
+      volunteerStore.fetchHomeSummary(),
+      volunteerStore.fetchMyProfile(user.value.id)
+    ])
+  } catch (error) {
+    console.error('加载志愿者工作台数据失败:', error)
+  }
+})
 
 onBeforeUnmount(() => {
   stopSidebarResize()
