@@ -7,7 +7,8 @@ import type {
   User,
   LoginRequest,
   UserIdentity,
-  RegisterRequest,
+  VolunteerRegisterRequest,
+  OrganizationRegisterRequest,
   LoginType
 } from '@/types/auth'
 
@@ -22,7 +23,7 @@ const transformUserInfo = (userInfo: UserInfo): User => ({
   id: userInfo.userId,
   username: userInfo.username,
   email: userInfo.email,
-  realName: userInfo.username,
+  realName: userInfo.displayName || userInfo.username,
   role: userInfo.identity,
   avatarUrl: userInfo.avatarUrl,
   phone: userInfo.phone
@@ -113,9 +114,9 @@ export const useAuthStore = defineStore('auth', () => {
   // 登出
   const logout = async () => {
     try {
-      const refreshTokenValue = tokenManager.getRefreshToken()
-      if (refreshTokenValue) {
-        await authApi.logout({ token: refreshTokenValue })
+      const accessTokenValue = tokenManager.getAccessToken()
+      if (accessTokenValue) {
+        await authApi.logout({ token: accessTokenValue })
       }
     } catch (error) {
       console.error('登出请求失败:', error)
@@ -184,9 +185,13 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  // 用户注册
-  const register = async (data: RegisterRequest) => {
-    const response = await authApi.register(data)
+  const registerVolunteer = async (data: VolunteerRegisterRequest) => {
+    const response = await authApi.registerVolunteer(data)
+    return response
+  }
+
+  const registerOrganization = async (data: OrganizationRegisterRequest) => {
+    const response = await authApi.registerOrganization(data)
     return response
   }
 
@@ -202,7 +207,8 @@ export const useAuthStore = defineStore('auth', () => {
     logout,
     refreshToken,
     updateProfile,
-    register,
+    registerVolunteer,
+    registerOrganization,
     restoreAuthState
   }
 })

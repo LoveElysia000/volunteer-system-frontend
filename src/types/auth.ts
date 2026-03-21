@@ -84,17 +84,24 @@ export interface User {
   totalHours?: number
 }
 
-// 注册请求参数
-export interface RegisterRequest {
-  registerType: UserIdentity
+export interface VolunteerRegisterRequest {
   username: string
   name: string
   phone: string
   email: string
   password: string
-  age?: number
-  gender?: string
-  organizationName?: string
+  age: number
+  gender: string
+}
+
+export interface OrganizationRegisterRequest {
+  username: string
+  name: string
+  phone: string
+  email: string
+  password: string
+  organizationName: string
+  code: string
 }
 
 // 注册响应

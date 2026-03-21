@@ -22,6 +22,13 @@
         title="行前运营面板"
         description="按时间优先级处理最接近开始的活动，减少漏签到风险。"
       >
+        <div
+          v-if="loading"
+          class="rounded-[1.5rem] border border-dashed border-slate-200 bg-slate-50/85 px-4 py-8 text-center text-sm text-slate-500"
+        >
+          正在加载我的报名...
+        </div>
+
         <div class="space-y-5">
           <div class="grid gap-4 md:grid-cols-3">
             <VolunteerSummaryCard
@@ -68,7 +75,10 @@
                     {{ activity.description }}
                   </p>
                 </div>
-                <button class="volunteer-toolbar-button">
+                <button
+                  class="volunteer-toolbar-button"
+                  @click="handleViewDetails(activity.id)"
+                >
                   查看详情
                 </button>
               </div>
@@ -77,7 +87,7 @@
                 <p>地点：{{ activity.location }}</p>
                 <p>预计服务：{{ activity.duration }} 小时</p>
                 <p class="font-semibold text-emerald-700">
-                  +{{ activity.points }} 积分
+                  {{ activity.orgName || '所属组织待确认' }}
                 </p>
               </div>
             </article>
@@ -118,28 +128,63 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { RouterLink } from 'vue-router'
+import { computed, onMounted, ref } from 'vue'
+import { RouterLink, useRouter } from 'vue-router'
 import VolunteerPageHeader from '@/components/volunteer/VolunteerPageHeader.vue'
 import VolunteerSectionCard from '@/components/volunteer/VolunteerSectionCard.vue'
 import VolunteerStatusBadge from '@/components/volunteer/VolunteerStatusBadge.vue'
 import VolunteerSummaryCard from '@/components/volunteer/VolunteerSummaryCard.vue'
-import { registeredActivities } from '@/data/volunteerCenter'
-import type { VolunteerActivityItem } from '@/data/volunteerCenter'
+import { activitiesApi, mapMyActivityItemToVolunteerView } from '@/api/activities'
+import { useMessageStore } from '@/store/modules/messages'
+import type { VolunteerActivityViewItem } from '@/types/activity'
 
-const sortedRegistrations = computed<VolunteerActivityItem[]>(() => {
-  return [...registeredActivities].sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime())
+const router = useRouter()
+const messageStore = useMessageStore()
+const loading = ref(false)
+const registeredActivities = ref<VolunteerActivityViewItem[]>([])
+
+const loadRegisteredActivities = async () => {
+  loading.value = true
+
+  try {
+    const response = await activitiesApi.myActivities({
+      page: 1,
+      pageSize: 100
+    })
+
+    if (response.code !== 200) {
+      throw new Error(response.msg || '获取我的报名失败')
+    }
+
+    registeredActivities.value = response.data.list
+      .map(mapMyActivityItemToVolunteerView)
+      .filter(item => item.userRegistrationStatus === 'registered')
+  } catch (error: any) {
+    console.error('加载我的报名失败:', error)
+    messageStore.error(error.message || '加载我的报名失败，请稍后重试')
+    registeredActivities.value = []
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(() => {
+  void loadRegisteredActivities()
+})
+
+const sortedRegistrations = computed<VolunteerActivityViewItem[]>(() => {
+  return [...registeredActivities.value].sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime())
 })
 
 const soonCount = computed(() => sortedRegistrations.value.slice(0, 2).length)
 const averageDuration = computed(() => {
-  if (!registeredActivities.length) return 0
-  const totalDuration = registeredActivities.reduce((sum, item) => sum + item.duration, 0)
-  return Number((totalDuration / registeredActivities.length).toFixed(1))
+  if (!registeredActivities.value.length) return 0
+  const totalDuration = registeredActivities.value.reduce((sum, item) => sum + item.duration, 0)
+  return Number((totalDuration / registeredActivities.value.length).toFixed(1))
 })
 
 const headerMeta = computed(() => [
-  { label: '已报名', value: `${registeredActivities.length} 场`, detail: '保持到场率' },
+  { label: '已报名', value: `${registeredActivities.value.length} 场`, detail: '保持到场率' },
   { label: '近期优先', value: `${soonCount.value} 场`, detail: '建议提前确认路线' }
 ])
 
@@ -148,4 +193,8 @@ const registrationChecklist = [
   { label: '查看路线与交通', detail: '高峰时段活动建议提前规划到场路线。', done: false },
   { label: '准备个人物资', detail: '水杯、手套、帽子和雨具会提升现场协作效率。', done: false }
 ]
+
+const handleViewDetails = async (id: number) => {
+  await router.push(`/volunteer/activities/${id}`)
+}
 </script>

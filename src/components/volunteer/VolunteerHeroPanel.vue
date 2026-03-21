@@ -75,9 +75,8 @@
 import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useVolunteerMetrics } from '@/composables/useVolunteerMetrics'
-import { registeredActivities } from '@/data/volunteerCenter'
 
-const { user, points, volunteerLevel, levelProgressPercentage } = useVolunteerMetrics()
-const registeredCount = registeredActivities.length
+const { user, points, volunteerLevel, levelProgressPercentage, upcomingActivities } = useVolunteerMetrics()
+const registeredCount = computed(() => upcomingActivities.value)
 const remainingPoints = computed(() => Math.max(200 - (points.value % 200), 0))
 </script>

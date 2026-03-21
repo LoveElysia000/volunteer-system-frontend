@@ -517,7 +517,7 @@
 
                     <div
                       v-else
-                      class="grid grid-cols-1 gap-5"
+                      class="grid grid-cols-1 gap-5 md:grid-cols-2"
                     >
                       <div class="field-shell">
                         <label
@@ -543,6 +543,33 @@
                           class="field-error"
                         >
                           {{ errors.organization }}
+                        </p>
+                      </div>
+
+                      <div class="field-shell">
+                        <label
+                          for="organizationCode"
+                          class="field-label"
+                        >统一社会信用代码</label>
+                        <div
+                          class="input-shell"
+                          :class="{ 'input-shell-error': errors.organizationCode }"
+                        >
+                          <BadgeCheckIcon class="field-icon" />
+                          <input
+                            id="organizationCode"
+                            v-model="form.organizationCode"
+                            type="text"
+                            class="field-input"
+                            placeholder="请输入统一社会信用代码"
+                            @blur="() => handleBlur('organizationCode')"
+                          >
+                        </div>
+                        <p
+                          v-if="errors.organizationCode"
+                          class="field-error"
+                        >
+                          {{ errors.organizationCode }}
                         </p>
                       </div>
                     </div>
@@ -647,7 +674,7 @@ import { computed, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/store/modules/auth'
 import { useMessageStore } from '@/store/modules/messages'
-import { UserIdentity, type RegisterRequest } from '@/types/auth'
+import { UserIdentity, type VolunteerRegisterRequest, type OrganizationRegisterRequest } from '@/types/auth'
 import {
   ArrowRightIcon,
   BadgeCheckIcon,
@@ -679,6 +706,7 @@ const form = ref({
   age: '',
   gender: '',
   organization: '',
+  organizationCode: '',
   role: UserIdentity.VOLUNTEER,
   agreement: false
 })
@@ -693,6 +721,7 @@ interface FormErrors {
   age: string
   gender: string
   organization: string
+  organizationCode: string
   role: string
   agreement: string
 }
@@ -707,6 +736,7 @@ interface FormTouched {
   age: boolean
   gender: boolean
   organization: boolean
+  organizationCode: boolean
   role: boolean
   agreement: boolean
 }
@@ -721,6 +751,7 @@ const errors = reactive<FormErrors>({
   age: '',
   gender: '',
   organization: '',
+  organizationCode: '',
   role: '',
   agreement: ''
 })
@@ -735,6 +766,7 @@ const touched = reactive<FormTouched>({
   age: false,
   gender: false,
   organization: false,
+  organizationCode: false,
   role: false,
   agreement: false
 })
@@ -785,6 +817,10 @@ const validateField = (field: keyof FormErrors, value: string) => {
     case 'organization':
       if (form.value.role === UserIdentity.ORGANIZATION && !value.trim()) return '*组织名称必须填写'
       return ''
+    case 'organizationCode':
+      if (form.value.role !== UserIdentity.ORGANIZATION) return ''
+      if (!value.trim()) return '*统一社会信用代码必须填写'
+      return ''
     case 'role':
       if (!value.trim()) return '*注册身份必须选择'
       return ''
@@ -829,7 +865,7 @@ const isFormValid = computed(() => {
     form.value.agreement
 
   if (form.value.role === UserIdentity.ORGANIZATION) {
-    return Boolean(baseValid && form.value.organization)
+    return Boolean(baseValid && form.value.organization && form.value.organizationCode)
   }
 
   return Boolean(baseValid && form.value.age && form.value.gender)
@@ -852,8 +888,11 @@ const selectRole = (role: UserIdentity) => {
 
   if (role === UserIdentity.VOLUNTEER) {
     form.value.organization = ''
+    form.value.organizationCode = ''
     errors.organization = ''
+    errors.organizationCode = ''
     touched.organization = false
+    touched.organizationCode = false
   } else {
     form.value.age = ''
     form.value.gender = ''
@@ -878,30 +917,36 @@ const handleRegister = async () => {
   loading.value = true
 
   try {
-    const registerData: RegisterRequest = {
-      registerType: form.value.role === UserIdentity.VOLUNTEER ? UserIdentity.VOLUNTEER : UserIdentity.ORGANIZATION,
-      username: form.value.username,
-      name: form.value.realName,
-      phone: form.value.phone,
-      email: form.value.email,
-      password: form.value.password
-    }
-
+    let response
     if (form.value.role === UserIdentity.VOLUNTEER) {
-      registerData.age = Number.parseInt(form.value.age, 10)
+      const registerData: VolunteerRegisterRequest = {
+        username: form.value.username,
+        name: form.value.realName,
+        phone: form.value.phone,
+        email: form.value.email,
+        password: form.value.password,
+        age: Number.parseInt(form.value.age, 10),
+        gender: ''
+      }
       const genderMap: Record<string, string> = {
         male: '男',
         female: '女',
-        other: '其他'
+        other: '未知'
       }
       registerData.gender = genderMap[form.value.gender] || form.value.gender
+      response = await authStore.registerVolunteer(registerData)
+    } else {
+      const registerData: OrganizationRegisterRequest = {
+        username: form.value.username,
+        name: form.value.realName,
+        phone: form.value.phone,
+        email: form.value.email,
+        password: form.value.password,
+        organizationName: form.value.organization,
+        code: form.value.organizationCode
+      }
+      response = await authStore.registerOrganization(registerData)
     }
-
-    if (form.value.role === UserIdentity.ORGANIZATION) {
-      registerData.organizationName = form.value.organization
-    }
-
-    const response = await authStore.register(registerData)
 
     if (response.code === 200) {
       messageStore.success('注册成功，正在跳转登录页。')
@@ -986,6 +1031,7 @@ const handleRegister = async () => {
   width: 100%;
   border: 0;
   background: transparent;
+  border-radius: inherit;
   padding: 0.95rem 1rem 0.95rem 2.95rem;
   font-size: 0.95rem;
   color: #0f172a;
@@ -994,6 +1040,24 @@ const handleRegister = async () => {
 
 .field-input::placeholder {
   color: #94a3b8;
+}
+
+.field-input:-webkit-autofill,
+.field-input:-webkit-autofill:hover,
+.field-input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #0f172a;
+  border-radius: inherit;
+  -webkit-box-shadow: 0 0 0 1000px #f8fafc inset;
+  box-shadow: 0 0 0 1000px #f8fafc inset;
+  background-clip: padding-box;
+  transition: background-color 9999s ease-out 0s;
+}
+
+.input-shell:focus-within .field-input:-webkit-autofill,
+.input-shell:focus-within .field-input:-webkit-autofill:hover,
+.input-shell:focus-within .field-input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset;
+  box-shadow: 0 0 0 1000px #ffffff inset;
 }
 
 .select-shell::after {

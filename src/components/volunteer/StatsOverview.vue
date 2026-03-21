@@ -3,7 +3,7 @@
     <VolunteerSummaryCard
       label="当前积分"
       :value="String(points)"
-      detail="本月新增 92 分"
+      :detail="`本月新增 ${monthlyPointsGrowth} 分`"
       tone="green"
     >
       <template #icon>
@@ -27,15 +27,15 @@
         <ClockIcon class="h-6 w-6" />
       </template>
       <div class="mt-4 flex items-center justify-between text-xs text-slate-500">
-        <span>本月 +12h</span>
+        <span>本月 +{{ monthlyHoursGrowth }}h</span>
         <span>100h 年度目标</span>
       </div>
     </VolunteerSummaryCard>
 
     <VolunteerSummaryCard
       label="参与活动"
-      :value="String(fallbackMetrics.totalActivities)"
-      :detail="`其中 ${fallbackMetrics.completedActivities} 场已完成`"
+      :value="String(totalActivities)"
+      :detail="`其中 ${completedActivities} 场已完成`"
       tone="amber"
     >
       <template #icon>
@@ -43,11 +43,11 @@
       </template>
       <div class="mt-4 flex gap-2 text-xs">
         <VolunteerStatusBadge
-          label="2 场待参加"
+          :label="`${upcomingActivities} 场待参加`"
           tone="amber"
         />
         <VolunteerStatusBadge
-          label="4 场已完成"
+          :label="`${completedActivities} 场已完成`"
           tone="blue"
         />
       </div>
@@ -82,6 +82,10 @@ const {
   currentLevelHours,
   hoursToNextLevel,
   levelProgressPercentage,
-  fallbackMetrics
+  monthlyHoursGrowth,
+  monthlyPointsGrowth,
+  totalActivities,
+  completedActivities,
+  upcomingActivities
 } = useVolunteerMetrics()
 </script>

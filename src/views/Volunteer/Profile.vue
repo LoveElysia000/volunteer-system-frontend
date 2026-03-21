@@ -192,6 +192,66 @@
             </button>
           </div>
         </VolunteerSectionCard>
+
+        <VolunteerSectionCard
+          title="实名认证"
+          description="认证通过后，报名、签到等真实业务流程会更顺畅。"
+          tone="soft"
+        >
+          <div class="space-y-4">
+            <div class="volunteer-surface-lift flex items-start justify-between gap-4 rounded-[1.1rem] border border-white/80 bg-white/90 px-4 py-4">
+              <div>
+                <p class="text-sm font-semibold text-slate-900">
+                  当前认证状态
+                </p>
+                <p class="mt-1 text-xs text-slate-500">
+                  {{ auditStatusDescription }}
+                </p>
+              </div>
+              <span
+                class="shrink-0 rounded-full px-3 py-1 text-xs font-semibold"
+                :class="auditStatusClass"
+              >
+                {{ auditStatusLabel }}
+              </span>
+            </div>
+
+            <div
+              v-if="canSubmitRealName"
+              class="grid gap-4 md:grid-cols-2"
+            >
+              <label class="text-sm font-medium text-slate-600">
+                真实姓名
+                <input
+                  v-model="realNameForm.realName"
+                  class="input mt-2 rounded-2xl border-slate-200 bg-slate-50 shadow-none"
+                  placeholder="请输入身份证上的真实姓名"
+                >
+              </label>
+              <label class="text-sm font-medium text-slate-600">
+                身份证号
+                <input
+                  v-model="realNameForm.idCard"
+                  class="input mt-2 rounded-2xl border-slate-200 bg-slate-50 shadow-none"
+                  placeholder="请输入 18 位身份证号"
+                >
+              </label>
+            </div>
+
+            <div
+              v-if="canSubmitRealName"
+              class="flex justify-end"
+            >
+              <button
+                class="rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-300"
+                :disabled="realNameSubmitting"
+                @click="submitRealName"
+              >
+                {{ realNameSubmitting ? '提交中...' : '提交实名认证' }}
+              </button>
+            </div>
+          </div>
+        </VolunteerSectionCard>
       </div>
     </div>
   </div>
@@ -200,14 +260,20 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useAuthStore } from '@/store/modules/auth'
+import { useVolunteerStore } from '@/store/modules/volunteer'
+import { useMessageStore } from '@/store/modules/messages'
 import { CameraIcon } from 'lucide-vue-next'
 import VolunteerPageHeader from '@/components/volunteer/VolunteerPageHeader.vue'
 import VolunteerSectionCard from '@/components/volunteer/VolunteerSectionCard.vue'
 
 const authStore = useAuthStore()
+const volunteerStore = useVolunteerStore()
+const messageStore = useMessageStore()
 const user = computed(() => authStore.user)
+const profile = computed(() => volunteerStore.profile)
 const isEditing = ref(false)
 const avatarPreview = ref('')
+const realNameSubmitting = ref(false)
 
 const formData = reactive({
   realName: '',
@@ -216,6 +282,10 @@ const formData = reactive({
   phone: '',
   bio: '',
   preferences: ['环保宣传', '公园清洁'] as string[]
+})
+const realNameForm = reactive({
+  realName: '',
+  idCard: ''
 })
 
 const activityPreferences = ['环保宣传', '垃圾分类', '公园清洁', '植树造林', '动物保护', '水资源保护']
@@ -239,12 +309,54 @@ const profileHealthChecklist = computed(() => {
   ]
 })
 
+const auditStatus = computed(() => profile.value?.auditStatus ?? volunteerStore.realNameAudit?.status ?? 0)
+const auditStatusLabel = computed(() => {
+  switch (auditStatus.value) {
+    case 1:
+      return '审核中'
+    case 2:
+      return '已通过'
+    case 3:
+      return '已驳回'
+    default:
+      return '未认证'
+  }
+})
+const auditStatusDescription = computed(() => {
+  switch (auditStatus.value) {
+    case 1:
+      return '你的实名认证申请正在审核，请耐心等待结果。'
+    case 2:
+      return '实名认证已通过，后续参与正式活动时会更顺畅。'
+    case 3:
+      return '上次实名认证未通过，请核对信息后重新提交。'
+    default:
+      return '尚未提交实名认证，建议尽快补全以便参与完整业务流程。'
+  }
+})
+const auditStatusClass = computed(() => {
+  switch (auditStatus.value) {
+    case 1:
+      return 'bg-amber-100 text-amber-700'
+    case 2:
+      return 'bg-emerald-100 text-emerald-700'
+    case 3:
+      return 'bg-rose-100 text-rose-700'
+    default:
+      return 'bg-slate-100 text-slate-600'
+  }
+})
+const canSubmitRealName = computed(() => auditStatus.value === 0 || auditStatus.value === 3)
+
 const syncForm = () => {
-  formData.realName = user.value?.realName || ''
+  formData.realName = profile.value?.realName || user.value?.realName || ''
   formData.username = user.value?.username || ''
   formData.email = user.value?.email || ''
   formData.phone = user.value?.phone || ''
-  formData.bio = formData.bio || '长期参与社区环境改善与环保宣传，希望持续投入高质量项目。'
+  formData.bio = profile.value?.introduction || formData.bio || '长期参与社区环境改善与环保宣传，希望持续投入高质量项目。'
+  avatarPreview.value = profile.value?.avatarUrl || avatarPreview.value
+  realNameForm.realName = profile.value?.realName || formData.realName
+  realNameForm.idCard = profile.value?.idCard || ''
 }
 
 const handleAvatarUpload = (event: Event) => {
@@ -268,12 +380,57 @@ const cancelEditing = () => {
 }
 
 const saveChanges = async () => {
-  await authStore.updateProfile({
-    realName: formData.realName,
-    email: formData.email,
-    phone: formData.phone
-  })
-  isEditing.value = false
+  try {
+    if (user.value?.id) {
+      await volunteerStore.updateMyProfile(user.value.id, {
+        realName: formData.realName,
+        avatarUrl: avatarPreview.value || undefined,
+        introduction: formData.bio
+      })
+    }
+
+    await authStore.updateProfile({
+      realName: formData.realName,
+      email: formData.email,
+      phone: formData.phone,
+      avatarUrl: avatarPreview.value || user.value?.avatarUrl
+    })
+
+    messageStore.success('个人资料已更新')
+    isEditing.value = false
+  } catch (error: any) {
+    console.error('保存个人资料失败:', error)
+    messageStore.error(error.message || '保存个人资料失败，请稍后重试')
+  }
+}
+
+const submitRealName = async () => {
+  if (!realNameForm.realName.trim()) {
+    messageStore.error('请输入真实姓名')
+    return
+  }
+  if (!/^\d{17}[\dXx]$/.test(realNameForm.idCard.trim())) {
+    messageStore.error('请输入有效的 18 位身份证号')
+    return
+  }
+
+  realNameSubmitting.value = true
+  try {
+    await volunteerStore.submitRealName({
+      realName: realNameForm.realName.trim(),
+      idCard: realNameForm.idCard.trim().toUpperCase()
+    })
+    formData.realName = realNameForm.realName.trim()
+    await authStore.updateProfile({
+      realName: realNameForm.realName.trim()
+    })
+    messageStore.success('实名认证信息已提交，请等待审核')
+  } catch (error: any) {
+    console.error('提交实名认证失败:', error)
+    messageStore.error(error.message || '提交实名认证失败，请稍后重试')
+  } finally {
+    realNameSubmitting.value = false
+  }
 }
 
 const togglePreference = (preference: string) => {
@@ -286,5 +443,14 @@ const togglePreference = (preference: string) => {
   formData.preferences.push(preference)
 }
 
-onMounted(syncForm)
+onMounted(async () => {
+  if (user.value?.id && !profile.value) {
+    try {
+      await volunteerStore.fetchMyProfile(user.value.id)
+    } catch (error) {
+      console.error('加载志愿者资料失败:', error)
+    }
+  }
+  syncForm()
+})
 </script>
