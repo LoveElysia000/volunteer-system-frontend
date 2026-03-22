@@ -3,6 +3,19 @@ import { routes } from './routes'
 import { useAuthStore } from '@/store/modules/auth'
 import { tokenManager } from '@/utils/token'
 
+const CHUNK_RELOAD_KEY = 'router-chunk-reload-once'
+
+const isChunkLoadError = (error: unknown) => {
+  const message = String((error as Error | undefined)?.message || error || '')
+
+  return (
+    message.includes('Failed to fetch dynamically imported module') ||
+    message.includes('Importing a module script failed') ||
+    message.includes('Failed to import') ||
+    message.includes('Loading chunk')
+  )
+}
+
 const router = createRouter({
   history: createWebHistory(),
   routes
@@ -18,13 +31,32 @@ router.onError((error, to) => {
     return
   }
 
+  // 懒加载 chunk 失败通常是用户命中了旧缓存，刷新一次拿新入口文件即可。
+  if (isChunkLoadError(error)) {
+    if (sessionStorage.getItem(CHUNK_RELOAD_KEY) === '1') {
+      sessionStorage.removeItem(CHUNK_RELOAD_KEY)
+      return
+    }
+
+    sessionStorage.setItem(CHUNK_RELOAD_KEY, '1')
+    window.location.reload()
+    return
+  }
+
+  sessionStorage.removeItem(CHUNK_RELOAD_KEY)
+
+  // 避免 404 页面本身出错时再次跳转，导致无限循环。
+  if (to?.path === '/404' || to?.name === '404' || to?.name === 'not-found') {
+    return
+  }
+
   // 其他路由错误，重定向到404页面
   // 使用replace而不是push，避免在历史记录中添加额外的条目
   router.replace('/404')
 })
 
 // 路由守卫
-router.beforeEach(async (to, from, next) => {
+router.beforeEach(async (to, _from, next) => {
   // 对于404页面，直接放行，不进行认证检查
   if (to.name === 'not-found' || to.name === '404') {
     next()
