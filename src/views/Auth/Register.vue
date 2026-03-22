@@ -777,6 +777,20 @@ const confirmPasswordVisible = ref(false)
 
 const isVolunteer = computed(() => form.value.role === UserIdentity.VOLUNTEER)
 
+const getValidationValue = (field: keyof FormErrors) => {
+  if (field === 'agreement') {
+    return form.value.agreement ? 'true' : ''
+  }
+
+  const rawValue = form.value[field as keyof typeof form.value]
+
+  if (rawValue === null || rawValue === undefined) {
+    return ''
+  }
+
+  return String(rawValue)
+}
+
 const validateField = (field: keyof FormErrors, value: string) => {
   switch (field) {
     case 'username':
@@ -835,20 +849,14 @@ const validateField = (field: keyof FormErrors, value: string) => {
 const validateForm = () => {
   (Object.keys(errors) as Array<keyof FormErrors>).forEach(field => {
     if (touched[field]) {
-      const value = field === 'agreement'
-        ? (form.value.agreement ? 'true' : '')
-        : ((form.value[field as keyof typeof form.value] as string) || '')
-      errors[field] = validateField(field, value)
+      errors[field] = validateField(field, getValidationValue(field))
     }
   })
 }
 
 const handleBlur = (field: keyof FormErrors) => {
   touched[field] = true
-  const value = field === 'agreement'
-    ? (form.value.agreement ? 'true' : '')
-    : ((form.value[field as keyof typeof form.value] as string) || '')
-  errors[field] = validateField(field, value)
+  errors[field] = validateField(field, getValidationValue(field))
 }
 
 watch(form, validateForm, { deep: true })
