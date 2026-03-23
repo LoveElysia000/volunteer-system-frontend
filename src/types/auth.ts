@@ -13,7 +13,7 @@ export enum UserIdentity {
 // 后端返回的用户信息
 export interface UserInfo {
   userId: string
-  username: string
+  userName: string
   email: string
   phone: string
   displayName: string
@@ -36,6 +36,8 @@ export interface LoginResponse {
   code: number
   msg: string
   data: {
+    success: boolean
+    message: string
     accessToken: string
     refreshToken: string
     expiresAt: number
@@ -50,8 +52,12 @@ export interface LogoutRequest {
 
 // 登出响应
 export interface LogoutResponse {
-  success: boolean
-  message: string
+  code: number
+  msg: string
+  data: {
+    success: boolean
+    message: string
+  }
 }
 
 // 刷新令牌请求
@@ -64,6 +70,8 @@ export interface RefreshTokenResponse {
   code: number
   msg: string
   data: {
+    success: boolean
+    message: string
     token: string
     refreshToken: string
     expiresAt: number
@@ -85,7 +93,7 @@ export interface User {
 }
 
 export interface VolunteerRegisterRequest {
-  username: string
+  userName: string
   name: string
   phone: string
   email: string
@@ -95,7 +103,7 @@ export interface VolunteerRegisterRequest {
 }
 
 export interface OrganizationRegisterRequest {
-  username: string
+  userName: string
   name: string
   phone: string
   email: string
@@ -108,5 +116,5 @@ export interface OrganizationRegisterRequest {
 export interface RegisterResponse {
   code: number
   msg: string
-  data: Record<string, any>
+  data: Record<string, never>
 }

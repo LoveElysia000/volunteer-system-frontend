@@ -27,17 +27,19 @@
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">开始时间</label>
           <input
-            v-model="form.startTime"
+            :value="toDateTimeLocal(form.startTime)"
             type="datetime-local"
             class="input"
+            @input="updateDateTimeField('startTime', $event)"
           >
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">结束时间</label>
           <input
-            v-model="form.endTime"
+            :value="toDateTimeLocal(form.endTime)"
             type="datetime-local"
             class="input"
+            @input="updateDateTimeField('endTime', $event)"
           >
         </div>
         <div>
@@ -108,14 +110,16 @@ import { useRouter } from 'vue-router'
 import { activitiesApi } from '@/api/activities'
 import { useMessageStore } from '@/store/modules/messages'
 import { useOrganizationStore } from '@/store/modules/organization'
+import type { CreateOrganizationActivityRequest } from '@/types/activity'
 
 const router = useRouter()
 const messageStore = useMessageStore()
 const organizationStore = useOrganizationStore()
 const submitting = ref(false)
-const organizationId = computed(() => Number(organizationStore.activeOrganizationId || organizationStore.currentOrganization?.id || 0))
+const organizationId = computed(() => organizationStore.activeOrganizationId ?? organizationStore.currentOrganization?.id ?? 0)
 
-const form = reactive({
+const form = reactive<CreateOrganizationActivityRequest>({
+  orgId: 0,
   title: '',
   description: '',
   coverUrl: '',
@@ -134,6 +138,17 @@ const toApiDateTime = (value: string) => {
   return new Date(value).toISOString().slice(0, 19).replace('T', ' ')
 }
 
+const toDateTimeLocal = (value: string) => {
+  if (!value) {
+    return ''
+  }
+  return value.replace(' ', 'T').slice(0, 16)
+}
+
+const updateDateTimeField = (field: 'startTime' | 'endTime', event: Event) => {
+  form[field] = toApiDateTime((event.target as HTMLInputElement).value)
+}
+
 const submitActivity = async () => {
   if (!organizationId.value) {
     messageStore.error('当前账号缺少组织标识，暂时无法创建活动')
@@ -145,18 +160,18 @@ const submitActivity = async () => {
   }
   submitting.value = true
   try {
-    const response = await activitiesApi.create({
-      orgId: organizationId.value,
+    form.orgId = organizationId.value
+    const payload: CreateOrganizationActivityRequest = {
+      ...form,
       title: form.title.trim(),
       description: form.description.trim(),
       coverUrl: form.coverUrl.trim() || undefined,
-      startTime: toApiDateTime(form.startTime),
-      endTime: toApiDateTime(form.endTime),
       location: form.location.trim(),
       address: form.address.trim() || undefined,
-      duration: Number(form.duration),
-      maxPeople: Number(form.maxPeople)
-    })
+      startTime: form.startTime,
+      endTime: form.endTime
+    }
+    const response = await activitiesApi.create(payload)
 
     if (response.code !== 200) {
       throw new Error(response.msg || '创建活动失败')

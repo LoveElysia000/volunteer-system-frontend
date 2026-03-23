@@ -156,7 +156,7 @@
                       <button
                         type="button"
                         :class="roleButtonClass(UserIdentity.VOLUNTEER)"
-                        @click="loginState.role = UserIdentity.VOLUNTEER"
+                        @click="loginState.form.identity = UserIdentity.VOLUNTEER"
                       >
                         <UserIcon class="h-4 w-4" />
                         志愿者
@@ -164,7 +164,7 @@
                       <button
                         type="button"
                         :class="roleButtonClass(UserIdentity.ORGANIZATION)"
-                        @click="loginState.role = UserIdentity.ORGANIZATION"
+                        @click="loginState.form.identity = UserIdentity.ORGANIZATION"
                       >
                         <Building2Icon class="h-4 w-4" />
                         组织管理者
@@ -180,16 +180,16 @@
                     <div class="grid grid-cols-2 gap-3 rounded-2xl bg-slate-100 p-1.5">
                       <button
                         type="button"
-                        :class="modeButtonClass(LoginMode.EMAIL)"
-                        @click="switchMode(LoginMode.EMAIL)"
+                        :class="modeButtonClass(LoginType.EMAIL)"
+                        @click="switchLoginType(LoginType.EMAIL)"
                       >
                         <MailIcon class="h-4 w-4" />
                         邮箱登录
                       </button>
                       <button
                         type="button"
-                        :class="modeButtonClass(LoginMode.PHONE)"
-                        @click="switchMode(LoginMode.PHONE)"
+                        :class="modeButtonClass(LoginType.PHONE)"
+                        @click="switchLoginType(LoginType.PHONE)"
                       >
                         <PhoneIcon class="h-4 w-4" />
                         手机号登录
@@ -200,36 +200,36 @@
                   <div class="space-y-5">
                     <div class="floating-field relative">
                       <input
-                        v-if="loginState.mode === LoginMode.EMAIL"
+                        v-if="loginState.form.loginType === LoginType.EMAIL"
                         id="identifier"
-                        v-model="loginState.form.email"
+                        v-model="loginState.form.identifier"
                         type="email"
                         placeholder=" "
                         class="peer login-input"
-                        :class="{ 'login-input-error': loginState.errors.email }"
+                        :class="{ 'login-input-error': loginState.errors.identifier }"
                         autocomplete="email"
-                        @blur="() => handleBlur('email')"
+                        @blur="() => handleBlur('identifier')"
                       >
                       <input
                         v-else
                         id="identifier"
-                        v-model="loginState.form.phone"
+                        v-model="loginState.form.identifier"
                         type="tel"
                         placeholder=" "
                         class="peer login-input"
-                        :class="{ 'login-input-error': loginState.errors.phone }"
+                        :class="{ 'login-input-error': loginState.errors.identifier }"
                         autocomplete="tel"
-                        @blur="() => handleBlur('phone')"
+                        @blur="() => handleBlur('identifier')"
                       >
                       <label
                         for="identifier"
                         class="login-label"
                       >
-                        {{ loginState.mode === LoginMode.EMAIL ? '邮箱地址' : '手机号码' }}
+                        {{ loginState.form.loginType === LoginType.EMAIL ? '邮箱地址' : '手机号码' }}
                       </label>
                       <component
-                        :is="loginState.mode === LoginMode.EMAIL ? MailIcon : PhoneIcon"
-                        class="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-300 transition peer-focus:text-primary-500"
+                        :is="loginState.form.loginType === LoginType.EMAIL ? MailIcon : PhoneIcon"
+                        class="field-leading-icon pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-300 transition peer-focus:text-primary-500"
                       />
                       <p
                         v-if="currentIdentifierError"
@@ -264,7 +264,7 @@
                           class="h-5 w-5"
                         />
                       </button>
-                      <LockIcon class="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-300 peer-focus:text-primary-400" />
+                      <LockIcon class="field-leading-icon pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-300 peer-focus:text-primary-400" />
                       <p
                         v-if="loginState.errors.password"
                         class="mt-2 text-sm font-medium text-rose-500"
@@ -324,10 +324,10 @@
                   <button
                     type="button"
                     class="flex items-center justify-center rounded-2xl border border-slate-200 px-4 py-3 text-slate-600 transition hover:border-primary-300 hover:bg-primary-50 hover:text-primary-600"
-                    @click="switchMode(loginState.mode === LoginMode.EMAIL ? LoginMode.PHONE : LoginMode.EMAIL)"
+                    @click="switchLoginType(loginState.form.loginType === LoginType.EMAIL ? LoginType.PHONE : LoginType.EMAIL)"
                   >
                     <component
-                      :is="loginState.mode === LoginMode.EMAIL ? PhoneIcon : MailIcon"
+                      :is="loginState.form.loginType === LoginType.EMAIL ? PhoneIcon : MailIcon"
                       class="h-5 w-5"
                     />
                   </button>
@@ -418,7 +418,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/store/modules/auth'
 import { useMessageStore } from '@/store/modules/messages'
 import { tokenManager } from '@/utils/token'
-import { LoginType, UserIdentity, type User } from '@/types/auth'
+import { LoginType, UserIdentity, type LoginRequest, type User } from '@/types/auth'
 import {
   ArrowRightIcon,
   Building2Icon,
@@ -438,29 +438,36 @@ const authStore = useAuthStore()
 const messageStore = useMessageStore()
 const isDevMockAccessEnabled = import.meta.env.DEV
 
-enum LoginMode {
-  EMAIL = 'email',
-  PHONE = 'phone'
+type LoginFormState = LoginRequest & {
+  rememberMe: boolean
 }
 
-const loginState = reactive({
-  mode: LoginMode.EMAIL,
-  role: UserIdentity.VOLUNTEER,
+type LoginFormField = keyof Pick<LoginFormState, 'loginType' | 'identifier' | 'password' | 'identity'>
+type LoginFormFieldValue = LoginFormState[LoginFormField]
+
+const loginState = reactive<{
+  form: LoginFormState
+  errors: Record<LoginFormField, string>
+  touched: Record<LoginFormField, boolean>
+}>({
   form: {
-    email: '',
-    phone: '',
+    loginType: LoginType.EMAIL,
+    identifier: '',
     password: '',
+    identity: UserIdentity.VOLUNTEER,
     rememberMe: false
   },
   errors: {
-    email: '',
-    phone: '',
-    password: ''
+    loginType: '',
+    identifier: '',
+    password: '',
+    identity: ''
   },
   touched: {
-    email: false,
-    phone: false,
-    password: false
+    loginType: false,
+    identifier: false,
+    password: false,
+    identity: false
   }
 })
 
@@ -468,18 +475,27 @@ const loading = ref(false)
 const passwordVisible = ref(false)
 
 const currentIdentifierError = computed(() => {
-  return loginState.mode === LoginMode.EMAIL ? loginState.errors.email : loginState.errors.phone
+  return loginState.errors.identifier
 })
 
-const validateField = (field: string, value: string) => {
+const validateField = (field: LoginFormField, value: LoginFormFieldValue) => {
   switch (field) {
-    case 'email':
-      if (!value.trim()) return '*邮箱地址必须填写'
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return '*请输入有效的邮箱地址'
+    case 'loginType':
+      if (!value) return '*登录方式必须选择'
       return ''
-    case 'phone':
-      if (!value.trim()) return '*手机号必须填写'
-      if (!/^1[3-9]\d{9}$/.test(value)) return '*请输入有效的手机号'
+    case 'identity':
+      if (!value) return '*登录身份必须选择'
+      return ''
+    case 'identifier':
+      if (!value.trim()) {
+        return loginState.form.loginType === LoginType.EMAIL ? '*邮箱地址必须填写' : '*手机号必须填写'
+      }
+      if (loginState.form.loginType === LoginType.EMAIL && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+        return '*请输入有效的邮箱地址'
+      }
+      if (loginState.form.loginType === LoginType.PHONE && !/^1[3-9]\d{9}$/.test(value)) {
+        return '*请输入有效的手机号'
+      }
       return ''
     case 'password':
       if (!value) return '*密码必须填写'
@@ -491,38 +507,31 @@ const validateField = (field: string, value: string) => {
 }
 
 const validateForm = () => {
-  Object.keys(loginState.errors).forEach(field => {
-    if (loginState.touched[field as keyof typeof loginState.touched]) {
-      const value = loginState.form[field as keyof typeof loginState.form] as string
-      loginState.errors[field as keyof typeof loginState.errors] = validateField(field, value || '')
+  (Object.keys(loginState.errors) as LoginFormField[]).forEach(field => {
+    if (loginState.touched[field]) {
+      loginState.errors[field] = validateField(field, loginState.form[field])
     }
   })
 }
 
-const handleBlur = (field: keyof typeof loginState.touched) => {
+const handleBlur = (field: LoginFormField) => {
   loginState.touched[field] = true
-  const value = loginState.form[field as keyof typeof loginState.form] as string
-  loginState.errors[field as keyof typeof loginState.errors] = validateField(field, value || '')
+  loginState.errors[field] = validateField(field, loginState.form[field])
 }
 
 watch(loginState.form, validateForm, { deep: true })
 
-const switchMode = (mode: LoginMode) => {
-  loginState.mode = mode
-
-  if (mode === LoginMode.EMAIL) {
-    loginState.form.phone = ''
-    loginState.errors.phone = ''
-    loginState.touched.phone = false
-  } else {
-    loginState.form.email = ''
-    loginState.errors.email = ''
-    loginState.touched.email = false
-  }
+const switchLoginType = (loginType: LoginType) => {
+  loginState.form.loginType = loginType
+  loginState.form.identifier = ''
+  loginState.errors.loginType = ''
+  loginState.errors.identifier = ''
+  loginState.touched.loginType = false
+  loginState.touched.identifier = false
 }
 
 const roleButtonClass = (role: UserIdentity) => {
-  const active = loginState.role === role
+  const active = loginState.form.identity === role
   return [
     'inline-flex items-center justify-center gap-2 rounded-2xl border px-4 py-3 text-sm font-semibold transition',
     active
@@ -531,8 +540,8 @@ const roleButtonClass = (role: UserIdentity) => {
   ]
 }
 
-const modeButtonClass = (mode: LoginMode) => {
-  const active = loginState.mode === mode
+const modeButtonClass = (mode: LoginType) => {
+  const active = loginState.form.loginType === mode
   return [
     'inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition',
     active
@@ -584,13 +593,10 @@ const handleMockOrganizationAccess = async () => {
 }
 
 const handleLogin = async () => {
-  if (loginState.mode === LoginMode.EMAIL) {
-    loginState.touched.email = true
-    loginState.touched.password = true
-  } else {
-    loginState.touched.phone = true
-    loginState.touched.password = true
-  }
+  loginState.touched.loginType = true
+  loginState.touched.identifier = true
+  loginState.touched.password = true
+  loginState.touched.identity = true
 
   validateForm()
 
@@ -603,13 +609,11 @@ const handleLogin = async () => {
 
   try {
     await authStore.login({
-      loginType: loginState.mode === LoginMode.EMAIL ? LoginType.EMAIL : LoginType.PHONE,
-      identifier: loginState.mode === LoginMode.EMAIL ? loginState.form.email : loginState.form.phone,
+      loginType: loginState.form.loginType,
+      identifier: loginState.form.identifier.trim(),
       password: loginState.form.password,
-      identity: loginState.role
+      identity: loginState.form.identity
     })
-
-    loading.value = false
 
     if (authStore.user?.role === UserIdentity.VOLUNTEER) {
       router.push('/volunteer')
@@ -619,18 +623,17 @@ const handleLogin = async () => {
       router.push('/')
     }
   } catch (error: any) {
-    loading.value = false
     console.error('登录失败:', error)
     messageStore.error(error.message || '登录失败，请检查用户名和密码')
+  } finally {
+    loading.value = false
   }
 }
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-
 :global(body) {
-  font-family: 'Plus Jakarta Sans', 'Inter', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-family: 'Inter', 'PingFang SC', 'Microsoft YaHei', sans-serif;
 }
 
 .login-input {
@@ -675,6 +678,11 @@ const handleLogin = async () => {
 .floating-field .peer:not(:placeholder-shown) {
   padding-top: 1.5rem;
   padding-bottom: 0.75rem;
+}
+
+.floating-field .peer:focus ~ .field-leading-icon,
+.floating-field .peer:not(:placeholder-shown) ~ .field-leading-icon {
+  top: calc(50% + 0.3rem);
 }
 
 </style>

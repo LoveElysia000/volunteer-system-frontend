@@ -263,23 +263,23 @@
                         >真实姓名</label>
                         <div
                           class="input-shell"
-                          :class="{ 'input-shell-error': errors.realName }"
+                          :class="{ 'input-shell-error': errors.name }"
                         >
                           <BadgeCheckIcon class="field-icon" />
                           <input
                             id="realName"
-                            v-model="form.realName"
+                            v-model="form.name"
                             type="text"
                             class="field-input"
                             placeholder="请输入真实姓名"
-                            @blur="() => handleBlur('realName')"
+                            @blur="() => handleBlur('name')"
                           >
                         </div>
                         <p
-                          v-if="errors.realName"
+                          v-if="errors.name"
                           class="field-error"
                         >
-                          {{ errors.realName }}
+                          {{ errors.name }}
                         </p>
                       </div>
 
@@ -461,7 +461,7 @@
                           <CalendarIcon class="field-icon" />
                           <input
                             id="age"
-                            v-model="form.age"
+                            v-model.number="form.age"
                             type="number"
                             class="field-input"
                             placeholder="请输入年龄"
@@ -495,13 +495,13 @@
                             <option value="">
                               请选择性别
                             </option>
-                            <option value="male">
+                            <option value="男">
                               男
                             </option>
-                            <option value="female">
+                            <option value="女">
                               女
                             </option>
-                            <option value="other">
+                            <option value="其他">
                               其他
                             </option>
                           </select>
@@ -526,23 +526,23 @@
                         >组织名称</label>
                         <div
                           class="input-shell"
-                          :class="{ 'input-shell-error': errors.organization }"
+                          :class="{ 'input-shell-error': errors.organizationName }"
                         >
                           <Building2Icon class="field-icon" />
                           <input
                             id="organization"
-                            v-model="form.organization"
+                            v-model="form.organizationName"
                             type="text"
                             class="field-input"
                             placeholder="请输入组织名称"
-                            @blur="() => handleBlur('organization')"
+                            @blur="() => handleBlur('organizationName')"
                           >
                         </div>
                         <p
-                          v-if="errors.organization"
+                          v-if="errors.organizationName"
                           class="field-error"
                         >
-                          {{ errors.organization }}
+                          {{ errors.organizationName }}
                         </p>
                       </div>
 
@@ -553,23 +553,23 @@
                         >统一社会信用代码</label>
                         <div
                           class="input-shell"
-                          :class="{ 'input-shell-error': errors.organizationCode }"
+                          :class="{ 'input-shell-error': errors.code }"
                         >
                           <BadgeCheckIcon class="field-icon" />
                           <input
                             id="organizationCode"
-                            v-model="form.organizationCode"
+                            v-model="form.code"
                             type="text"
                             class="field-input"
                             placeholder="请输入统一社会信用代码"
-                            @blur="() => handleBlur('organizationCode')"
+                            @blur="() => handleBlur('code')"
                           >
                         </div>
                         <p
-                          v-if="errors.organizationCode"
+                          v-if="errors.code"
                           class="field-error"
                         >
-                          {{ errors.organizationCode }}
+                          {{ errors.code }}
                         </p>
                       </div>
                     </div>
@@ -696,77 +696,64 @@ const router = useRouter()
 const authStore = useAuthStore()
 const messageStore = useMessageStore()
 
-const form = ref({
-  username: '',
-  email: '',
-  phone: '',
-  password: '',
-  confirmPassword: '',
-  realName: '',
-  age: '',
-  gender: '',
-  organization: '',
-  organizationCode: '',
-  role: UserIdentity.VOLUNTEER,
-  agreement: false
-})
-
-interface FormErrors {
+type RegisterForm = {
   username: string
   email: string
   phone: string
   password: string
   confirmPassword: string
-  realName: string
-  age: string
+  name: string
+  age: number | null
   gender: string
-  organization: string
-  organizationCode: string
-  role: string
-  agreement: string
-}
-
-interface FormTouched {
-  username: boolean
-  email: boolean
-  phone: boolean
-  password: boolean
-  confirmPassword: boolean
-  realName: boolean
-  age: boolean
-  gender: boolean
-  organization: boolean
-  organizationCode: boolean
-  role: boolean
+  organizationName: string
+  code: string
+  role: UserIdentity
   agreement: boolean
 }
 
-const errors = reactive<FormErrors>({
+type RegisterFormField = keyof RegisterForm
+
+const form = ref<RegisterForm>({
   username: '',
   email: '',
   phone: '',
   password: '',
   confirmPassword: '',
-  realName: '',
+  name: '',
+  age: null,
+  gender: '',
+  organizationName: '',
+  code: '',
+  role: UserIdentity.VOLUNTEER,
+  agreement: false
+})
+
+const errors = reactive<Record<RegisterFormField, string>>({
+  username: '',
+  email: '',
+  phone: '',
+  password: '',
+  confirmPassword: '',
+  name: '',
   age: '',
   gender: '',
-  organization: '',
-  organizationCode: '',
+  organizationName: '',
+  code: '',
   role: '',
   agreement: ''
 })
 
-const touched = reactive<FormTouched>({
+const touched = reactive<Record<RegisterFormField, boolean>>({
   username: false,
   email: false,
   phone: false,
   password: false,
   confirmPassword: false,
-  realName: false,
+  name: false,
   age: false,
   gender: false,
-  organization: false,
-  organizationCode: false,
+  organizationName: false,
+  code: false,
   role: false,
   agreement: false
 })
@@ -777,66 +764,50 @@ const confirmPasswordVisible = ref(false)
 
 const isVolunteer = computed(() => form.value.role === UserIdentity.VOLUNTEER)
 
-const getValidationValue = (field: keyof FormErrors) => {
-  if (field === 'agreement') {
-    return form.value.agreement ? 'true' : ''
-  }
-
-  const rawValue = form.value[field as keyof typeof form.value]
-
-  if (rawValue === null || rawValue === undefined) {
-    return ''
-  }
-
-  return String(rawValue)
-}
-
-const validateField = (field: keyof FormErrors, value: string) => {
+const validateField = (field: RegisterFormField) => {
   switch (field) {
     case 'username':
-      if (!value.trim()) return '*用户名必须填写'
-      if (value.length < 3) return '*用户名至少3个字符'
-      if (!/^[a-zA-Z0-9_]+$/.test(value)) return '*用户名只能包含字母、数字和下划线'
+      if (!form.value.username.trim()) return '*用户名必须填写'
+      if (form.value.username.length < 3) return '*用户名至少3个字符'
+      if (!/^[a-zA-Z0-9_]+$/.test(form.value.username)) return '*用户名只能包含字母、数字和下划线'
       return ''
     case 'email':
-      if (!value.trim()) return '*邮箱地址必须填写'
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return '*请输入有效的邮箱地址'
+      if (!form.value.email.trim()) return '*邮箱地址必须填写'
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.value.email)) return '*请输入有效的邮箱地址'
       return ''
     case 'phone':
-      if (!value.trim()) return '*手机号必须填写'
-      if (!/^1[3-9]\d{9}$/.test(value)) return '*请输入有效的手机号码'
+      if (!form.value.phone.trim()) return '*手机号必须填写'
+      if (!/^1[3-9]\d{9}$/.test(form.value.phone)) return '*请输入有效的手机号码'
       return ''
     case 'password':
-      if (!value) return '*密码必须填写'
-      if (value.length < 6) return '*密码至少6个字符'
+      if (!form.value.password) return '*密码必须填写'
+      if (form.value.password.length < 6) return '*密码至少6个字符'
       return ''
     case 'confirmPassword':
-      if (!value) return '*请确认密码'
-      if (value !== form.value.password) return '*两次输入的密码不一致'
+      if (!form.value.confirmPassword) return '*请确认密码'
+      if (form.value.confirmPassword !== form.value.password) return '*两次输入的密码不一致'
       return ''
-    case 'realName':
-      if (!value.trim()) return '*真实姓名必须填写'
+    case 'name':
+      if (!form.value.name.trim()) return '*真实姓名必须填写'
       return ''
-    case 'age': {
+    case 'age':
       if (form.value.role !== UserIdentity.VOLUNTEER) return ''
-      if (!value.trim()) return '*年龄必须填写'
-      const ageNum = Number.parseInt(value, 10)
-      if (Number.isNaN(ageNum) || ageNum < 1 || ageNum > 120) return '*请输入有效的年龄(1-120)'
+      if (form.value.age === null || Number.isNaN(form.value.age)) return '*年龄必须填写'
+      if (form.value.age < 1 || form.value.age > 120) return '*请输入有效的年龄(1-120)'
       return ''
-    }
     case 'gender':
       if (form.value.role !== UserIdentity.VOLUNTEER) return ''
-      if (!value.trim()) return '*性别必须选择'
+      if (!form.value.gender.trim()) return '*性别必须选择'
       return ''
-    case 'organization':
-      if (form.value.role === UserIdentity.ORGANIZATION && !value.trim()) return '*组织名称必须填写'
+    case 'organizationName':
+      if (form.value.role === UserIdentity.ORGANIZATION && !form.value.organizationName.trim()) return '*组织名称必须填写'
       return ''
-    case 'organizationCode':
+    case 'code':
       if (form.value.role !== UserIdentity.ORGANIZATION) return ''
-      if (!value.trim()) return '*统一社会信用代码必须填写'
+      if (!form.value.code.trim()) return '*统一社会信用代码必须填写'
       return ''
     case 'role':
-      if (!value.trim()) return '*注册身份必须选择'
+      if (!form.value.role) return '*注册身份必须选择'
       return ''
     case 'agreement':
       if (!form.value.agreement) return '*请同意用户协议和隐私政策'
@@ -847,16 +818,16 @@ const validateField = (field: keyof FormErrors, value: string) => {
 }
 
 const validateForm = () => {
-  (Object.keys(errors) as Array<keyof FormErrors>).forEach(field => {
+  (Object.keys(errors) as RegisterFormField[]).forEach(field => {
     if (touched[field]) {
-      errors[field] = validateField(field, getValidationValue(field))
+      errors[field] = validateField(field)
     }
   })
 }
 
-const handleBlur = (field: keyof FormErrors) => {
+const handleBlur = (field: RegisterFormField) => {
   touched[field] = true
-  errors[field] = validateField(field, getValidationValue(field))
+  errors[field] = validateField(field)
 }
 
 watch(form, validateForm, { deep: true })
@@ -868,15 +839,15 @@ const isFormValid = computed(() => {
     form.value.phone &&
     form.value.password &&
     form.value.confirmPassword &&
-    form.value.realName &&
+    form.value.name &&
     form.value.role &&
     form.value.agreement
 
   if (form.value.role === UserIdentity.ORGANIZATION) {
-    return Boolean(baseValid && form.value.organization && form.value.organizationCode)
+    return Boolean(baseValid && form.value.organizationName && form.value.code)
   }
 
-  return Boolean(baseValid && form.value.age && form.value.gender)
+  return Boolean(baseValid && form.value.age !== null && form.value.gender)
 })
 
 const roleCardClass = (role: UserIdentity) => {
@@ -892,17 +863,17 @@ const roleCardClass = (role: UserIdentity) => {
 const selectRole = (role: UserIdentity) => {
   form.value.role = role
   touched.role = true
-  errors.role = validateField('role', role)
+  errors.role = validateField('role')
 
   if (role === UserIdentity.VOLUNTEER) {
-    form.value.organization = ''
-    form.value.organizationCode = ''
-    errors.organization = ''
-    errors.organizationCode = ''
-    touched.organization = false
-    touched.organizationCode = false
+    form.value.organizationName = ''
+    form.value.code = ''
+    errors.organizationName = ''
+    errors.code = ''
+    touched.organizationName = false
+    touched.code = false
   } else {
-    form.value.age = ''
+    form.value.age = null
     form.value.gender = ''
     errors.age = ''
     errors.gender = ''
@@ -912,7 +883,7 @@ const selectRole = (role: UserIdentity) => {
 }
 
 const handleRegister = async () => {
-  (Object.keys(touched) as Array<keyof FormTouched>).forEach(field => {
+  (Object.keys(touched) as RegisterFormField[]).forEach(field => {
     touched[field] = true
   })
   validateForm()
@@ -928,30 +899,24 @@ const handleRegister = async () => {
     let response
     if (form.value.role === UserIdentity.VOLUNTEER) {
       const registerData: VolunteerRegisterRequest = {
-        username: form.value.username,
-        name: form.value.realName,
+        userName: form.value.username,
+        name: form.value.name.trim(),
         phone: form.value.phone,
         email: form.value.email,
         password: form.value.password,
-        age: Number.parseInt(form.value.age, 10),
-        gender: ''
+        age: form.value.age ?? 0,
+        gender: form.value.gender
       }
-      const genderMap: Record<string, string> = {
-        male: '男',
-        female: '女',
-        other: '未知'
-      }
-      registerData.gender = genderMap[form.value.gender] || form.value.gender
       response = await authStore.registerVolunteer(registerData)
     } else {
       const registerData: OrganizationRegisterRequest = {
-        username: form.value.username,
-        name: form.value.realName,
+        userName: form.value.username,
+        name: form.value.name.trim(),
         phone: form.value.phone,
         email: form.value.email,
         password: form.value.password,
-        organizationName: form.value.organization,
-        code: form.value.organizationCode
+        organizationName: form.value.organizationName.trim(),
+        code: form.value.code.trim()
       }
       response = await authStore.registerOrganization(registerData)
     }
@@ -973,10 +938,8 @@ const handleRegister = async () => {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-
 :global(body) {
-  font-family: 'Plus Jakarta Sans', 'Inter', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-family: 'Inter', 'PingFang SC', 'Microsoft YaHei', sans-serif;
 }
 
 .section-chip {

@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { notificationApi } from '@/api/notifications'
-import type { NotificationItem, NotificationListRequest } from '@/types/notification'
+import { NotificationReadStatus, type NotificationItem, type NotificationListRequest } from '@/types/notification'
 
 export const useNotificationsStore = defineStore('notifications', () => {
   const items = ref<NotificationItem[]>([])
@@ -34,7 +34,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
     const readAt = new Date().toISOString()
     items.value = items.value.map((item) => (
       ids.includes(item.inboxId)
-        ? { ...item, readStatus: 1, readAt }
+        ? { ...item, readStatus: NotificationReadStatus.READ, readAt }
         : item
     ))
     return response.data.updated

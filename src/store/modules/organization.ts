@@ -32,7 +32,7 @@ export const useOrganizationStore = defineStore('organization', () => {
     }
   }
 
-  const fetchOrganization = async (id: number | string) => {
+  const fetchOrganization = async (id: number) => {
     loading.value = true
     try {
       const response = await organizationsApi.detail(id)
@@ -47,7 +47,7 @@ export const useOrganizationStore = defineStore('organization', () => {
     }
   }
 
-  const updateOrganization = async (id: number | string, data: UpdateOrganizationRequest) => {
+  const updateOrganization = async (id: number, data: UpdateOrganizationRequest) => {
     const response = await organizationsApi.update(id, data)
     if (response.code !== 200) {
       throw new Error(response.msg || '更新组织信息失败')
@@ -56,7 +56,7 @@ export const useOrganizationStore = defineStore('organization', () => {
       currentOrganization.value = { ...currentOrganization.value, ...data }
     }
     organizations.value = organizations.value.map((item) => (
-      item.id === Number(id)
+      item.id === id
         ? { ...item, ...data }
         : item
     ))

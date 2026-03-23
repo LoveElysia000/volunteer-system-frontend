@@ -1,4 +1,5 @@
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig, AxiosResponse } from 'axios'
+import { requestTokenRefresh } from './refresh'
 import { tokenManager } from '@/utils/token'
 import type { ApiError, InternalRequestConfig } from './types'
 
@@ -51,8 +52,7 @@ apiClient.interceptors.response.use(
         }
 
         // 调用刷新token接口
-        const { authApi } = await import('./auth')
-        const response = await authApi.refreshToken({ refreshToken })
+        const response = await requestTokenRefresh({ refreshToken })
 
         if (response.code !== 200) {
           throw new Error(response.msg || '刷新token失败')

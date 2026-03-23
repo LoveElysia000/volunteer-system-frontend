@@ -1,6 +1,13 @@
 // HTTP方法
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
 
+// 通用API响应结构
+export interface ApiResponse<T = unknown> {
+  code: number
+  msg: string
+  data: T
+}
+
 // 请求配置
 export interface RequestConfig {
   url: string

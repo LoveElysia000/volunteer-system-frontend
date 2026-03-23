@@ -1,16 +1,11 @@
 import { http } from './request'
+import type { ApiResponse } from './types'
 import type {
   NotificationListData,
   NotificationListRequest,
   NotificationReadData,
   NotificationReadRequest
 } from '@/types/notification'
-
-interface ApiResponse<T> {
-  code: number
-  msg: string
-  data: T
-}
 
 export const notificationApi = {
   getNotifications: (params: NotificationListRequest = {}): Promise<ApiResponse<NotificationListData>> => {

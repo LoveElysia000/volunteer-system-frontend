@@ -1,14 +1,19 @@
+export enum NotificationReadStatus {
+  UNREAD = 0,
+  READ = 1
+}
+
 export interface NotificationItem {
   inboxId: number
-  notificationId?: number
-  eventType?: string
-  bizType?: string
-  bizId?: number
+  notificationId: number
+  eventType: string
+  bizType: string
+  bizId: number
   title: string
   content: string
-  readStatus: number
-  readAt?: string
-  createdAt?: string
+  readStatus: NotificationReadStatus
+  readAt: string
+  createdAt: string
 }
 
 export interface NotificationListRequest {

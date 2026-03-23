@@ -55,16 +55,16 @@
           v-for="item in notifications"
           :key="item.inboxId"
           class="organization-surface-lift rounded-[1.3rem] border px-5 py-4"
-          :class="item.readStatus === 1 ? 'border-slate-200 bg-white' : 'border-[#ffd8c2] bg-[#fff8f3]'"
+          :class="item.readStatus === NotificationReadStatus.READ ? 'border-slate-200 bg-white' : 'border-[#ffd8c2] bg-[#fff8f3]'"
         >
           <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div class="min-w-0">
               <div class="flex flex-wrap items-center gap-2">
                 <span
                   class="rounded-full px-2.5 py-1 text-[11px] font-semibold"
-                  :class="item.readStatus === 1 ? 'bg-slate-100 text-slate-500' : 'bg-[#ffe1d0] text-[#ec5b13]'"
+                  :class="item.readStatus === NotificationReadStatus.READ ? 'bg-slate-100 text-slate-500' : 'bg-[#ffe1d0] text-[#ec5b13]'"
                 >
-                  {{ item.readStatus === 1 ? '已读' : '未读' }}
+                  {{ NOTIFICATION_READ_STATUS_LABELS[item.readStatus] }}
                 </span>
                 <span
                   v-if="item.bizType"
@@ -86,7 +86,7 @@
             </div>
 
             <button
-              v-if="item.readStatus !== 1"
+              v-if="item.readStatus !== NotificationReadStatus.READ"
               class="rounded-full border border-[#ffd3be] bg-white px-4 py-2 text-sm font-semibold text-[#ec5b13] transition hover:border-[#ec5b13] disabled:cursor-not-allowed disabled:opacity-60"
               :disabled="markingRead"
               @click="markSingleAsRead(item.inboxId)"
@@ -102,8 +102,10 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
+import { NOTIFICATION_READ_STATUS_LABELS } from '@/constants/status'
 import { useNotificationsStore } from '@/store/modules/notifications'
 import { useMessageStore } from '@/store/modules/messages'
+import { NotificationReadStatus } from '@/types/notification'
 import OrganizationPageHeader from '@/components/organization/OrganizationPageHeader.vue'
 import OrganizationSectionCard from '@/components/organization/OrganizationSectionCard.vue'
 
@@ -114,7 +116,9 @@ const markingRead = ref(false)
 
 const notifications = computed(() => notificationsStore.items)
 const loading = computed(() => notificationsStore.loading)
-const unreadIds = computed(() => notifications.value.filter(item => item.readStatus !== 1).map(item => item.inboxId))
+const unreadIds = computed(() => notifications.value
+  .filter(item => item.readStatus !== NotificationReadStatus.READ)
+  .map(item => item.inboxId))
 const unreadCount = computed(() => unreadIds.value.length)
 
 const headerMeta = computed(() => [

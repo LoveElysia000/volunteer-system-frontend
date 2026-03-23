@@ -1,27 +1,23 @@
 import { http } from './request'
+import type { ApiResponse } from './types'
 import type {
   OrganizationDetailData,
   OrganizationListData,
   OrganizationListRequest,
+  UpdateOrganizationData,
   UpdateOrganizationRequest
 } from '@/types/organization'
-
-interface ApiResponse<T> {
-  code: number
-  msg: string
-  data: T
-}
 
 export const organizationsApi = {
   list: (data: OrganizationListRequest): Promise<ApiResponse<OrganizationListData>> => {
     return http.post<ApiResponse<OrganizationListData>>('/api/organizations/list', data)
   },
 
-  detail: (id: number | string): Promise<ApiResponse<OrganizationDetailData>> => {
+  detail: (id: number): Promise<ApiResponse<OrganizationDetailData>> => {
     return http.get<ApiResponse<OrganizationDetailData>>(`/api/organizations/${id}`)
   },
 
-  update: (id: number | string, data: UpdateOrganizationRequest): Promise<ApiResponse<{ message?: string }>> => {
-    return http.put<ApiResponse<{ message?: string }>>(`/api/organizations/${id}`, data)
+  update: (id: number, data: UpdateOrganizationRequest): Promise<ApiResponse<UpdateOrganizationData>> => {
+    return http.put<ApiResponse<UpdateOrganizationData>>(`/api/organizations/${id}`, data)
   }
 }

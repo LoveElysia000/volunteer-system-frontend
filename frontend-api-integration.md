@@ -186,6 +186,8 @@ Authorization: Bearer <accessToken>
 
 - 接口：`POST /api/volunteer/register`
 - 给谁用：`游客`
+- 请求体字段类型：
+  `name:string, phone:string, email:string, password:string, age:int32, gender:string, username:string`
 - 请求体：
 
 ```json
@@ -206,6 +208,8 @@ Authorization: Bearer <accessToken>
 
 - 接口：`POST /api/organization/register`
 - 给谁用：`游客`
+- 请求体字段类型：
+  `name:string, phone:string, email:string, password:string, organizationName:string, code:string, username:string`
 - 请求体：
 
 ```json
@@ -226,6 +230,8 @@ Authorization: Bearer <accessToken>
 
 - 接口：`POST /api/login`
 - 给谁用：`游客`
+- 请求体字段类型：
+  `loginType:string, identifier:string, password:string, identity:string`
 - 请求体：
 
 ```json
@@ -264,11 +270,15 @@ Authorization: Bearer <accessToken>
   `loginType` 当前只支持 `email` 和 `phone`
   `phone` 为解密后的手机号；若底层解密失败则返回空字符串
   `displayName` 当前默认取用户名
+  `userInfo` 字段类型：
+  `userId:string, username:string, email:string, phone:string, displayName:string, avatarUrl:string, identity:string, createdAt:int64, updatedAt:int64`
 
 ### 3.4 登出
 
 - 接口：`POST /api/logout`
 - 给谁用：`游客/已登录用户`
+- 请求体字段类型：
+  `token:string`
 - 请求体：
 
 ```json
@@ -286,10 +296,15 @@ Authorization: Bearer <accessToken>
 }
 ```
 
+- 返回字段类型：
+  `success:bool, message:string`
+
 ### 3.5 刷新令牌
 
 - 接口：`POST /api/refresh`
 - 给谁用：`游客/已登录用户`
+- 请求体字段类型：
+  `refreshToken:string`
 - 请求体：
 
 ```json
@@ -311,6 +326,9 @@ Authorization: Bearer <accessToken>
 }
 ```
 
+- 返回字段类型：
+  `success:bool, message:string, token:string, refreshToken:string, expiresAt:int64, userInfo:UserInfo`
+
 ---
 
 ## 4. 志愿者信息
@@ -319,16 +337,19 @@ Authorization: Bearer <accessToken>
 
 | 接口 | 给谁用 | 请求结构 | 返回 data 结构 |
 | --- | --- | --- | --- |
-| `POST /api/volunteers/list` | 有组织管理权限的账号 | `{ keyword, page, pageSize }` | `{ total, list: VolunteerListItem[] }` |
-| `GET /api/volunteers/detail/:id` | 当前志愿者本人，或有组织管理权限且能覆盖该志愿者的账号 | 路径参数 `id` | `{ volunteer: VolunteerInfo }` |
-| `GET /api/volunteers/my/profile/:id` | 当前志愿者本人 | 路径参数 `id` | `{ volunteer: VolunteerInfo }` |
-| `GET /api/volunteers/home/summary` | 当前志愿者本人 | 无 | `{ nickname, level, stats, monthlyGrowth, needHoursToNextLevel }` |
-| `PUT /api/volunteers/:id` | 当前志愿者本人，或有组织管理权限且能覆盖该志愿者的账号 | 路径参数 `id` + `{ realName, gender, birthday, avatarUrl, introduction }` | `{}` |
-| `POST /api/volunteers/real-name/submit` | 当前志愿者本人 | `{ realName, idCard }` | `{ auditId, status }` |
+| `POST /api/volunteers/list` | 有组织管理权限的账号 | `{ keyword:string, page:int32, pageSize:int32 }` | `{ total:int32, list: VolunteerListItem[] }` |
+| `GET /api/volunteers/detail/:id` | 当前志愿者本人，或有组织管理权限且能覆盖该志愿者的账号 | 路径参数 `id:int64` | `{ volunteer: VolunteerInfo }` |
+| `GET /api/volunteers/my/profile/:id` | 当前志愿者本人 | 路径参数 `id:int64` | `{ volunteer: VolunteerInfo }` |
+| `GET /api/volunteers/home/summary` | 当前志愿者本人 | 无 | `{ nickname:string, level:int32, stats: VolunteerHomeSummaryStats, monthlyGrowth:double, needHoursToNextLevel:double }` |
+| `PUT /api/volunteers/:id` | 当前志愿者本人，或有组织管理权限且能覆盖该志愿者的账号 | 路径参数 `id:int64` + `{ realName:string, gender:int32, birthday:string, avatarUrl:string, introduction:string }` | `{}` |
+| `POST /api/volunteers/real-name/submit` | 当前志愿者本人 | `{ realName:string, idCard:string }` | `{ auditId:int64, status:int32 }` |
 
 ### 4.2 关键返回结构
 
 `VolunteerListItem`
+
+字段类型：
+`id:int64, accountId:int64, realName:string, gender:int32, avatarUrl:string, totalHours:double, serviceCount:int32, creditScore:int32, auditStatus:int32, createdAt:string, updatedAt:string, status:int32`
 
 ```json
 {
@@ -348,6 +369,9 @@ Authorization: Bearer <accessToken>
 ```
 
 `VolunteerInfo`
+
+字段类型：
+`id:int64, accountId:int64, realName:string, gender:int32, birthday:string, idCard:string, avatarUrl:string, introduction:string, totalHours:double, serviceCount:int32, creditScore:int32, auditStatus:int32, createdAt:string, updatedAt:string, status:int32`
 
 ```json
 {
@@ -369,6 +393,9 @@ Authorization: Bearer <accessToken>
 }
 ```
 
+`VolunteerHomeSummaryStats` 字段类型：
+`points:int32, hours:double, activityCount:int32`
+
 ---
 
 ## 5. 组织管理
@@ -377,21 +404,24 @@ Authorization: Bearer <accessToken>
 
 | 接口 | 给谁用 | 请求结构 | 返回 data 结构 |
 | --- | --- | --- | --- |
-| `POST /api/organizations/list` | 有组织管理权限的账号 | `{ keyword, status, organizationType, region, page, pageSize }` | `{ total, list: OrganizationListItem[] }` |
-| `GET /api/organizations/:id` | 有组织管理权限且能管理该组织的账号 | 路径参数 `id` | `{ organization: OrganizationInfo }` |
-| `POST /api/organizations/create` | 已登录用户 | `{ name, organizationCode, contactPerson, contactPhone, email, address, organizationType, region, description, websiteUrl, logoUrl }` | `{ id, message }` |
-| `PUT /api/organizations/:id` | 有组织管理权限且能管理该组织的账号 | 路径参数 `id` + 可更新字段 | `{ message }` |
-| `DELETE /api/organizations/:id` | 有组织管理权限且能管理该组织的账号 | 路径参数 `id` | `{ message }` |
-| `POST /api/organizations/:id/disable` | 有组织管理权限且能管理该组织的账号 | 路径参数 `id` + `{ reason }` | `{ message }` |
-| `POST /api/organizations/:id/enable` | 有组织管理权限且能管理该组织的账号 | 路径参数 `id` + `{ reason }` | `{ message }` |
-| `POST /api/organizations/search` | 有组织管理权限的账号 | `{ keyword, status, organizationType, region, startDate, endDate, page, pageSize }` | `{ total, list: OrganizationListItem[] }` |
-| `POST /api/organizations/bulk-delete` | 有组织管理权限且能管理目标组织的账号 | `{ ids }` | `{ successCount, failedCount, message }` |
-| `POST /api/organizations/batch-disable` | 有组织管理权限且能管理目标组织的账号 | `{ ids, reason }` | `{ successCount, failedIds, message }` |
-| `POST /api/organizations/batch-enable` | 有组织管理权限且能管理目标组织的账号 | `{ ids, reason }` | `{ successCount, failedIds, message }` |
+| `POST /api/organizations/list` | 有组织管理权限的账号 | `{ keyword:string, status:int32[], organizationType:string, region:string, page:int32, pageSize:int32 }` | `{ total:int32, list: OrganizationListItem[] }` |
+| `GET /api/organizations/:id` | 有组织管理权限且能管理该组织的账号 | 路径参数 `id:int64` | `{ organization: OrganizationInfo }` |
+| `POST /api/organizations/create` | 已登录用户 | `{ name:string, organizationCode:string, contactPerson:string, contactPhone:string, email:string, address:string, organizationType:string, region:string, description:string, websiteUrl:string, logoUrl:string }` | `{ id:int64, message:string }` |
+| `PUT /api/organizations/:id` | 有组织管理权限且能管理该组织的账号 | 路径参数 `id:int64` + 可更新字段 `{ name:string, organizationCode:string, contactPerson:string, contactPhone:string, email:string, address:string, organizationType:string, region:string, description:string, websiteUrl:string, logoUrl:string }` | `{ message:string }` |
+| `DELETE /api/organizations/:id` | 有组织管理权限且能管理该组织的账号 | 路径参数 `id:int64` | `{ message:string }` |
+| `POST /api/organizations/:id/disable` | 有组织管理权限且能管理该组织的账号 | 路径参数 `id:int64` + `{ reason:string }` | `{ message:string }` |
+| `POST /api/organizations/:id/enable` | 有组织管理权限且能管理该组织的账号 | 路径参数 `id:int64` + `{ reason:string }` | `{ message:string }` |
+| `POST /api/organizations/search` | 有组织管理权限的账号 | `{ keyword:string, status:int32[], organizationType:string, region:string, startDate:string, endDate:string, page:int32, pageSize:int32 }` | `{ total:int32, list: OrganizationListItem[] }` |
+| `POST /api/organizations/bulk-delete` | 有组织管理权限且能管理目标组织的账号 | `{ ids:int64[] }` | `{ successCount:int32, failedCount:int32, message:string }` |
+| `POST /api/organizations/batch-disable` | 有组织管理权限且能管理目标组织的账号 | `{ ids:int64[], reason:string }` | `{ successCount:int32, failedIds:int64[], message:string }` |
+| `POST /api/organizations/batch-enable` | 有组织管理权限且能管理目标组织的账号 | `{ ids:int64[], reason:string }` | `{ successCount:int32, failedIds:int64[], message:string }` |
 
 ### 5.2 关键返回结构
 
 `OrganizationListItem`
+
+字段类型：
+`id:int64, name:string, organizationCode:string, contactPerson:string, contactPhone:string, email:string, address:string, status:int32, organizationType:string, region:string, createdAt:string`
 
 ```json
 {
@@ -410,6 +440,9 @@ Authorization: Bearer <accessToken>
 ```
 
 `OrganizationInfo`
+
+字段类型：
+`id:int64, accountId:int64, name:string, organizationCode:string, contactPerson:string, contactPhone:string, email:string, address:string, status:int32, organizationType:string, region:string, description:string, websiteUrl:string, logoUrl:string, createdAt:string, updatedAt:string`
 
 ```json
 {
@@ -443,16 +476,18 @@ Authorization: Bearer <accessToken>
 
 | 接口 | 给谁用 | 请求结构 | 返回 data 结构 |
 | --- | --- | --- | --- |
-| `POST /api/memberships/join` | 当前志愿者本人 | `{ volunteerId, organizationId }` | `{ membershipId, status, message }` |
-| `POST /api/memberships/leave` | 当前志愿者本人 | `{ membershipId, reason }` | `{ message }` |
-| `GET /api/organizations/:organizationId/members` | 有成员管理权限且能管理该组织的账号 | 查询参数 `{ status, role, keyword, page, pageSize }` | `{ total, list: MemberInfo[] }` |
-| `GET /api/volunteers/:volunteerId/organizations` | 当前志愿者本人 | 查询参数 `{ status, page, pageSize }` | `{ total, list: OrganizationMemberInfo[] }` |
-| `POST /api/memberships/status/update` | 有成员管理权限且能管理该组织的账号 | `{ membershipId, status, reviewComment }` | `{ message }` |
-| `GET /api/memberships/stats` | 有成员管理权限的账号 | 查询参数 `{ organizationId }` | `{ pendingCount, activeCount, inactiveCount, suspendedCount, totalCount }` |
+| `POST /api/memberships/join` | 当前志愿者本人 | `{ volunteerId:int64, organizationId:int64 }` | `{ membershipId:int64, status:int32, message:string }` |
+| `POST /api/memberships/leave` | 当前志愿者本人 | `{ membershipId:int64, reason:string }` | `{ message:string }` |
+| `GET /api/organizations/:organizationId/members` | 有成员管理权限且能管理该组织的账号 | 路径参数 `organizationId:int64` + 查询参数 `{ status:int32, role:int32, keyword:string, page:int32, pageSize:int32 }` | `{ total:int32, list: MemberInfo[] }` |
+| `GET /api/volunteers/:volunteerId/organizations` | 当前志愿者本人 | 路径参数 `volunteerId:int64` + 查询参数 `{ status:int32, page:int32, pageSize:int32 }` | `{ total:int32, list: OrganizationMemberInfo[] }` |
+| `POST /api/memberships/status/update` | 有成员管理权限且能管理该组织的账号 | `{ membershipId:int64, status:int32, reviewComment:string }` | `{ message:string }` |
+| `GET /api/memberships/stats` | 有成员管理权限的账号 | 查询参数 `{ organizationId:int64 }` | `{ pendingCount:int64, activeCount:int64, inactiveCount:int64, suspendedCount:int64, totalCount:int64 }` |
 
-`MemberInfo` 主要字段：`membershipId, volunteerId, volunteerName, volunteerCode, organizationId, organizationName, status, role, position, motivation, expectedHours, joinDate, reviewDate, reviewComment, leaveDate, leaveReason, createdAt, updatedAt`
+`MemberInfo` 主要字段：
+`membershipId:int64, volunteerId:int64, volunteerName:string, volunteerCode:string, organizationId:int64, organizationName:string, status:int32, role:int32, position:string, motivation:string, expectedHours:string, joinDate:string, reviewDate:string, reviewComment:string, leaveDate:string, leaveReason:string, createdAt:string, updatedAt:string`
 
-`OrganizationMemberInfo` 主要字段：`membershipId, organizationId, organizationName, organizationCode, status, role, position, joinDate, reviewDate, reviewComment, createdAt, updatedAt`
+`OrganizationMemberInfo` 主要字段：
+`membershipId:int64, organizationId:int64, organizationName:string, organizationCode:string, status:int32, role:int32, position:string, joinDate:string, reviewDate:string, reviewComment:string, createdAt:string, updatedAt:string`
 
 - 说明：
   `POST /api/memberships/join` 里的 `volunteerId` 需要传当前登录志愿者本人 ID；若传其他 ID 会被拒绝
@@ -465,35 +500,38 @@ Authorization: Bearer <accessToken>
 
 | 接口 | 给谁用 | 请求结构 | 返回 data 结构 |
 | --- | --- | --- | --- |
-| `POST /api/activities` | 已登录用户 | `{ page, pageSize, status, keyword, startFrom, startTo, sortBy, sortOrder }` | `{ total, list: ActivityItem[] }` |
-| `GET /api/activities/:id` | 已登录用户 | 路径参数 `id` | `{ activity: ActivityInfo }` |
-| `POST /api/activities/signup` | 当前志愿者本人 | `{ activityId }` | `{ success }` |
-| `POST /api/activities/cancel` | 当前志愿者本人 | `{ activityId }` | `{ success }` |
-| `POST /api/activities/my` | 当前志愿者本人 | `{ page, pageSize, status }` | `{ total, list: MyActivityItem[] }` |
-| `POST /api/activities/checkin` | 当前志愿者本人 | `{ activityId, checkInCode }` | `{ success, checkInTime }` |
-| `POST /api/activities/checkout` | 当前志愿者本人 | `{ activityId, checkOutCode }` | `{ success, checkOutTime, grantedHours }` |
+| `POST /api/activities` | 已登录用户 | `{ page:int32, pageSize:int32, status:int32, keyword:string, startFrom:string, startTo:string, sortBy:string, sortOrder:string }` | `{ total:int32, list: ActivityItem[] }` |
+| `GET /api/activities/:id` | 已登录用户 | 路径参数 `id:int64` | `{ activity: ActivityInfo }` |
+| `POST /api/activities/signup` | 当前志愿者本人 | `{ activityId:int64 }` | `{ success:bool }` |
+| `POST /api/activities/cancel` | 当前志愿者本人 | `{ activityId:int64 }` | `{ success:bool }` |
+| `POST /api/activities/my` | 当前志愿者本人 | `{ page:int32, pageSize:int32, status:int32 }` | `{ total:int32, list: MyActivityItem[] }` |
+| `POST /api/activities/checkin` | 当前志愿者本人 | `{ activityId:int64, checkInCode:string }` | `{ success:bool, checkInTime:string }` |
+| `POST /api/activities/checkout` | 当前志愿者本人 | `{ activityId:int64, checkOutCode:string }` | `{ success:bool, checkOutTime:string, grantedHours:double }` |
 
 ### 7.2 组织侧
 
 | 接口 | 给谁用 | 请求结构 | 返回 data 结构 |
 | --- | --- | --- | --- |
-| `POST /api/activities/create` | 有组织管理权限且能管理该组织的账号 | `{ orgId, title, description, coverUrl, startTime, endTime, location, address, duration, maxPeople }` | `{ id, message }` |
-| `PUT /api/activities/:id` | 有组织管理权限且能管理该活动所属组织的账号 | 路径参数 `id` + 可更新字段 | `{ message }` |
-| `DELETE /api/activities/:id` | 有组织管理权限且能管理该活动所属组织的账号 | 路径参数 `id` | `{ message }` |
-| `POST /api/activities/cancel/:id` | 有组织管理权限且能管理该活动所属组织的账号 | 路径参数 `id` + `{ reason }` | `{ message }` |
-| `POST /api/activities/finish/:id` | 有组织管理权限且能管理该活动所属组织的账号 | 路径参数 `id` | `{ message }` |
-| `POST /api/activities/attendance-codes/generate/:id` | 有组织管理权限且能管理该活动所属组织的账号 | 路径参数 `id` + `{ checkInValidMinutes, checkOutValidMinutes }` | `{ success, checkInCode, checkOutCode, attendanceCodeVersion, attendanceCodeUpdatedAt, checkInExpireAt, checkOutExpireAt }` |
-| `POST /api/activities/attendance-codes/reset/:id` | 有组织管理权限且能管理该活动所属组织的账号 | 路径参数 `id` + `{ codeType, validMinutes }` | `{ success, code, codeType, attendanceCodeVersion, attendanceCodeUpdatedAt, expireAt }` |
-| `GET /api/activities/attendance-codes/:id` | 有组织管理权限且能管理该活动所属组织的账号 | 路径参数 `id` | `{ success, checkInCode, checkOutCode, attendanceCodeVersion, attendanceCodeUpdatedAt, checkInExpireAt, checkOutExpireAt }` |
-| `POST /api/activities/supplement-attendance` | 有组织管理权限且能管理该活动所属组织的账号 | `{ activityId, volunteerId, checkInTime, checkOutTime, reason }` | `{ success, checkInTime, checkOutTime, grantedHours }` |
+| `POST /api/activities/create` | 有组织管理权限且能管理该组织的账号 | `{ orgId:int64, title:string, description:string, coverUrl:string, startTime:string, endTime:string, location:string, address:string, duration:double, maxPeople:int32 }` | `{ id:int64, message:string }` |
+| `PUT /api/activities/:id` | 有组织管理权限且能管理该活动所属组织的账号 | 路径参数 `id:int64` + 可更新字段 `{ title:string, description:string, coverUrl:string, startTime:string, endTime:string, location:string, address:string, duration:double, maxPeople:int32 }` | `{ message:string }` |
+| `DELETE /api/activities/:id` | 有组织管理权限且能管理该活动所属组织的账号 | 路径参数 `id:int64` | `{ message:string }` |
+| `POST /api/activities/cancel/:id` | 有组织管理权限且能管理该活动所属组织的账号 | 路径参数 `id:int64` + `{ reason:string }` | `{ message:string }` |
+| `POST /api/activities/finish/:id` | 有组织管理权限且能管理该活动所属组织的账号 | 路径参数 `id:int64` | `{ message:string }` |
+| `POST /api/activities/attendance-codes/generate/:id` | 有组织管理权限且能管理该活动所属组织的账号 | 路径参数 `id:int64` + `{ checkInValidMinutes:int32, checkOutValidMinutes:int32 }` | `{ success:bool, checkInCode:string, checkOutCode:string, attendanceCodeVersion:int64, attendanceCodeUpdatedAt:string, checkInExpireAt:string, checkOutExpireAt:string }` |
+| `POST /api/activities/attendance-codes/reset/:id` | 有组织管理权限且能管理该活动所属组织的账号 | 路径参数 `id:int64` + `{ codeType:int32, validMinutes:int32 }` | `{ success:bool, code:string, codeType:int32, attendanceCodeVersion:int64, attendanceCodeUpdatedAt:string, expireAt:string }` |
+| `GET /api/activities/attendance-codes/:id` | 有组织管理权限且能管理该活动所属组织的账号 | 路径参数 `id:int64` | `{ success:bool, checkInCode:string, checkOutCode:string, attendanceCodeVersion:int64, attendanceCodeUpdatedAt:string, checkInExpireAt:string, checkOutExpireAt:string }` |
+| `POST /api/activities/supplement-attendance` | 有组织管理权限且能管理该活动所属组织的账号 | `{ activityId:int64, volunteerId:int64, checkInTime:string, checkOutTime:string, reason:string }` | `{ success:bool, checkInTime:string, checkOutTime:string, grantedHours:double }` |
 
 ### 7.3 关键返回结构
 
-`ActivityItem` 主要字段：`id, title, description, coverUrl, startTime, endTime, location, duration, maxPeople, currentPeople, status, isRegistered, isFull`
+`ActivityItem` 主要字段：
+`id:int64, title:string, description:string, coverUrl:string, startTime:string, endTime:string, location:string, duration:double, maxPeople:int32, currentPeople:int32, status:int32, isRegistered:bool, isFull:bool`
 
-`ActivityInfo` 主要字段：`id, orgId, orgName, title, description, coverUrl, startTime, endTime, location, address, duration, maxPeople, currentPeople, status, isRegistered, createdAt, checkInStatus, checkInTime, checkOutStatus, checkOutTime, workHourStatus, grantedHours`
+`ActivityInfo` 主要字段：
+`id:int64, orgId:int64, orgName:string, title:string, description:string, coverUrl:string, startTime:string, endTime:string, location:string, address:string, duration:double, maxPeople:int32, currentPeople:int32, status:int32, isRegistered:bool, createdAt:string, checkInStatus:int32, checkInTime:string, checkOutStatus:int32, checkOutTime:string, workHourStatus:int32, grantedHours:double`
 
-`MyActivityItem` 主要字段：`id, orgId, orgName, title, description, coverUrl, startTime, endTime, location, duration, maxPeople, currentPeople, status, signupTime, checkInStatus, checkInTime, checkOutStatus, checkOutTime, workHourStatus, grantedHours, signupStatus, auditReason`
+`MyActivityItem` 主要字段：
+`id:int64, orgId:int64, orgName:string, title:string, description:string, coverUrl:string, startTime:string, endTime:string, location:string, duration:double, maxPeople:int32, currentPeople:int32, status:int32, signupTime:string, checkInStatus:int32, checkInTime:string, checkOutStatus:int32, checkOutTime:string, workHourStatus:int32, grantedHours:double, signupStatus:int32, auditReason:string`
 
 ---
 
@@ -501,15 +539,17 @@ Authorization: Bearer <accessToken>
 
 | 接口 | 给谁用 | 请求结构 | 返回 data 结构 |
 | --- | --- | --- | --- |
-| `POST /api/audits/pending` | 有审核权限的账号 | `{ targetTypes, status, keyword, page, pageSize, createdFrom, createdTo, slaHours }` | `{ total, list: PendingAuditItem[] }` |
-| `POST /api/audits/approval` | 有审核权限且能审核该记录的账号 | `{ id, reason }` | `{}` |
-| `POST /api/audits/rejection` | 有审核权限且能审核该记录的账号 | `{ id, reason }` | `{}` |
-| `POST /api/audits/batch-decision` | 有审核权限且能审核目标记录的账号 | `{ ids, action, reason }` | `{ successCount, failedIds }` |
-| `GET /api/audits/records/:id` | 有审核权限且能查看该记录的账号 | 路径参数 `id` | `{ record: AuditRecordDetail }` |
+| `POST /api/audits/pending` | 有审核权限的账号 | `{ targetTypes:int32[], status:int32[], keyword:string, page:int32, pageSize:int32, createdFrom:string, createdTo:string, slaHours:int32 }` | `{ total:int32, list: PendingAuditItem[] }` |
+| `POST /api/audits/approval` | 有审核权限且能审核该记录的账号 | `{ id:int64, reason:string }` | `{}` |
+| `POST /api/audits/rejection` | 有审核权限且能审核该记录的账号 | `{ id:int64, reason:string }` | `{}` |
+| `POST /api/audits/batch-decision` | 有审核权限且能审核目标记录的账号 | `{ ids:int64[], action:int32, reason:string }` | `{ successCount:int32, failedIds:int64[] }` |
+| `GET /api/audits/records/:id` | 有审核权限且能查看该记录的账号 | 路径参数 `id:int64` | `{ record: AuditRecordDetail }` |
 
-`PendingAuditItem` 主要字段：`id, targetType, targetId, title, subTitle, creatorId, createdAt, isOverdue`
+`PendingAuditItem` 主要字段：
+`id:int64, targetType:int32, targetId:int64, title:string, subTitle:string, creatorId:int64, createdAt:string, isOverdue:bool`
 
-`AuditRecordDetail` 主要字段：`id, targetType, targetId, auditorId, status, oldContent, newContent, auditResult, rejectReason, auditTime, createdAt`
+`AuditRecordDetail` 主要字段：
+`id:int64, targetType:int32, targetId:int64, auditorId:int64, status:int32, oldContent:string, newContent:string, auditResult:int32, rejectReason:string, auditTime:string, createdAt:string`
 
 ---
 
@@ -517,11 +557,12 @@ Authorization: Bearer <accessToken>
 
 | 接口 | 给谁用 | 请求结构 | 返回 data 结构 |
 | --- | --- | --- | --- |
-| `POST /api/work-hours/list` | 当前志愿者本人，或有组织管理权限的账号 | `{ page, pageSize, activityId, signupId, operationType }` | `{ total, list: WorkHourLogItem[] }` |
-| `POST /api/work-hours/void` | 有组织管理权限且能管理该报名所属活动的账号 | `{ signupId, reason, idempotencyKey }` | `{ success, workHourLogId }` |
-| `POST /api/work-hours/recalculate` | 有组织管理权限且能管理该报名所属活动的账号 | `{ signupId, hours, reason, idempotencyKey }` | `{ success, workHourLogId, grantedHours }` |
+| `POST /api/work-hours/list` | 当前志愿者本人，或有组织管理权限的账号 | `{ page:int32, pageSize:int32, activityId:int64, signupId:int64, operationType:int32 }` | `{ total:int32, list: WorkHourLogItem[] }` |
+| `POST /api/work-hours/void` | 有组织管理权限且能管理该报名所属活动的账号 | `{ signupId:int64, reason:string, idempotencyKey:string }` | `{ success:bool, workHourLogId:int64 }` |
+| `POST /api/work-hours/recalculate` | 有组织管理权限且能管理该报名所属活动的账号 | `{ signupId:int64, hours:double, reason:string, idempotencyKey:string }` | `{ success:bool, workHourLogId:int64, grantedHours:double }` |
 
-`WorkHourLogItem` 主要字段：`id, volunteerId, activityId, signupId, operationType, hoursDelta, serviceCountDelta, beforeTotalHours, afterTotalHours, beforeServiceCount, afterServiceCount, workHourVersion, refLogId, reason, operatorId, idempotencyKey, createdAt`
+`WorkHourLogItem` 主要字段：
+`id:int64, volunteerId:int64, activityId:int64, signupId:int64, operationType:int32, hoursDelta:double, serviceCountDelta:int64, beforeTotalHours:double, afterTotalHours:double, beforeServiceCount:int64, afterServiceCount:int64, workHourVersion:int64, refLogId:int64, reason:string, operatorId:int64, idempotencyKey:string, createdAt:string`
 
 ---
 
@@ -529,10 +570,11 @@ Authorization: Bearer <accessToken>
 
 | 接口 | 给谁用 | 请求结构 | 返回 data 结构 |
 | --- | --- | --- | --- |
-| `GET /api/notifications` | 已登录用户 | 查询参数 `{ page, pageSize, unreadOnly }` | `{ total, list: NotificationItem[] }` |
-| `POST /api/notifications/read` | 已登录用户 | `{ ids }` | `{ updated }` |
+| `GET /api/notifications` | 已登录用户 | 查询参数 `{ page:int32, pageSize:int32, unreadOnly:bool }` | `{ total:int32, list: NotificationItem[] }` |
+| `POST /api/notifications/read` | 已登录用户 | `{ ids:int64[] }` | `{ updated:int32 }` |
 
-`NotificationItem` 主要字段：`inboxId, notificationId, eventType, bizType, bizId, title, content, readStatus, readAt, createdAt`
+`NotificationItem` 主要字段：
+`inboxId:int64, notificationId:int64, eventType:string, bizType:string, bizId:int64, title:string, content:string, readStatus:int32, readAt:string, createdAt:string`
 
 ---
 
@@ -540,8 +582,8 @@ Authorization: Bearer <accessToken>
 
 | 接口 | 给谁用 | 请求结构 | 返回 data 结构 |
 | --- | --- | --- | --- |
-| `GET /api/analytics/org/funnel` | 有统计查看权限且能访问该组织的账号 | 查询参数 `{ orgId, start, end }` | `{ registrationCount, membershipCount, signupCount, attendanceCount, workhourCount, registrationToMembershipRate, membershipToSignupRate, signupToAttendanceRate, attendanceToWorkhourRate, start, end }` |
-| `GET /api/analytics/org/dashboard` | 有统计查看权限且能访问该组织的账号 | 查询参数 `{ orgId, start, end }` | `{ signupCount, approvedSignupCount, attendanceCount, attendanceRate, grantedWorkHours, start, end }` |
+| `GET /api/analytics/org/funnel` | 有统计查看权限且能访问该组织的账号 | 查询参数 `{ orgId:int64, start:string, end:string }` | `{ registrationCount:int64, membershipCount:int64, signupCount:int64, attendanceCount:int64, workhourCount:int64, registrationToMembershipRate:double, membershipToSignupRate:double, signupToAttendanceRate:double, attendanceToWorkhourRate:double, start:string, end:string }` |
+| `GET /api/analytics/org/dashboard` | 有统计查看权限且能访问该组织的账号 | 查询参数 `{ orgId:int64, start:string, end:string }` | `{ signupCount:int64, approvedSignupCount:int64, attendanceCount:int64, attendanceRate:double, grantedWorkHours:double, start:string, end:string }` |
 
 ---
 
@@ -549,17 +591,32 @@ Authorization: Bearer <accessToken>
 
 | 接口 | 给谁用 | 请求结构 | 返回 data 结构 |
 | --- | --- | --- | --- |
-| `GET /api/authz/roles` | 有 RBAC 全局管理权限的账号 | 查询参数 `{ keyword, includeDisabled, page, pageSize }` | `{ total, list: RoleInfo[] }` |
-| `POST /api/authz/roles` | 有 RBAC 全局管理权限的账号 | `{ roleCode, roleName, description }` | `{ id }` |
-| `PUT /api/authz/roles/:id` | 有 RBAC 全局管理权限的账号 | 路径参数 `id` + `{ roleName, description }` | `{ message }` |
-| `POST /api/authz/roles/:id/status` | 有 RBAC 全局管理权限的账号 | 路径参数 `id` + `{ status }` | `{ message }` |
-| `GET /api/authz/permissions` | 有 RBAC 全局管理权限的账号 | 查询参数 `{ keyword, onlyEnabled }` | `{ list: PermissionInfo[] }` |
-| `GET /api/authz/roles/:roleId/permissions` | 有 RBAC 全局管理权限的账号 | 路径参数 `roleId` | `{ roleId, permissions: RolePermissionItem[] }` |
-| `POST /api/authz/roles/:roleId/permissions/set` | 有 RBAC 全局管理权限的账号 | 路径参数 `roleId` + `{ permissionIds }` | `{ message }` |
-| `GET /api/authz/grants` | 有 RBAC 全局管理权限的账号 | 查询参数 `{ accountId, scopeType, scopeId, onlyActive, page, pageSize }` | `{ total, list: AccountRoleBindingInfo[] }` |
-| `POST /api/authz/grants` | 有 RBAC 全局管理权限的账号 | `{ accountId, roleId, scopeType, scopeId, expiresAt, remark }` | `{ message }` |
-| `POST /api/authz/grants/:bindingId/revoke` | 有 RBAC 全局管理权限的账号 | 路径参数 `bindingId` + `{ remark }` | `{ message }` |
-| `GET /api/authz/me` | 已登录用户 | 无 | `{ accountId, roles, permissions }` |
+| `GET /api/authz/roles` | 有 RBAC 全局管理权限的账号 | 查询参数 `{ keyword:string, includeDisabled:bool, page:int32, pageSize:int32 }` | `{ total:int32, list: RoleInfo[] }` |
+| `POST /api/authz/roles` | 有 RBAC 全局管理权限的账号 | `{ roleCode:string, roleName:string, description:string }` | `{ id:int64 }` |
+| `PUT /api/authz/roles/:id` | 有 RBAC 全局管理权限的账号 | 路径参数 `id:int64` + `{ roleName:string, description:string }` | `{ message:string }` |
+| `POST /api/authz/roles/:id/status` | 有 RBAC 全局管理权限的账号 | 路径参数 `id:int64` + `{ status:int32 }` | `{ message:string }` |
+| `GET /api/authz/permissions` | 有 RBAC 全局管理权限的账号 | 查询参数 `{ keyword:string, onlyEnabled:bool }` | `{ list: PermissionInfo[] }` |
+| `GET /api/authz/roles/:roleId/permissions` | 有 RBAC 全局管理权限的账号 | 路径参数 `roleId:int64` | `{ roleId:int64, permissions: RolePermissionItem[] }` |
+| `POST /api/authz/roles/:roleId/permissions/set` | 有 RBAC 全局管理权限的账号 | 路径参数 `roleId:int64` + `{ permissionIds:int64[] }` | `{ message:string }` |
+| `GET /api/authz/grants` | 有 RBAC 全局管理权限的账号 | 查询参数 `{ accountId:int64, scopeType:string, scopeId:int64, onlyActive:bool, page:int32, pageSize:int32 }` | `{ total:int32, list: AccountRoleBindingInfo[] }` |
+| `POST /api/authz/grants` | 有 RBAC 全局管理权限的账号 | `{ accountId:int64, roleId:int64, scopeType:string, scopeId:int64, expiresAt:string, remark:string }` | `{ message:string }` |
+| `POST /api/authz/grants/:bindingId/revoke` | 有 RBAC 全局管理权限的账号 | 路径参数 `bindingId:int64` + `{ remark:string }` | `{ message:string }` |
+| `GET /api/authz/me` | 已登录用户 | 无 | `{ accountId:int64, roles: AccountRoleBindingInfo[], permissions: MyPermissionScope[] }` |
+
+`RoleInfo` 字段类型：
+`id:int64, roleCode:string, roleName:string, description:string, status:int32, createdAt:string, updatedAt:string`
+
+`PermissionInfo` 字段类型：
+`id:int64, resource:string, action:string, description:string, status:int32`
+
+`RolePermissionItem` 字段类型：
+`permissionId:int64, resource:string, action:string, description:string`
+
+`AccountRoleBindingInfo` 字段类型：
+`bindingId:int64, accountId:int64, roleId:int64, roleCode:string, roleName:string, scopeType:string, scopeId:int64, status:int32, grantedBy:int64, expiresAt:string, createdAt:string, updatedAt:string`
+
+`MyPermissionScope` 字段类型：
+`resource:string, action:string, scopeType:string, scopeId:int64`
 
 ---
 
@@ -571,9 +628,9 @@ Authorization: Bearer <accessToken>
 
 | 接口 | 给谁用 | 请求结构 | 返回 |
 | --- | --- | --- | --- |
-| `POST /api/admin/export/volunteers` | 有导出权限的账号；若存在多个组织作用域则此接口可能无法直接确定组织 | `{ idList, keyword, auditStatus, status }` | Excel 文件流 |
-| `POST /api/admin/export/activities` | 有导出权限的账号；若存在多个组织作用域则此接口可能无法直接确定组织 | `{ idList, keyword, status, startFrom, startTo }` | Excel 文件流 |
-| `POST /api/admin/export/ops-report` | 有导出权限且能访问指定组织的账号 | `{ periodType, orgId, start, end }` | Excel 文件流 |
+| `POST /api/admin/export/volunteers` | 有导出权限的账号；若存在多个组织作用域则此接口可能无法直接确定组织 | `{ idList:int64[], keyword:string, auditStatus:int32, status:int32 }` | Excel 文件流 |
+| `POST /api/admin/export/activities` | 有导出权限的账号；若存在多个组织作用域则此接口可能无法直接确定组织 | `{ idList:int64[], keyword:string, status:int32, startFrom:string, startTo:string }` | Excel 文件流 |
+| `POST /api/admin/export/ops-report` | 有导出权限且能访问指定组织的账号 | `{ periodType:string, orgId:int64, start:string, end:string }` | Excel 文件流 |
 
 前端处理建议：
 
@@ -586,10 +643,11 @@ Authorization: Bearer <accessToken>
 
 | 接口 | 给谁用 | 请求格式 | 返回 data 结构 |
 | --- | --- | --- | --- |
-| `POST /api/admin/import/volunteers` | 有组织管理权限的账号 | `form-data(file)` | `{ totalCount, successCount, failedCount, errorFileName, errorFileContentType, errorFileContent, failures }` |
-| `POST /api/admin/import/activities` | 有组织管理权限且能管理导入数据所属组织的账号 | `form-data(file)` | `{ totalCount, successCount, failedCount, errorFileName, errorFileContentType, errorFileContent, failures }` |
+| `POST /api/admin/import/volunteers` | 有组织管理权限的账号 | `form-data(file:binary)` | `{ totalCount:int32, successCount:int32, failedCount:int32, errorFileName:string, errorFileContentType:string, errorFileContent:bytes(base64), failures: ImportFailureItem[] }` |
+| `POST /api/admin/import/activities` | 有组织管理权限且能管理导入数据所属组织的账号 | `form-data(file:binary)` | `{ totalCount:int32, successCount:int32, failedCount:int32, errorFileName:string, errorFileContentType:string, errorFileContent:bytes(base64), failures: ImportFailureItem[] }` |
 
-`failures[]` 结构：`{ rowNumber, reason, raw }`
+`ImportFailureItem` 结构：
+`rowNumber:int32, reason:string, raw:string`
 
 ---
 
@@ -599,10 +657,22 @@ Authorization: Bearer <accessToken>
 
 | 接口 | 给谁用 | 请求结构 | 返回 data 结构 |
 | --- | --- | --- | --- |
-| `POST /api/assistant/sessions` | 已登录用户 | `{ scene, title }` | `{ session_id }` |
-| `POST /api/assistant/chat` | 已登录用户（且仅能对自己的会话发消息） | `{ session_id, message, stream }` | `{ reply, tool_calls, usage }` |
-| `GET /api/assistant/sessions/:id/messages` | 已登录用户（且仅能查看自己的会话） | 路径参数 `id` | `{ list: AssistantMessageItem[] }` |
-| `POST /api/assistant/actions/activity-draft` | 已登录用户；实际能否生成具体组织草案取决于该用户是否拥有对应组织成员/可访问组织范围 | `{ session_id, topic, target_people, location }` | `{ session_id, result }` |
+| `POST /api/assistant/sessions` | 已登录用户 | `{ scene:string, title:string }` | `{ session_id:int64 }` |
+| `POST /api/assistant/chat` | 已登录用户（且仅能对自己的会话发消息） | `{ session_id:int64, message:string, stream:bool }` | `{ reply:string, tool_calls: AssistantToolCall[], usage: AssistantUsage }` |
+| `GET /api/assistant/sessions/:id/messages` | 已登录用户（且仅能查看自己的会话） | 路径参数 `id:int64` | `{ list: AssistantMessageItem[] }` |
+| `POST /api/assistant/actions/activity-draft` | 已登录用户；实际能否生成具体组织草案取决于该用户是否拥有对应组织成员/可访问组织范围 | `{ session_id:int64, topic:string, target_people:string, location:string }` | `{ session_id:int64, result: AssistantChatResponse }` |
+
+`AssistantToolCall` 字段类型：
+`tool_name:string, success:bool, error_code:string, error_msg:string, latency_ms:int32, input:string, output:string`
+
+`AssistantUsage` 字段类型：
+`model:string, token_in:int32, token_out:int32, latency_ms:int32`
+
+`AssistantMessageItem` 字段类型：
+`id:int64, session_id:int64, seq_no:int32, role:int32, content:string, model:string, finish_reason:int32, token_in:int32, token_out:int32, latency_ms:int32, request_id:string, created_at:string`
+
+`AssistantChatResponse` 字段类型：
+`reply:string, tool_calls:AssistantToolCall[], usage:AssistantUsage`
 
 ### 14.2 SSE 流式接口
 
@@ -658,47 +728,6 @@ data: {"finish_reason":"stop"}
 - 大多数列表接口带分页：`page`、`pageSize`
 - 多数字段是可选的，联调时建议只传当前页面真实需要的字段
 - 活动、审核、工时等模块里有较多状态码，前端最好统一做枚举映射
-
-### 15.3 当前前端接入状态（`feat-auth-api-alignment`）
-
-以下状态基于当前前端分支代码，便于后续逐项联调检查：
-
-**已接入**
-
-- `POST /api/volunteer/register`
-- `POST /api/organization/register`
-- `POST /api/login`
-- `POST /api/logout`
-- `POST /api/refresh`
-- `POST /api/activities`
-- `GET /api/activities/:id`
-- `POST /api/activities/my`
-- `POST /api/activities/signup`
-- `POST /api/activities/cancel`
-- `POST /api/activities/checkin`
-- `POST /api/activities/checkout`
-- `GET /api/volunteers/my/profile/:id`
-- `GET /api/volunteers/home/summary`
-- `PUT /api/volunteers/:id`
-- `POST /api/volunteers/real-name/submit`
-- `GET /api/notifications`
-- `POST /api/notifications/read`
-- `POST /api/organizations/list`
-- `GET /api/organizations/:id`
-- `PUT /api/organizations/:id`
-- `POST /api/activities/create`
-- `PUT /api/activities/:id`
-- `DELETE /api/activities/:id`
-- `POST /api/activities/cancel/:id`
-- `POST /api/activities/finish/:id`
-- `POST /api/activities/attendance-codes/generate/:id`
-- `POST /api/activities/attendance-codes/reset/:id`
-- `GET /api/activities/attendance-codes/:id`
-- `POST /api/activities/supplement-attendance`
-
-**相关功能尚未接入**
-
-- 暂无
 
 ---
 

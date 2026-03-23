@@ -54,7 +54,7 @@
               </div>
               <div>
                 <p class="text-2xl font-black">
-                  {{ formData.realName || '志愿者' }}
+                  {{ profileForm.realName || '志愿者' }}
                 </p>
                 <p class="mt-1 text-sm text-emerald-100/85">
                   Lv.{{ volunteerLevel }} · 环保志愿者
@@ -133,7 +133,7 @@
             <label class="text-sm font-medium text-slate-600">
               真实姓名
               <input
-                v-model="formData.realName"
+                v-model="profileForm.realName"
                 :disabled="!isEditing"
                 class="input mt-2 rounded-2xl border-slate-200 bg-slate-50 shadow-none disabled:bg-slate-100"
               >
@@ -141,7 +141,7 @@
             <label class="text-sm font-medium text-slate-600">
               用户名
               <input
-                v-model="formData.username"
+                v-model="accountForm.username"
                 :disabled="!isEditing"
                 class="input mt-2 rounded-2xl border-slate-200 bg-slate-50 shadow-none disabled:bg-slate-100"
               >
@@ -149,7 +149,7 @@
             <label class="text-sm font-medium text-slate-600">
               邮箱地址
               <input
-                v-model="formData.email"
+                v-model="accountForm.email"
                 :disabled="!isEditing"
                 class="input mt-2 rounded-2xl border-slate-200 bg-slate-50 shadow-none disabled:bg-slate-100"
               >
@@ -157,7 +157,7 @@
             <label class="text-sm font-medium text-slate-600">
               手机号码
               <input
-                v-model="formData.phone"
+                v-model="accountForm.phone"
                 :disabled="!isEditing"
                 class="input mt-2 rounded-2xl border-slate-200 bg-slate-50 shadow-none disabled:bg-slate-100"
               >
@@ -165,7 +165,7 @@
             <label class="text-sm font-medium text-slate-600 md:col-span-2">
               个人简介
               <textarea
-                v-model="formData.bio"
+                v-model="profileForm.introduction"
                 :disabled="!isEditing"
                 rows="4"
                 class="input mt-2 rounded-2xl border-slate-200 bg-slate-50 shadow-none disabled:bg-slate-100"
@@ -184,7 +184,7 @@
               v-for="pref in activityPreferences"
               :key="pref"
               class="rounded-full px-4 py-2 text-sm font-semibold transition"
-              :class="formData.preferences.includes(pref) ? 'bg-emerald-600 text-white shadow-[0_10px_24px_-16px_rgba(5,150,105,0.9)]' : 'border border-slate-200 bg-white text-slate-600'"
+              :class="accountForm.preferences.includes(pref) ? 'bg-emerald-600 text-white shadow-[0_10px_24px_-16px_rgba(5,150,105,0.9)]' : 'border border-slate-200 bg-white text-slate-600'"
               :disabled="!isEditing"
               @click="togglePreference(pref)"
             >
@@ -259,9 +259,15 @@
 
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
+import { VOLUNTEER_AUDIT_STATUS_LABELS } from '@/constants/status'
 import { useAuthStore } from '@/store/modules/auth'
 import { useVolunteerStore } from '@/store/modules/volunteer'
 import { useMessageStore } from '@/store/modules/messages'
+import {
+  VolunteerAuditStatus,
+  type UpdateVolunteerProfileRequest,
+  type VolunteerRealNameSubmitRequest
+} from '@/types/volunteer'
 import { CameraIcon } from 'lucide-vue-next'
 import VolunteerPageHeader from '@/components/volunteer/VolunteerPageHeader.vue'
 import VolunteerSectionCard from '@/components/volunteer/VolunteerSectionCard.vue'
@@ -275,21 +281,26 @@ const isEditing = ref(false)
 const avatarPreview = ref('')
 const realNameSubmitting = ref(false)
 
-const formData = reactive({
+const profileForm = reactive<Required<UpdateVolunteerProfileRequest>>({
   realName: '',
+  gender: 0,
+  birthday: '',
+  avatarUrl: '',
+  introduction: ''
+})
+const accountForm = reactive({
   username: '',
   email: '',
   phone: '',
-  bio: '',
   preferences: ['环保宣传', '公园清洁'] as string[]
 })
-const realNameForm = reactive({
+const realNameForm = reactive<VolunteerRealNameSubmitRequest>({
   realName: '',
   idCard: ''
 })
 
 const activityPreferences = ['环保宣传', '垃圾分类', '公园清洁', '植树造林', '动物保护', '水资源保护']
-const userInitials = computed(() => (formData.realName || user.value?.realName || '志愿者').charAt(0))
+const userInitials = computed(() => (profileForm.realName || user.value?.realName || '志愿者').charAt(0))
 const volunteerLevel = computed(() => Math.floor((user.value?.totalHours || 0) / 10) + 1)
 
 const headerMeta = computed(() => [
@@ -298,9 +309,9 @@ const headerMeta = computed(() => [
 ])
 
 const profileHealthChecklist = computed(() => {
-  const hasBaseProfile = Boolean(formData.realName && formData.email && formData.phone)
-  const hasBio = Boolean(formData.bio && formData.bio.trim().length >= 12)
-  const hasPreferences = formData.preferences.length >= 2
+  const hasBaseProfile = Boolean(profileForm.realName && accountForm.email && accountForm.phone)
+  const hasBio = Boolean(profileForm.introduction && profileForm.introduction.trim().length >= 12)
+  const hasPreferences = accountForm.preferences.length >= 2
 
   return [
     { label: '基础资料完整', detail: '姓名、邮箱、手机号建议保持最新。', done: hasBaseProfile },
@@ -309,26 +320,15 @@ const profileHealthChecklist = computed(() => {
   ]
 })
 
-const auditStatus = computed(() => profile.value?.auditStatus ?? volunteerStore.realNameAudit?.status ?? 0)
-const auditStatusLabel = computed(() => {
-  switch (auditStatus.value) {
-    case 1:
-      return '审核中'
-    case 2:
-      return '已通过'
-    case 3:
-      return '已驳回'
-    default:
-      return '未认证'
-  }
-})
+const auditStatus = computed(() => profile.value?.auditStatus ?? volunteerStore.realNameAudit?.status ?? VolunteerAuditStatus.UNVERIFIED)
+const auditStatusLabel = computed(() => VOLUNTEER_AUDIT_STATUS_LABELS[auditStatus.value])
 const auditStatusDescription = computed(() => {
   switch (auditStatus.value) {
-    case 1:
+    case VolunteerAuditStatus.PENDING:
       return '你的实名认证申请正在审核，请耐心等待结果。'
-    case 2:
+    case VolunteerAuditStatus.APPROVED:
       return '实名认证已通过，后续参与正式活动时会更顺畅。'
-    case 3:
+    case VolunteerAuditStatus.REJECTED:
       return '上次实名认证未通过，请核对信息后重新提交。'
     default:
       return '尚未提交实名认证，建议尽快补全以便参与完整业务流程。'
@@ -336,26 +336,32 @@ const auditStatusDescription = computed(() => {
 })
 const auditStatusClass = computed(() => {
   switch (auditStatus.value) {
-    case 1:
+    case VolunteerAuditStatus.PENDING:
       return 'bg-amber-100 text-amber-700'
-    case 2:
+    case VolunteerAuditStatus.APPROVED:
       return 'bg-emerald-100 text-emerald-700'
-    case 3:
+    case VolunteerAuditStatus.REJECTED:
       return 'bg-rose-100 text-rose-700'
     default:
       return 'bg-slate-100 text-slate-600'
   }
 })
-const canSubmitRealName = computed(() => auditStatus.value === 0 || auditStatus.value === 3)
+const canSubmitRealName = computed(() => (
+  auditStatus.value === VolunteerAuditStatus.UNVERIFIED
+  || auditStatus.value === VolunteerAuditStatus.REJECTED
+))
 
 const syncForm = () => {
-  formData.realName = profile.value?.realName || user.value?.realName || ''
-  formData.username = user.value?.username || ''
-  formData.email = user.value?.email || ''
-  formData.phone = user.value?.phone || ''
-  formData.bio = profile.value?.introduction || formData.bio || '长期参与社区环境改善与环保宣传，希望持续投入高质量项目。'
-  avatarPreview.value = profile.value?.avatarUrl || avatarPreview.value
-  realNameForm.realName = profile.value?.realName || formData.realName
+  profileForm.realName = profile.value?.realName || user.value?.realName || ''
+  profileForm.gender = profile.value?.gender ?? 0
+  profileForm.birthday = profile.value?.birthday || ''
+  profileForm.avatarUrl = profile.value?.avatarUrl || ''
+  profileForm.introduction = profile.value?.introduction || profileForm.introduction || '长期参与社区环境改善与环保宣传，希望持续投入高质量项目。'
+  accountForm.username = user.value?.username || ''
+  accountForm.email = user.value?.email || ''
+  accountForm.phone = user.value?.phone || ''
+  avatarPreview.value = profileForm.avatarUrl || avatarPreview.value
+  realNameForm.realName = profile.value?.realName || profileForm.realName
   realNameForm.idCard = profile.value?.idCard || ''
 }
 
@@ -382,17 +388,19 @@ const cancelEditing = () => {
 const saveChanges = async () => {
   try {
     if (user.value?.id) {
-      await volunteerStore.updateMyProfile(user.value.id, {
-        realName: formData.realName,
+      const payload: UpdateVolunteerProfileRequest = {
+        ...profileForm,
+        realName: profileForm.realName.trim(),
         avatarUrl: avatarPreview.value || undefined,
-        introduction: formData.bio
-      })
+        introduction: profileForm.introduction.trim()
+      }
+      await volunteerStore.updateMyProfile(user.value.id, payload)
     }
 
     await authStore.updateProfile({
-      realName: formData.realName,
-      email: formData.email,
-      phone: formData.phone,
+      realName: profileForm.realName,
+      email: accountForm.email,
+      phone: accountForm.phone,
       avatarUrl: avatarPreview.value || user.value?.avatarUrl
     })
 
@@ -416,13 +424,12 @@ const submitRealName = async () => {
 
   realNameSubmitting.value = true
   try {
-    await volunteerStore.submitRealName({
-      realName: realNameForm.realName.trim(),
-      idCard: realNameForm.idCard.trim().toUpperCase()
-    })
-    formData.realName = realNameForm.realName.trim()
+    realNameForm.realName = realNameForm.realName.trim()
+    realNameForm.idCard = realNameForm.idCard.trim().toUpperCase()
+    await volunteerStore.submitRealName(realNameForm)
+    profileForm.realName = realNameForm.realName
     await authStore.updateProfile({
-      realName: realNameForm.realName.trim()
+      realName: realNameForm.realName
     })
     messageStore.success('实名认证信息已提交，请等待审核')
   } catch (error: any) {
@@ -435,12 +442,12 @@ const submitRealName = async () => {
 
 const togglePreference = (preference: string) => {
   if (!isEditing.value) return
-  const index = formData.preferences.indexOf(preference)
+  const index = accountForm.preferences.indexOf(preference)
   if (index >= 0) {
-    formData.preferences.splice(index, 1)
+    accountForm.preferences.splice(index, 1)
     return
   }
-  formData.preferences.push(preference)
+  accountForm.preferences.push(preference)
 }
 
 onMounted(async () => {

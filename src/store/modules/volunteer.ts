@@ -30,7 +30,7 @@ export const useVolunteerStore = defineStore('volunteer', () => {
     }
   }
 
-  const fetchMyProfile = async (id: number | string) => {
+  const fetchMyProfile = async (id: number) => {
     profileLoading.value = true
     try {
       const response = await volunteerApi.getMyProfile(id)
@@ -44,7 +44,7 @@ export const useVolunteerStore = defineStore('volunteer', () => {
     }
   }
 
-  const updateMyProfile = async (id: number | string, data: UpdateVolunteerProfileRequest) => {
+  const updateMyProfile = async (id: number, data: UpdateVolunteerProfileRequest) => {
     const response = await volunteerApi.updateProfile(id, data)
     if (response.code !== 200) {
       throw new Error(response.msg || '更新志愿者资料失败')

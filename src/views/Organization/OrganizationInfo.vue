@@ -204,6 +204,7 @@
 import { onMounted, reactive, ref } from 'vue'
 import { useMessageStore } from '@/store/modules/messages'
 import { useOrganizationStore } from '@/store/modules/organization'
+import type { UpdateOrganizationRequest } from '@/types/organization'
 import { CameraIcon } from 'lucide-vue-next'
 
 const messageStore = useMessageStore()
@@ -215,7 +216,7 @@ const listFilters = reactive({
   pageSize: 10
 })
 
-const form = reactive({
+const form = reactive<Required<UpdateOrganizationRequest>>({
   name: '',
   organizationCode: '',
   contactPerson: '',
@@ -282,18 +283,8 @@ const saveChanges = async () => {
   }
   saving.value = true
   try {
-    await organizationStore.updateOrganization(targetId, {
-      name: form.name,
-      organizationCode: form.organizationCode,
-      contactPerson: form.contactPerson,
-      contactPhone: form.contactPhone,
-      email: form.email,
-      address: form.address,
-      organizationType: form.organizationType,
-      region: form.region,
-      description: form.description,
-      websiteUrl: form.websiteUrl
-    })
+    const payload: UpdateOrganizationRequest = { ...form }
+    await organizationStore.updateOrganization(targetId, payload)
     messageStore.success('组织信息已更新')
   } catch (error: any) {
     console.error('保存组织信息失败:', error)

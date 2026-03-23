@@ -1,5 +1,7 @@
 import { http } from './request'
+import type { ApiResponse } from './types'
 import type {
+  EmptyObjectData,
   VolunteerRealNameSubmitData,
   VolunteerRealNameSubmitRequest,
   UpdateVolunteerProfileRequest,
@@ -7,23 +9,17 @@ import type {
   VolunteerProfileData
 } from '@/types/volunteer'
 
-interface ApiResponse<T> {
-  code: number
-  msg: string
-  data: T
-}
-
 export const volunteerApi = {
   getHomeSummary: (): Promise<ApiResponse<VolunteerHomeSummaryData>> => {
     return http.get<ApiResponse<VolunteerHomeSummaryData>>('/api/volunteers/home/summary')
   },
 
-  getMyProfile: (id: number | string): Promise<ApiResponse<VolunteerProfileData>> => {
+  getMyProfile: (id: number): Promise<ApiResponse<VolunteerProfileData>> => {
     return http.get<ApiResponse<VolunteerProfileData>>(`/api/volunteers/my/profile/${id}`)
   },
 
-  updateProfile: (id: number | string, data: UpdateVolunteerProfileRequest): Promise<ApiResponse<Record<string, never>>> => {
-    return http.put<ApiResponse<Record<string, never>>>(`/api/volunteers/${id}`, data)
+  updateProfile: (id: number, data: UpdateVolunteerProfileRequest): Promise<ApiResponse<EmptyObjectData>> => {
+    return http.put<ApiResponse<EmptyObjectData>>(`/api/volunteers/${id}`, data)
   },
 
   submitRealName: (data: VolunteerRealNameSubmitRequest): Promise<ApiResponse<VolunteerRealNameSubmitData>> => {

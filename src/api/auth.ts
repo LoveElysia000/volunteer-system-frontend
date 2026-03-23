@@ -1,4 +1,5 @@
 import { http } from './request'
+import { requestTokenRefresh } from './refresh'
 import type {
   LoginRequest,
   LoginResponse,
@@ -10,13 +11,6 @@ import type {
   OrganizationRegisterRequest,
   RegisterResponse
 } from '@/types/auth'
-
-// 通用API响应结构
-export interface ApiResponse<T = any> {
-  code: number
-  msg: string
-  data: T
-}
 
 export const authApi = {
   // 用户登录
@@ -31,7 +25,7 @@ export const authApi = {
 
   // 刷新令牌
   refreshToken: (data: RefreshTokenRequest): Promise<RefreshTokenResponse> => {
-    return http.post<RefreshTokenResponse>('/api/refresh', data, { skipAuth: true, skipRefresh: true })
+    return requestTokenRefresh(data)
   },
 
   // 志愿者注册

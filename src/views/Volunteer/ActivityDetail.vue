@@ -50,7 +50,7 @@
 
             <div class="flex flex-wrap gap-3 xl:justify-end">
               <button
-                v-if="!detail.isRegistered && detail.status === 1"
+                v-if="!detail.isRegistered && detail.status === ActivityStatus.OPEN"
                 class="rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
                 :disabled="actionLoading"
                 @click="handleSignup"
@@ -118,15 +118,15 @@
               服务记录
             </p>
             <div class="mt-2 space-y-1 text-sm text-slate-700">
-              <p>签到状态：{{ detail.checkInStatus === 1 ? '已签到' : '未签到' }}</p>
-              <p>签退状态：{{ detail.checkOutStatus === 1 ? '已签退' : '未签退' }}</p>
+              <p>签到状态：{{ ATTENDANCE_STATUS_LABELS[detail.checkInStatus ?? AttendanceStatus.NOT_CHECKED] }}</p>
+              <p>签退状态：{{ CHECK_OUT_STATUS_LABELS[detail.checkOutStatus ?? AttendanceStatus.NOT_CHECKED] }}</p>
               <p>已发工时：{{ detail.grantedHours ?? 0 }}</p>
             </div>
           </div>
         </div>
 
         <div
-          v-if="detail.isRegistered && detail.status === 1"
+          v-if="detail.isRegistered && detail.status === ActivityStatus.OPEN"
           class="grid gap-4 md:grid-cols-2"
         >
           <div class="rounded-[1.35rem] border border-slate-200 bg-white p-4">
@@ -142,10 +142,10 @@
               >
               <button
                 class="rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
-                :disabled="actionLoading || !checkInCode || detail.checkInStatus === 1"
+                :disabled="actionLoading || !checkInCode || detail.checkInStatus === AttendanceStatus.CHECKED"
                 @click="handleCheckIn"
               >
-                {{ detail.checkInStatus === 1 ? '已签到' : actionLoading ? '处理中...' : '提交签到' }}
+                {{ detail.checkInStatus === AttendanceStatus.CHECKED ? ATTENDANCE_STATUS_LABELS[AttendanceStatus.CHECKED] : actionLoading ? '处理中...' : '提交签到' }}
               </button>
               <p
                 v-if="detail.checkInTime"
@@ -169,10 +169,10 @@
               >
               <button
                 class="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
-                :disabled="actionLoading || !checkOutCode || detail.checkOutStatus === 1"
+                :disabled="actionLoading || !checkOutCode || detail.checkOutStatus === AttendanceStatus.CHECKED"
                 @click="handleCheckOut"
               >
-                {{ detail.checkOutStatus === 1 ? '已签退' : actionLoading ? '处理中...' : '提交签退' }}
+                {{ detail.checkOutStatus === AttendanceStatus.CHECKED ? CHECK_OUT_STATUS_LABELS[AttendanceStatus.CHECKED] : actionLoading ? '处理中...' : '提交签退' }}
               </button>
               <p
                 v-if="detail.checkOutTime"
@@ -199,11 +199,20 @@
 import { computed, onMounted, ref } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import { activitiesApi } from '@/api/activities'
+import {
+  ACTIVITY_STATUS_LABELS,
+  ATTENDANCE_STATUS_LABELS,
+  CHECK_OUT_STATUS_LABELS
+} from '@/constants/status'
 import VolunteerPageHeader from '@/components/volunteer/VolunteerPageHeader.vue'
 import VolunteerSectionCard from '@/components/volunteer/VolunteerSectionCard.vue'
 import VolunteerStatusBadge from '@/components/volunteer/VolunteerStatusBadge.vue'
 import { useMessageStore } from '@/store/modules/messages'
-import type { ActivityDetailData } from '@/types/activity'
+import {
+  ActivityStatus,
+  AttendanceStatus,
+  type ActivityDetailData
+} from '@/types/activity'
 
 const route = useRoute()
 const messageStore = useMessageStore()
@@ -223,16 +232,17 @@ const headerMeta = computed(() => [
 
 const statusText = computed(() => {
   const status = detail.value?.status
-  if (status === 1) return detail.value?.isRegistered ? '已报名' : '可报名'
-  if (status === 2) return '已结束'
-  if (status === 3) return '已取消'
+  if (status === ActivityStatus.OPEN) return detail.value?.isRegistered ? '已报名' : '可报名'
+  if (status === ActivityStatus.ENDED || status === ActivityStatus.CANCELLED) {
+    return ACTIVITY_STATUS_LABELS[status]
+  }
   return '状态待确认'
 })
 
 const statusTone = computed(() => {
   const status = detail.value?.status
-  if (status === 1 && detail.value?.isRegistered) return 'blue'
-  if (status === 1) return 'green'
+  if (status === ActivityStatus.OPEN && detail.value?.isRegistered) return 'blue'
+  if (status === ActivityStatus.OPEN) return 'green'
   return 'slate'
 })
 

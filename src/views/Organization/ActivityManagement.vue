@@ -168,17 +168,19 @@
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">开始时间</label>
               <input
-                v-model="editForm.startTime"
+                :value="toDateTimeLocal(editForm.startTime)"
                 type="datetime-local"
                 class="input"
+                @input="updateEditDateTime('startTime', $event)"
               >
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">结束时间</label>
               <input
-                v-model="editForm.endTime"
+                :value="toDateTimeLocal(editForm.endTime)"
                 type="datetime-local"
                 class="input"
+                @input="updateEditDateTime('endTime', $event)"
               >
             </div>
             <div>
@@ -294,14 +296,14 @@
               <button
                 class="btn btn-outline"
                 :disabled="attendanceLoading"
-                @click="resetAttendanceCode('checkin')"
+                @click="resetAttendanceCode(AttendanceCodeType.CHECK_IN)"
               >
                 重置签到码
               </button>
               <button
                 class="btn btn-outline"
                 :disabled="attendanceLoading"
-                @click="resetAttendanceCode('checkout')"
+                @click="resetAttendanceCode(AttendanceCodeType.CHECK_OUT)"
               >
                 重置签退码
               </button>
@@ -331,17 +333,19 @@
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">签到时间</label>
               <input
-                v-model="supplementForm.checkInTime"
+                :value="toDateTimeLocal(supplementForm.checkInTime)"
                 type="datetime-local"
                 class="input"
+                @input="updateSupplementDateTime('checkInTime', $event)"
               >
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">签退时间</label>
               <input
-                v-model="supplementForm.checkOutTime"
+                :value="toDateTimeLocal(supplementForm.checkOutTime)"
                 type="datetime-local"
                 class="input"
+                @input="updateSupplementDateTime('checkOutTime', $event)"
               >
             </div>
             <div>
@@ -381,7 +385,8 @@ import { ref, computed, onMounted, watch, onActivated } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { usePageStateStore } from '@/store/modules/pageState'
 import { useMessageStore } from '@/store/modules/messages'
-import { activitiesApi } from '@/api/activities'
+import { activitiesApi, ATTENDANCE_CODE_TYPE } from '@/api/activities'
+import { AttendanceCodeType, type SupplementAttendanceRequest, type UpdateOrganizationActivityRequest } from '@/types/activity'
 import { CalendarIcon, UsersIcon, ClockIcon, PlusIcon } from 'lucide-vue-next'
 
 // 路由和状态管理
@@ -447,7 +452,7 @@ const attendanceLoading = ref(false)
 const supplementing = ref(false)
 const targetActivityId = ref<number | null>(null)
 const cancelReason = ref('')
-const editForm = ref({
+const editForm = ref<UpdateOrganizationActivityRequest>({
   title: '',
   description: '',
   location: '',
@@ -466,8 +471,8 @@ const attendanceCodeInfo = ref({
   checkOutCode: '',
   attendanceCodeVersion: 0
 })
-const supplementForm = ref({
-  volunteerId: undefined as number | undefined,
+const supplementForm = ref<Omit<SupplementAttendanceRequest, 'activityId'>>({
+  volunteerId: 0,
   checkInTime: '',
   checkOutTime: '',
   reason: ''
@@ -570,6 +575,21 @@ const toApiDateTime = (value: string) => {
   return new Date(value).toISOString().slice(0, 19).replace('T', ' ')
 }
 
+const toDateTimeLocal = (value?: string) => {
+  if (!value) {
+    return ''
+  }
+  return value.replace(' ', 'T').slice(0, 16)
+}
+
+const updateEditDateTime = (field: 'startTime' | 'endTime', event: Event) => {
+  editForm.value[field] = toApiDateTime((event.target as HTMLInputElement).value)
+}
+
+const updateSupplementDateTime = (field: 'checkInTime' | 'checkOutTime', event: Event) => {
+  supplementForm.value[field] = toApiDateTime((event.target as HTMLInputElement).value)
+}
+
 const updateActivityLocalState = (patch: Partial<typeof activities.value[number]>) => {
   if (!selectedActivity.value) {
     return
@@ -600,10 +620,10 @@ const saveActivity = async () => {
       description: editForm.value.description.trim(),
       location: editForm.value.location.trim(),
       address: editForm.value.address.trim() || undefined,
-      startTime: toApiDateTime(editForm.value.startTime),
-      endTime: toApiDateTime(editForm.value.endTime),
-      duration: Number(editForm.value.duration),
-      maxPeople: Number(editForm.value.maxPeople)
+      startTime: editForm.value.startTime,
+      endTime: editForm.value.endTime,
+      duration: editForm.value.duration,
+      maxPeople: editForm.value.maxPeople
     })
     if (response.code !== 200) {
       throw new Error(response.msg || '更新活动失败')
@@ -615,7 +635,7 @@ const saveActivity = async () => {
       address: editForm.value.address.trim(),
       startTime: editForm.value.startTime,
       endTime: editForm.value.endTime,
-      duration: Number(editForm.value.duration)
+      duration: editForm.value.duration
     })
     messageStore.success(response.data.message || '活动信息已更新')
   } catch (error: any) {
@@ -750,13 +770,13 @@ const generateAttendanceCodes = async () => {
   }
 }
 
-const resetAttendanceCode = async (codeType: 'checkin' | 'checkout') => {
+const resetAttendanceCode = async (codeType: AttendanceCodeType) => {
   if (!selectedActivity.value) return
   const activityId = requireTargetActivityId()
   if (!activityId) return
   attendanceLoading.value = true
   try {
-    const validMinutes = codeType === 'checkin'
+    const validMinutes = codeType === ATTENDANCE_CODE_TYPE.CHECK_IN
       ? attendanceForm.value.checkInValidMinutes
       : attendanceForm.value.checkOutValidMinutes
     const response = await activitiesApi.resetAttendanceCode(activityId, {
@@ -768,11 +788,11 @@ const resetAttendanceCode = async (codeType: 'checkin' | 'checkout') => {
     }
     attendanceCodeInfo.value = {
       ...attendanceCodeInfo.value,
-      checkInCode: codeType === 'checkin' ? (response.data.code || attendanceCodeInfo.value.checkInCode) : attendanceCodeInfo.value.checkInCode,
-      checkOutCode: codeType === 'checkout' ? (response.data.code || attendanceCodeInfo.value.checkOutCode) : attendanceCodeInfo.value.checkOutCode,
-      attendanceCodeVersion: response.data.attendanceCodeVersion || attendanceCodeInfo.value.attendanceCodeVersion
+      checkInCode: codeType === ATTENDANCE_CODE_TYPE.CHECK_IN ? response.data.code : attendanceCodeInfo.value.checkInCode,
+      checkOutCode: codeType === ATTENDANCE_CODE_TYPE.CHECK_OUT ? response.data.code : attendanceCodeInfo.value.checkOutCode,
+      attendanceCodeVersion: response.data.attendanceCodeVersion
     }
-    messageStore.success(codeType === 'checkin' ? '签到码已重置' : '签退码已重置')
+    messageStore.success(codeType === ATTENDANCE_CODE_TYPE.CHECK_IN ? '签到码已重置' : '签退码已重置')
   } catch (error: any) {
     console.error('重置签到码失败:', error)
     messageStore.error(error.message || '重置签到码失败，请稍后重试')
@@ -794,8 +814,8 @@ const submitSupplementAttendance = async () => {
     const response = await activitiesApi.supplementAttendance({
       activityId,
       volunteerId: supplementForm.value.volunteerId,
-      checkInTime: toApiDateTime(supplementForm.value.checkInTime),
-      checkOutTime: toApiDateTime(supplementForm.value.checkOutTime),
+      checkInTime: supplementForm.value.checkInTime,
+      checkOutTime: supplementForm.value.checkOutTime,
       reason: supplementForm.value.reason.trim()
     })
     if (response.code !== 200) {

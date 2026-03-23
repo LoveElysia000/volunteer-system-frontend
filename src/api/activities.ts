@@ -1,11 +1,15 @@
 import { http } from './request'
+import type { ApiResponse } from './types'
 import type {
   ActivityActionResult,
   ActivityCheckInRequest,
   ActivityCheckOutRequest,
+  ActivitySignupStatus,
+  ActivityStatus,
   AttendanceCodeInfo,
   AttendanceCodeResetData,
   AttendanceCodeResetRequest,
+  AttendanceCodeType,
   AttendanceCodesGenerateRequest,
   CancelOrganizationActivityRequest,
   CreateOrganizationActivityData,
@@ -24,23 +28,22 @@ import type {
   VolunteerActivityViewItem
 } from '@/types/activity'
 
-interface ApiResponse<T> {
-  code: number
-  msg: string
-  data: T
-}
-
 const ACTIVITY_STATUS = {
-  OPEN: 1,
-  ENDED: 2,
-  CANCELLED: 3
+  OPEN: 1 as ActivityStatus,
+  ENDED: 2 as ActivityStatus,
+  CANCELLED: 3 as ActivityStatus
 } as const
 
 const SIGNUP_STATUS = {
-  PENDING: 1,
-  SUCCESS: 2,
-  REJECTED: 3,
-  CANCELLED: 4
+  PENDING: 1 as ActivitySignupStatus,
+  SUCCESS: 2 as ActivitySignupStatus,
+  REJECTED: 3 as ActivitySignupStatus,
+  CANCELLED: 4 as ActivitySignupStatus
+} as const
+
+export const ATTENDANCE_CODE_TYPE = {
+  CHECK_IN: 1 as AttendanceCodeType,
+  CHECK_OUT: 2 as AttendanceCodeType
 } as const
 
 const formatMonthDayTime = (value: string) => {
@@ -53,9 +56,9 @@ const formatMonthDayTime = (value: string) => {
 }
 
 const resolveVolunteerStatus = (
-  status: number,
+  status: ActivityStatus,
   isRegistered: boolean,
-  signupStatus?: number
+  signupStatus?: ActivitySignupStatus
 ): VolunteerActivityViewItem['status'] => {
   if (status === ACTIVITY_STATUS.ENDED || status === ACTIVITY_STATUS.CANCELLED) {
     return 'completed'
@@ -68,7 +71,11 @@ const resolveVolunteerStatus = (
   return 'upcoming'
 }
 
-const resolveTag = (status: number, orgName?: string, signupStatus?: number) => {
+const resolveTag = (
+  status: ActivityStatus,
+  orgName?: string,
+  signupStatus?: ActivitySignupStatus
+) => {
   if (status === ACTIVITY_STATUS.CANCELLED) {
     return '已取消'
   }
@@ -138,7 +145,7 @@ export const activitiesApi = {
     return http.post<ApiResponse<ActivityListData>>('/api/activities', data)
   },
 
-  detail: (id: number | string): Promise<ApiResponse<ActivityDetailData>> => {
+  detail: (id: number): Promise<ApiResponse<ActivityDetailData>> => {
     return http.get<ApiResponse<ActivityDetailData>>(`/api/activities/${id}`)
   },
 
@@ -166,31 +173,31 @@ export const activitiesApi = {
     return http.post<ApiResponse<CreateOrganizationActivityData>>('/api/activities/create', data)
   },
 
-  update: (id: number | string, data: UpdateOrganizationActivityRequest): Promise<ApiResponse<OrganizationActivityActionResponse>> => {
+  update: (id: number, data: UpdateOrganizationActivityRequest): Promise<ApiResponse<OrganizationActivityActionResponse>> => {
     return http.put<ApiResponse<OrganizationActivityActionResponse>>(`/api/activities/${id}`, data)
   },
 
-  remove: (id: number | string): Promise<ApiResponse<OrganizationActivityActionResponse>> => {
+  remove: (id: number): Promise<ApiResponse<OrganizationActivityActionResponse>> => {
     return http.delete<ApiResponse<OrganizationActivityActionResponse>>(`/api/activities/${id}`)
   },
 
-  cancelByOrganization: (id: number | string, data: CancelOrganizationActivityRequest): Promise<ApiResponse<OrganizationActivityActionResponse>> => {
+  cancelByOrganization: (id: number, data: CancelOrganizationActivityRequest): Promise<ApiResponse<OrganizationActivityActionResponse>> => {
     return http.post<ApiResponse<OrganizationActivityActionResponse>>(`/api/activities/cancel/${id}`, data)
   },
 
-  finishByOrganization: (id: number | string): Promise<ApiResponse<OrganizationActivityActionResponse>> => {
+  finishByOrganization: (id: number): Promise<ApiResponse<OrganizationActivityActionResponse>> => {
     return http.post<ApiResponse<OrganizationActivityActionResponse>>(`/api/activities/finish/${id}`)
   },
 
-  generateAttendanceCodes: (id: number | string, data: AttendanceCodesGenerateRequest): Promise<ApiResponse<AttendanceCodeInfo>> => {
+  generateAttendanceCodes: (id: number, data: AttendanceCodesGenerateRequest): Promise<ApiResponse<AttendanceCodeInfo>> => {
     return http.post<ApiResponse<AttendanceCodeInfo>>(`/api/activities/attendance-codes/generate/${id}`, data)
   },
 
-  resetAttendanceCode: (id: number | string, data: AttendanceCodeResetRequest): Promise<ApiResponse<AttendanceCodeResetData>> => {
+  resetAttendanceCode: (id: number, data: AttendanceCodeResetRequest): Promise<ApiResponse<AttendanceCodeResetData>> => {
     return http.post<ApiResponse<AttendanceCodeResetData>>(`/api/activities/attendance-codes/reset/${id}`, data)
   },
 
-  getAttendanceCodes: (id: number | string): Promise<ApiResponse<AttendanceCodeInfo>> => {
+  getAttendanceCodes: (id: number): Promise<ApiResponse<AttendanceCodeInfo>> => {
     return http.get<ApiResponse<AttendanceCodeInfo>>(`/api/activities/attendance-codes/${id}`)
   },
 

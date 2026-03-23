@@ -19,15 +19,14 @@ export const useVolunteerMetrics = () => {
   const summary = computed(() => volunteerStore.summary)
   const profile = computed(() => volunteerStore.profile)
 
-  const summaryStats = computed(() => summary.value?.stats || {})
+  const summaryStats = computed(() => summary.value?.stats)
   const points = computed(() =>
-    summaryStats.value.points ??
-    summaryStats.value.totalPoints ??
+    summaryStats.value?.points ??
     user.value?.points ??
     fallbackMetrics.points
   )
   const totalHours = computed(() =>
-    summaryStats.value.totalHours ??
+    summaryStats.value?.hours ??
     profile.value?.totalHours ??
     user.value?.totalHours ??
     fallbackMetrics.totalHours
@@ -36,11 +35,11 @@ export const useVolunteerMetrics = () => {
   const currentLevelHours = computed(() => totalHours.value % 10)
   const levelProgressPercentage = computed(() => currentLevelHours.value * 10)
   const hoursToNextLevel = computed(() => summary.value?.needHoursToNextLevel ?? Math.max(10 - currentLevelHours.value, 0))
-  const monthlyHoursGrowth = computed(() => summary.value?.monthlyGrowth?.hours ?? fallbackMetrics.monthHoursGrowth)
-  const monthlyPointsGrowth = computed(() => summary.value?.monthlyGrowth?.points ?? fallbackMetrics.monthPointsGrowth)
-  const totalActivities = computed(() => summaryStats.value.totalActivities ?? fallbackMetrics.totalActivities)
-  const completedActivities = computed(() => summaryStats.value.completedActivities ?? fallbackMetrics.completedActivities)
-  const upcomingActivities = computed(() => summaryStats.value.upcomingActivities ?? fallbackMetrics.upcomingActivities)
+  const monthlyHoursGrowth = computed(() => summary.value?.monthlyGrowth ?? fallbackMetrics.monthHoursGrowth)
+  const monthlyPointsGrowth = computed(() => fallbackMetrics.monthPointsGrowth)
+  const totalActivities = computed(() => summaryStats.value?.activityCount ?? fallbackMetrics.totalActivities)
+  const completedActivities = computed(() => fallbackMetrics.completedActivities)
+  const upcomingActivities = computed(() => fallbackMetrics.upcomingActivities)
 
   return {
     user,

@@ -6,10 +6,8 @@ import type {
   UserInfo,
   User,
   LoginRequest,
-  UserIdentity,
   VolunteerRegisterRequest,
-  OrganizationRegisterRequest,
-  LoginType
+  OrganizationRegisterRequest
 } from '@/types/auth'
 
 // 存储键名常量
@@ -21,9 +19,9 @@ const STORAGE_KEYS = {
 // 将后端UserInfo转换为前端User
 const transformUserInfo = (userInfo: UserInfo): User => ({
   id: userInfo.userId,
-  username: userInfo.username,
+  username: userInfo.userName,
   email: userInfo.email,
-  realName: userInfo.displayName || userInfo.username,
+  realName: userInfo.displayName || userInfo.userName,
   role: userInfo.identity,
   avatarUrl: userInfo.avatarUrl,
   phone: userInfo.phone
@@ -70,19 +68,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   // 登录
-  const login = async (credentials: {
-    loginType: LoginType
-    identifier: string
-    password: string
-    identity: UserIdentity
-  }) => {
-    const loginRequest: LoginRequest = {
-      loginType: credentials.loginType,
-      identifier: credentials.identifier,
-      password: credentials.password,
-      identity: credentials.identity
-    }
-
+  const login = async (loginRequest: LoginRequest) => {
     const response = await authApi.login(loginRequest)
 
     // 检查响应是否成功

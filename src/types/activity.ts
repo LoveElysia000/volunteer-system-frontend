@@ -29,10 +29,34 @@ export interface ActivityFilters {
   }
 }
 
+export enum ActivityStatus {
+  OPEN = 1,
+  ENDED = 2,
+  CANCELLED = 3
+}
+
+export enum ActivitySignupStatus {
+  PENDING = 1,
+  SUCCESS = 2,
+  REJECTED = 3,
+  CANCELLED = 4
+}
+
+export enum AttendanceStatus {
+  NOT_CHECKED = 0,
+  CHECKED = 1
+}
+
+export enum WorkHourStatus {
+  UNSETTLED = 0,
+  GRANTED = 1,
+  VOIDED = 2
+}
+
 export interface ActivityListRequest {
   page: number
   pageSize: number
-  status?: number
+  status?: ActivityStatus
   keyword?: string
   startFrom?: string
   startTo?: string
@@ -51,7 +75,7 @@ export interface ActivityListItem {
   duration: number
   maxPeople: number
   currentPeople: number
-  status: number
+  status: ActivityStatus
   isRegistered?: boolean
   isFull?: boolean
 }
@@ -76,14 +100,14 @@ export interface ActivityDetailData {
     duration: number
     maxPeople: number
     currentPeople: number
-    status: number
+    status: ActivityStatus
     isRegistered?: boolean
     createdAt?: string
-    checkInStatus?: number
+    checkInStatus?: AttendanceStatus
     checkInTime?: string
-    checkOutStatus?: number
+    checkOutStatus?: AttendanceStatus
     checkOutTime?: string
-    workHourStatus?: number
+    workHourStatus?: WorkHourStatus
     grantedHours?: number
   }
 }
@@ -91,7 +115,7 @@ export interface ActivityDetailData {
 export interface MyActivitiesRequest {
   page: number
   pageSize: number
-  status?: number
+  status?: ActivityStatus
 }
 
 export interface MyActivityItem {
@@ -107,15 +131,15 @@ export interface MyActivityItem {
   duration: number
   maxPeople: number
   currentPeople: number
-  status: number
+  status: ActivityStatus
   signupTime?: string
-  checkInStatus?: number
+  checkInStatus?: AttendanceStatus
   checkInTime?: string
-  checkOutStatus?: number
+  checkOutStatus?: AttendanceStatus
   checkOutTime?: string
-  workHourStatus?: number
+  workHourStatus?: WorkHourStatus
   grantedHours?: number
-  signupStatus?: number
+  signupStatus?: ActivitySignupStatus
   auditReason?: string
 }
 
@@ -125,7 +149,7 @@ export interface MyActivitiesData {
 }
 
 export interface ActivityActionResult {
-  success?: boolean
+  success: boolean
   checkInTime?: string
   checkOutTime?: string
   grantedHours?: number
@@ -156,7 +180,7 @@ export interface CreateOrganizationActivityRequest {
 
 export interface CreateOrganizationActivityData {
   id: number
-  message?: string
+  message: string
 }
 
 export interface UpdateOrganizationActivityRequest {
@@ -172,11 +196,16 @@ export interface UpdateOrganizationActivityRequest {
 }
 
 export interface OrganizationActivityActionResponse {
-  message?: string
+  message: string
 }
 
 export interface CancelOrganizationActivityRequest {
   reason: string
+}
+
+export enum AttendanceCodeType {
+  CHECK_IN = 1,
+  CHECK_OUT = 2
 }
 
 export interface AttendanceCodesGenerateRequest {
@@ -185,27 +214,27 @@ export interface AttendanceCodesGenerateRequest {
 }
 
 export interface AttendanceCodeInfo {
-  success?: boolean
-  checkInCode?: string
-  checkOutCode?: string
-  attendanceCodeVersion?: number
-  attendanceCodeUpdatedAt?: string
-  checkInExpireAt?: string
-  checkOutExpireAt?: string
+  success: boolean
+  checkInCode: string
+  checkOutCode: string
+  attendanceCodeVersion: number
+  attendanceCodeUpdatedAt: string
+  checkInExpireAt: string
+  checkOutExpireAt: string
 }
 
 export interface AttendanceCodeResetRequest {
-  codeType: 'checkin' | 'checkout'
+  codeType: AttendanceCodeType
   validMinutes: number
 }
 
 export interface AttendanceCodeResetData {
-  success?: boolean
-  code?: string
-  codeType?: string
-  attendanceCodeVersion?: number
-  attendanceCodeUpdatedAt?: string
-  expireAt?: string
+  success: boolean
+  code: string
+  codeType: AttendanceCodeType
+  attendanceCodeVersion: number
+  attendanceCodeUpdatedAt: string
+  expireAt: string
 }
 
 export interface SupplementAttendanceRequest {
@@ -217,10 +246,10 @@ export interface SupplementAttendanceRequest {
 }
 
 export interface SupplementAttendanceData {
-  success?: boolean
-  checkInTime?: string
-  checkOutTime?: string
-  grantedHours?: number
+  success: boolean
+  checkInTime: string
+  checkOutTime: string
+  grantedHours: number
 }
 
 export interface VolunteerActivityViewItem {
@@ -237,7 +266,7 @@ export interface VolunteerActivityViewItem {
   userRegistrationStatus: 'registered' | 'not_registered'
   tag?: string
   orgName?: string
-  signupStatus?: number
+  signupStatus?: ActivitySignupStatus
   grantedHours?: number
   auditReason?: string
 }
