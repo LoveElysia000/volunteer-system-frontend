@@ -9,7 +9,7 @@ import type {
 
 export const notificationApi = {
   getNotifications: (params: NotificationListRequest = {}): Promise<ApiResponse<NotificationListData>> => {
-    return http.get<ApiResponse<NotificationListData>>('/api/notifications', { params })
+    return http.get<ApiResponse<NotificationListData>>('/api/notifications', params)
   },
 
   markAsRead: (data: NotificationReadRequest): Promise<ApiResponse<NotificationReadData>> => {

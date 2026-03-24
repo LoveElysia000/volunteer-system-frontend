@@ -22,6 +22,25 @@ export interface OrganizationInfo {
   updatedAt: string
 }
 
+export interface OrganizationAccountInfo {
+  userName: string
+  email: string
+  phone: string
+}
+
+export interface OrganizationProfileInfo {
+  name: string
+  contactPerson: string
+  contactPhone: string
+  address: string
+  description: string
+  logoUrl: string
+}
+
+export interface OrganizationCertificationInfo {
+  organizationCode: string
+}
+
 export interface OrganizationListRequest {
   keyword?: string
   status?: OrganizationStatus[]
@@ -38,6 +57,9 @@ export interface OrganizationListData {
 
 export interface OrganizationDetailData {
   organization: OrganizationInfo
+  accountInfo: OrganizationAccountInfo
+  organizationProfile: OrganizationProfileInfo
+  organizationCertification: OrganizationCertificationInfo
 }
 
 export interface UpdateOrganizationData {
@@ -49,11 +71,13 @@ export interface UpdateOrganizationRequest {
   organizationCode?: string
   contactPerson?: string
   contactPhone?: string
-  email?: string
   address?: string
-  organizationType?: string
-  region?: string
   description?: string
-  websiteUrl?: string
   logoUrl?: string
+}
+
+export interface UpdateOrganizationAccountRequest {
+  userName?: string
+  email?: string
+  phone?: string
 }

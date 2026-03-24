@@ -25,7 +25,8 @@ import type {
   MyActivitiesRequest,
   MyActivityItem,
   UpdateOrganizationActivityRequest,
-  VolunteerActivityViewItem
+  VolunteerActivityViewItem,
+  OrganizationManagementActivityItem
 } from '@/types/activity'
 
 const ACTIVITY_STATUS = {
@@ -138,6 +139,30 @@ export const mapMyActivityItemToVolunteerView = (item: MyActivityItem): Voluntee
   signupStatus: item.signupStatus,
   grantedHours: item.grantedHours,
   auditReason: item.auditReason
+})
+
+export const mapActivityItemToOrganizationManagementView = (
+  item: ActivityListItem
+): OrganizationManagementActivityItem => ({
+  id: item.id,
+  orgId: item.orgId,
+  orgName: item.orgName,
+  title: item.title,
+  description: item.description,
+  date: item.startTime.slice(0, 10),
+  startTime: item.startTime,
+  endTime: item.endTime,
+  location: item.location,
+  address: '',
+  status: item.status === ACTIVITY_STATUS.OPEN ? '进行中' : item.status === ACTIVITY_STATUS.ENDED ? '已结束' : '已取消',
+  statusClass: item.status === ACTIVITY_STATUS.OPEN
+    ? 'bg-green-100 text-green-800'
+    : item.status === ACTIVITY_STATUS.ENDED
+      ? 'bg-gray-100 text-gray-800'
+      : 'bg-red-100 text-red-700',
+  participants: item.currentPeople,
+  maxPeople: item.maxPeople,
+  duration: item.duration
 })
 
 export const activitiesApi = {

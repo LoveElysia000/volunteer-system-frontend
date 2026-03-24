@@ -5,31 +5,7 @@
       title="维护你的志愿者档案"
       description="个人资料、服务偏好和通知方式会影响推荐任务与团队协作体验。"
       :meta-items="headerMeta"
-    >
-      <template #actions>
-        <button
-          v-if="!isEditing"
-          class="volunteer-toolbar-button"
-          @click="startEditing"
-        >
-          编辑资料
-        </button>
-        <template v-else>
-          <button
-            class="volunteer-toolbar-button"
-            @click="cancelEditing"
-          >
-            取消
-          </button>
-          <button
-            class="rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700"
-            @click="saveChanges"
-          >
-            保存更改
-          </button>
-        </template>
-      </template>
-    </VolunteerPageHeader>
+    />
 
     <div class="volunteer-profile-studio grid gap-6 xl:grid-cols-[0.92fr_1.08fr]">
       <div class="space-y-6">
@@ -54,7 +30,7 @@
               </div>
               <div>
                 <p class="text-2xl font-black">
-                  {{ profileForm.realName || '志愿者' }}
+                  {{ displayName }}
                 </p>
                 <p class="mt-1 text-sm text-emerald-100/85">
                   Lv.{{ volunteerLevel }} · 环保志愿者
@@ -95,8 +71,8 @@
         </VolunteerSectionCard>
 
         <VolunteerSectionCard
-          title="档案健康度"
-          description="这三项越完整，平台推荐会越精准。"
+          title="资料状态"
+          description="账户、资料、实名三块分开维护后，联调会更稳定。"
           tone="soft"
         >
           <ul class="space-y-3">
@@ -126,69 +102,90 @@
 
       <div class="space-y-6">
         <VolunteerSectionCard
-          title="基础资料"
-          description="这些资料会影响活动推荐和团队协作。"
+          title="账户信息"
+          description="单独通过账户信息接口维护用户名、邮箱和手机号。"
         >
           <div class="grid gap-4 md:grid-cols-2">
-            <label class="text-sm font-medium text-slate-600">
-              真实姓名
-              <input
-                v-model="profileForm.realName"
-                :disabled="!isEditing"
-                class="input mt-2 rounded-2xl border-slate-200 bg-slate-50 shadow-none disabled:bg-slate-100"
-              >
-            </label>
             <label class="text-sm font-medium text-slate-600">
               用户名
               <input
                 v-model="accountForm.username"
-                :disabled="!isEditing"
-                class="input mt-2 rounded-2xl border-slate-200 bg-slate-50 shadow-none disabled:bg-slate-100"
+                class="input mt-2 rounded-2xl border-slate-200 bg-slate-50 shadow-none"
               >
             </label>
             <label class="text-sm font-medium text-slate-600">
               邮箱地址
               <input
                 v-model="accountForm.email"
-                :disabled="!isEditing"
-                class="input mt-2 rounded-2xl border-slate-200 bg-slate-50 shadow-none disabled:bg-slate-100"
+                class="input mt-2 rounded-2xl border-slate-200 bg-slate-50 shadow-none"
               >
             </label>
             <label class="text-sm font-medium text-slate-600">
               手机号码
               <input
                 v-model="accountForm.phone"
-                :disabled="!isEditing"
-                class="input mt-2 rounded-2xl border-slate-200 bg-slate-50 shadow-none disabled:bg-slate-100"
+                class="input mt-2 rounded-2xl border-slate-200 bg-slate-50 shadow-none"
+              >
+            </label>
+          </div>
+          <div class="mt-4 flex justify-end">
+            <button
+              class="rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-300"
+              :disabled="accountSaving"
+              @click="saveAccountChanges"
+            >
+              {{ accountSaving ? '保存中...' : '保存账户信息' }}
+            </button>
+          </div>
+        </VolunteerSectionCard>
+
+        <VolunteerSectionCard
+          title="个人资料"
+          description="这些资料通过志愿者资料接口维护，不再处理实名认证字段。"
+          tone="soft"
+        >
+          <div class="grid gap-4 md:grid-cols-2">
+            <label class="text-sm font-medium text-slate-600">
+              性别
+              <select
+                v-model.number="profileForm.gender"
+                class="input mt-2 rounded-2xl border-slate-200 bg-slate-50 shadow-none"
+              >
+                <option :value="0">
+                  未知
+                </option>
+                <option :value="1">
+                  男
+                </option>
+                <option :value="2">
+                  女
+                </option>
+              </select>
+            </label>
+            <label class="text-sm font-medium text-slate-600">
+              生日
+              <input
+                v-model="profileForm.birthday"
+                type="date"
+                class="input mt-2 rounded-2xl border-slate-200 bg-slate-50 shadow-none"
               >
             </label>
             <label class="text-sm font-medium text-slate-600 md:col-span-2">
               个人简介
               <textarea
                 v-model="profileForm.introduction"
-                :disabled="!isEditing"
                 rows="4"
-                class="input mt-2 rounded-2xl border-slate-200 bg-slate-50 shadow-none disabled:bg-slate-100"
+                class="input mt-2 rounded-2xl border-slate-200 bg-slate-50 shadow-none"
               />
             </label>
           </div>
-        </VolunteerSectionCard>
-
-        <VolunteerSectionCard
-          title="活动偏好"
-          description="这些偏好用于推荐更适合你的任务类型。"
-          tone="soft"
-        >
-          <div class="flex flex-wrap gap-2">
+          <div class="mt-4 flex justify-end">
             <button
-              v-for="pref in activityPreferences"
-              :key="pref"
-              class="rounded-full px-4 py-2 text-sm font-semibold transition"
-              :class="accountForm.preferences.includes(pref) ? 'bg-emerald-600 text-white shadow-[0_10px_24px_-16px_rgba(5,150,105,0.9)]' : 'border border-slate-200 bg-white text-slate-600'"
-              :disabled="!isEditing"
-              @click="togglePreference(pref)"
+              class="rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-300"
+              :disabled="profileSaving"
+              @click="saveProfileChanges"
             >
-              {{ pref }}
+              {{ profileSaving ? '保存中...' : '保存个人资料' }}
             </button>
           </div>
         </VolunteerSectionCard>
@@ -206,6 +203,9 @@
                 </p>
                 <p class="mt-1 text-xs text-slate-500">
                   {{ auditStatusDescription }}
+                </p>
+                <p class="mt-2 text-xs text-slate-500">
+                  当前实名：{{ verificationInfo?.realName || '未提交' }}
                 </p>
               </div>
               <span
@@ -265,6 +265,7 @@ import { useVolunteerStore } from '@/store/modules/volunteer'
 import { useMessageStore } from '@/store/modules/messages'
 import {
   VolunteerAuditStatus,
+  type UpdateVolunteerAccountRequest,
   type UpdateVolunteerProfileRequest,
   type VolunteerRealNameSubmitRequest
 } from '@/types/volunteer'
@@ -277,12 +278,14 @@ const volunteerStore = useVolunteerStore()
 const messageStore = useMessageStore()
 const user = computed(() => authStore.user)
 const profile = computed(() => volunteerStore.profile)
-const isEditing = ref(false)
+const accountInfo = computed(() => volunteerStore.accountInfo)
+const verificationInfo = computed(() => volunteerStore.verification)
 const avatarPreview = ref('')
+const accountSaving = ref(false)
+const profileSaving = ref(false)
 const realNameSubmitting = ref(false)
 
-const profileForm = reactive<Required<UpdateVolunteerProfileRequest>>({
-  realName: '',
+const profileForm = reactive({
   gender: 0,
   birthday: '',
   avatarUrl: '',
@@ -291,36 +294,40 @@ const profileForm = reactive<Required<UpdateVolunteerProfileRequest>>({
 const accountForm = reactive({
   username: '',
   email: '',
-  phone: '',
-  preferences: ['环保宣传', '公园清洁'] as string[]
+  phone: ''
 })
 const realNameForm = reactive<VolunteerRealNameSubmitRequest>({
   realName: '',
   idCard: ''
 })
 
-const activityPreferences = ['环保宣传', '垃圾分类', '公园清洁', '植树造林', '动物保护', '水资源保护']
-const userInitials = computed(() => (profileForm.realName || user.value?.realName || '志愿者').charAt(0))
+const displayName = computed(() => {
+  if (auditStatus.value === VolunteerAuditStatus.APPROVED && verificationInfo.value?.realName) {
+    return verificationInfo.value.realName
+  }
+  return accountInfo.value?.userName || user.value?.realName || user.value?.username || '志愿者'
+})
+const userInitials = computed(() => displayName.value.charAt(0))
 const volunteerLevel = computed(() => Math.floor((user.value?.totalHours || 0) / 10) + 1)
 
 const headerMeta = computed(() => [
   { label: '当前等级', value: `Lv.${volunteerLevel.value}`, detail: `${user.value?.points || 0} 当前积分` },
-  { label: '个人资料', value: isEditing.value ? '编辑中' : '已保存', detail: '建议保持资料最新' }
+  { label: '实名认证', value: auditStatusLabel.value, detail: '审核状态来自实名信息' }
 ])
 
 const profileHealthChecklist = computed(() => {
-  const hasBaseProfile = Boolean(profileForm.realName && accountForm.email && accountForm.phone)
+  const hasAccountInfo = Boolean(accountForm.username && accountForm.email && accountForm.phone)
   const hasBio = Boolean(profileForm.introduction && profileForm.introduction.trim().length >= 12)
-  const hasPreferences = accountForm.preferences.length >= 2
+  const hasVerification = auditStatus.value === VolunteerAuditStatus.APPROVED
 
   return [
-    { label: '基础资料完整', detail: '姓名、邮箱、手机号建议保持最新。', done: hasBaseProfile },
+    { label: '账户信息完整', detail: '用户名、邮箱、手机号由账户信息接口单独维护。', done: hasAccountInfo },
     { label: '个人简介已填写', detail: '建议说明你的长期服务意愿与擅长领域。', done: hasBio },
-    { label: '活动偏好已配置', detail: '至少保留 2 个偏好以提高推荐命中率。', done: hasPreferences }
+    { label: '实名认证已完成', detail: '实名通过后，报名与签到等流程会更顺畅。', done: hasVerification }
   ]
 })
 
-const auditStatus = computed(() => profile.value?.auditStatus ?? volunteerStore.realNameAudit?.status ?? VolunteerAuditStatus.UNVERIFIED)
+const auditStatus = computed(() => verificationInfo.value?.auditStatus ?? profile.value?.auditStatus ?? volunteerStore.realNameAudit?.status ?? VolunteerAuditStatus.UNVERIFIED)
 const auditStatusLabel = computed(() => VOLUNTEER_AUDIT_STATUS_LABELS[auditStatus.value])
 const auditStatusDescription = computed(() => {
   switch (auditStatus.value) {
@@ -352,17 +359,16 @@ const canSubmitRealName = computed(() => (
 ))
 
 const syncForm = () => {
-  profileForm.realName = profile.value?.realName || user.value?.realName || ''
   profileForm.gender = profile.value?.gender ?? 0
   profileForm.birthday = profile.value?.birthday || ''
   profileForm.avatarUrl = profile.value?.avatarUrl || ''
   profileForm.introduction = profile.value?.introduction || profileForm.introduction || '长期参与社区环境改善与环保宣传，希望持续投入高质量项目。'
-  accountForm.username = user.value?.username || ''
-  accountForm.email = user.value?.email || ''
-  accountForm.phone = user.value?.phone || ''
+  accountForm.username = accountInfo.value?.userName || user.value?.username || ''
+  accountForm.email = accountInfo.value?.email || user.value?.email || ''
+  accountForm.phone = accountInfo.value?.phone || user.value?.phone || ''
   avatarPreview.value = profileForm.avatarUrl || avatarPreview.value
-  realNameForm.realName = profile.value?.realName || profileForm.realName
-  realNameForm.idCard = profile.value?.idCard || ''
+  realNameForm.realName = verificationInfo.value?.realName || ''
+  realNameForm.idCard = verificationInfo.value?.idCard || ''
 }
 
 const handleAvatarUpload = (event: Event) => {
@@ -375,40 +381,54 @@ const handleAvatarUpload = (event: Event) => {
   reader.readAsDataURL(input.files[0])
 }
 
-const startEditing = () => {
-  isEditing.value = true
-  syncForm()
-}
+const saveAccountChanges = async () => {
+  const payload: UpdateVolunteerAccountRequest = {
+    userName: accountForm.username.trim() || undefined,
+    email: accountForm.email.trim() || undefined,
+    phone: accountForm.phone.trim() || undefined
+  }
 
-const cancelEditing = () => {
-  isEditing.value = false
-  syncForm()
-}
-
-const saveChanges = async () => {
+  accountSaving.value = true
   try {
-    if (user.value?.id) {
-      const payload: UpdateVolunteerProfileRequest = {
-        ...profileForm,
-        realName: profileForm.realName.trim(),
-        avatarUrl: avatarPreview.value || undefined,
-        introduction: profileForm.introduction.trim()
-      }
-      await volunteerStore.updateMyProfile(user.value.id, payload)
+    await volunteerStore.updateMyAccount(payload)
+    await authStore.updateProfile({
+      username: payload.userName || user.value?.username,
+      email: payload.email || user.value?.email,
+      phone: payload.phone || user.value?.phone
+    })
+    messageStore.success('账户信息已更新')
+  } catch (error: any) {
+    console.error('保存账户信息失败:', error)
+    messageStore.error(error.message || '保存账户信息失败，请稍后重试')
+  } finally {
+    accountSaving.value = false
+  }
+}
+
+const saveProfileChanges = async () => {
+  try {
+    if (!user.value?.id) {
+      messageStore.error('当前账号缺少志愿者标识，暂时无法保存')
+      return
     }
 
+    profileSaving.value = true
+    const payload: UpdateVolunteerProfileRequest = {
+      gender: profileForm.gender,
+      birthday: profileForm.birthday || undefined,
+      avatarUrl: avatarPreview.value || undefined,
+      introduction: profileForm.introduction.trim() || undefined
+    }
+    await volunteerStore.updateMyProfile(user.value.id, payload)
     await authStore.updateProfile({
-      realName: profileForm.realName,
-      email: accountForm.email,
-      phone: accountForm.phone,
       avatarUrl: avatarPreview.value || user.value?.avatarUrl
     })
-
     messageStore.success('个人资料已更新')
-    isEditing.value = false
   } catch (error: any) {
     console.error('保存个人资料失败:', error)
     messageStore.error(error.message || '保存个人资料失败，请稍后重试')
+  } finally {
+    profileSaving.value = false
   }
 }
 
@@ -427,10 +447,6 @@ const submitRealName = async () => {
     realNameForm.realName = realNameForm.realName.trim()
     realNameForm.idCard = realNameForm.idCard.trim().toUpperCase()
     await volunteerStore.submitRealName(realNameForm)
-    profileForm.realName = realNameForm.realName
-    await authStore.updateProfile({
-      realName: realNameForm.realName
-    })
     messageStore.success('实名认证信息已提交，请等待审核')
   } catch (error: any) {
     console.error('提交实名认证失败:', error)
@@ -438,16 +454,6 @@ const submitRealName = async () => {
   } finally {
     realNameSubmitting.value = false
   }
-}
-
-const togglePreference = (preference: string) => {
-  if (!isEditing.value) return
-  const index = accountForm.preferences.indexOf(preference)
-  if (index >= 0) {
-    accountForm.preferences.splice(index, 1)
-    return
-  }
-  accountForm.preferences.push(preference)
 }
 
 onMounted(async () => {

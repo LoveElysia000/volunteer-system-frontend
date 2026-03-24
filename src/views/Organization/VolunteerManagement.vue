@@ -1,168 +1,251 @@
 <template>
   <div class="space-y-6">
-    <div class="flex items-center justify-between">
-      <h1 class="text-2xl font-bold text-gray-900">
-        志愿者管理
-      </h1>
-    </div>
+    <OrganizationPageHeader
+      eyebrow="Volunteers"
+      title="志愿者管理"
+      description="志愿者列表来自真实接口，导入导出通过按钮直接调用后端文件接口。"
+      :meta-items="headerMeta"
+    >
+      <template #actions>
+        <input
+          ref="importInputRef"
+          type="file"
+          class="hidden"
+          accept=".xlsx,.xls"
+          @change="handleImport"
+        >
+        <button
+          class="org-toolbar-button"
+          :disabled="importing"
+          @click="triggerImport"
+        >
+          {{ importing ? '导入中...' : '导入志愿者' }}
+        </button>
+        <button
+          class="org-toolbar-button org-toolbar-button--soft"
+          :disabled="exporting"
+          @click="exportVolunteers"
+        >
+          {{ exporting ? '导出中...' : '导出志愿者' }}
+        </button>
+      </template>
+    </OrganizationPageHeader>
 
-    <!-- 志愿者统计 -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-      <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-        <div class="flex items-center">
-          <div class="h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
-            <UsersIcon class="h-5 w-5 text-blue-600" />
-          </div>
-          <div>
-            <p class="text-sm text-gray-600">
-              总志愿者
-            </p>
-            <p class="text-2xl font-bold">
-              158
-            </p>
-          </div>
-        </div>
+    <OrganizationSectionCard
+      title="筛选"
+      description="支持关键词检索真实志愿者列表。"
+      tone="soft"
+    >
+      <div class="flex flex-wrap gap-3">
+        <input
+          v-model.trim="keyword"
+          type="text"
+          class="input max-w-sm"
+          placeholder="搜索志愿者姓名"
+        >
+        <button
+          class="org-toolbar-button"
+          :disabled="loading"
+          @click="loadVolunteers"
+        >
+          {{ loading ? '加载中...' : '刷新列表' }}
+        </button>
       </div>
-      <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-        <div class="flex items-center">
-          <div class="h-10 w-10 bg-green-100 rounded-lg flex items-center justify-center mr-4">
-            <ActivityIcon class="h-5 w-5 text-green-600" />
-          </div>
-          <div>
-            <p class="text-sm text-gray-600">
-              活跃志愿者
-            </p>
-            <p class="text-2xl font-bold">
-              89
-            </p>
-          </div>
-        </div>
-      </div>
-      <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-        <div class="flex items-center">
-          <div class="h-10 w-10 bg-orange-100 rounded-lg flex items-center justify-center mr-4">
-            <ClockIcon class="h-5 w-5 text-orange-600" />
-          </div>
-          <div>
-            <p class="text-sm text-gray-600">
-              总服务时长
-            </p>
-            <p class="text-2xl font-bold">
-              245h
-            </p>
-          </div>
-        </div>
-      </div>
-      <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-        <div class="flex items-center">
-          <div class="h-10 w-10 bg-purple-100 rounded-lg flex items-center justify-center mr-4">
-            <StarIcon class="h-5 w-5 text-purple-600" />
-          </div>
-          <div>
-            <p class="text-sm text-gray-600">
-              平均评分
-            </p>
-            <p class="text-2xl font-bold">
-              4.8
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
+    </OrganizationSectionCard>
 
-    <!-- 志愿者列表 -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
-      <div class="p-6 border-b border-gray-200">
-        <div class="flex items-center justify-between">
-          <h2 class="text-lg font-semibold">
-            志愿者列表
-          </h2>
-          <div class="flex space-x-2">
-            <input
-              type="text"
-              class="input input-sm"
-              placeholder="搜索志愿者..."
-            >
-            <select class="select select-sm">
-              <option>全部志愿者</option>
-              <option>活跃志愿者</option>
-              <option>新加入</option>
-            </select>
-          </div>
-        </div>
+    <OrganizationSectionCard
+      title="志愿者列表"
+      description="服务时长、场次和状态基于真实志愿者列表接口。"
+    >
+      <div
+        v-if="loading"
+        class="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500"
+      >
+        正在加载志愿者...
       </div>
 
-      <div class="divide-y divide-gray-200">
-        <div
+      <div
+        v-else-if="!volunteers.length"
+        class="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500"
+      >
+        当前没有可展示的志愿者数据。
+      </div>
+
+      <div
+        v-else
+        class="space-y-4"
+      >
+        <article
           v-for="volunteer in volunteers"
           :key="volunteer.id"
-          class="p-6 hover:bg-gray-50"
+          class="organization-surface-lift rounded-[1.3rem] border border-slate-200 bg-white px-5 py-4"
         >
-          <div class="flex items-center justify-between">
-            <div class="flex items-center space-x-4">
-              <div class="h-12 w-12 bg-gradient-to-br from-primary-400 to-primary-600 rounded-full flex items-center justify-center text-white font-bold">
-                {{ volunteer.initials }}
+          <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+            <div class="flex items-center gap-4">
+              <div class="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-[#f08b53] to-[#ec5b13] text-lg font-bold text-white">
+                {{ volunteer.realName?.charAt(0) || '志' }}
               </div>
               <div>
-                <h3 class="font-semibold text-gray-900">
-                  {{ volunteer.name }}
-                </h3>
-                <p class="text-sm text-gray-500">
-                  {{ volunteer.email }}
+                <h2 class="text-base font-bold text-slate-900">
+                  {{ volunteer.realName || '未实名' }}
+                </h2>
+                <p class="mt-1 text-sm text-slate-500">
+                  志愿者 ID: {{ volunteer.id }} · 审核状态 {{ auditText(volunteer.auditStatus) }}
                 </p>
               </div>
             </div>
-            <div class="flex items-center space-x-2">
-              <span class="text-sm text-gray-500">服务时长: {{ volunteer.hours }}h</span>
-              <span class="text-sm text-gray-500">参与活动: {{ volunteer.activities }}</span>
-              <span :class="`px-2 py-1 rounded-full text-xs font-medium ${volunteer.statusClass}`">
-                {{ volunteer.status }}
+
+            <div class="flex flex-wrap items-center gap-3 text-sm text-slate-500">
+              <span>{{ volunteer.totalHours }}h</span>
+              <span>{{ volunteer.serviceCount }} 场活动</span>
+              <span>信用 {{ volunteer.creditScore }}</span>
+              <span
+                class="rounded-full px-2.5 py-1 text-[11px] font-semibold"
+                :class="statusClass(volunteer.status)"
+              >
+                {{ statusText(volunteer.status) }}
               </span>
-              <button class="btn btn-sm btn-outline">
-                查看详情
-              </button>
             </div>
           </div>
-        </div>
+        </article>
       </div>
-    </div>
+    </OrganizationSectionCard>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { UsersIcon, ActivityIcon, ClockIcon, StarIcon } from 'lucide-vue-next'
+import { computed, onMounted, ref } from 'vue'
+import OrganizationPageHeader from '@/components/organization/OrganizationPageHeader.vue'
+import OrganizationSectionCard from '@/components/organization/OrganizationSectionCard.vue'
+import { volunteerApi } from '@/api/volunteer'
+import { adminApi } from '@/api/admin'
+import { useMessageStore } from '@/store/modules/messages'
+import { VolunteerAuditStatus, VolunteerStatus, type VolunteerListItem } from '@/types/volunteer'
 
-const volunteers = ref([
-  {
-    id: 1,
-    name: '张三',
-    initials: '张',
-    email: 'zhangsan@example.com',
-    hours: 25,
-    activities: 8,
-    status: '活跃',
-    statusClass: 'bg-green-100 text-green-800'
-  },
-  {
-    id: 2,
-    name: '李四',
-    initials: '李',
-    email: 'lisi@example.com',
-    hours: 18,
-    activities: 5,
-    status: '活跃',
-    statusClass: 'bg-green-100 text-green-800'
-  },
-  {
-    id: 3,
-    name: '王五',
-    initials: '王',
-    email: 'wangwu@example.com',
-    hours: 32,
-    activities: 10,
-    status: '非常活跃',
-    statusClass: 'bg-blue-100 text-blue-800'
+const messageStore = useMessageStore()
+
+const importInputRef = ref<HTMLInputElement | null>(null)
+const keyword = ref('')
+const volunteers = ref<VolunteerListItem[]>([])
+const total = ref(0)
+const loading = ref(false)
+const importing = ref(false)
+const exporting = ref(false)
+
+const headerMeta = computed(() => {
+  const activeCount = volunteers.value.filter((item) => item.status === VolunteerStatus.ACTIVE).length
+  const totalHours = volunteers.value.reduce((sum, item) => sum + item.totalHours, 0)
+  return [
+    { label: '总志愿者', value: `${total.value}`, detail: '来自真实列表接口' },
+    { label: '活跃志愿者', value: `${activeCount}`, detail: '状态=活跃' },
+    { label: '总服务时长', value: `${totalHours}h`, detail: '当前页统计' }
+  ]
+})
+
+const loadVolunteers = async () => {
+  loading.value = true
+  try {
+    const response = await volunteerApi.list({
+      keyword: keyword.value || undefined,
+      page: 1,
+      pageSize: 20
+    })
+    if (response.code !== 200) {
+      throw new Error(response.msg || '获取志愿者列表失败')
+    }
+    volunteers.value = response.data.list || []
+    total.value = response.data.total || 0
+  } catch (error: any) {
+    console.error('加载志愿者列表失败:', error)
+    messageStore.error(error.message || '加载志愿者列表失败，请稍后重试')
+  } finally {
+    loading.value = false
   }
-])
+}
+
+const triggerImport = () => {
+  importInputRef.value?.click()
+}
+
+const handleImport = async (event: Event) => {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (!file) return
+
+  importing.value = true
+  try {
+    const response = await adminApi.importVolunteers(file)
+    if (response.code !== 200) {
+      throw new Error(response.msg || '导入志愿者失败')
+    }
+    messageStore.success(`导入完成：成功 ${response.data.successCount} 条，失败 ${response.data.failedCount} 条`)
+    await loadVolunteers()
+  } catch (error: any) {
+    console.error('导入志愿者失败:', error)
+    messageStore.error(error.message || '导入志愿者失败，请稍后重试')
+  } finally {
+    importing.value = false
+    target.value = ''
+  }
+}
+
+const getDownloadFileName = (contentDisposition?: string | null, fallback = 'export.xlsx') => {
+  const match = contentDisposition?.match(/filename\*=UTF-8''([^;]+)|filename="?([^"]+)"?/)
+  return decodeURIComponent(match?.[1] || match?.[2] || fallback)
+}
+
+const downloadBlob = (blob: Blob, fileName: string) => {
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = fileName
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+  URL.revokeObjectURL(url)
+}
+
+const exportVolunteers = async () => {
+  exporting.value = true
+  try {
+    const response = await adminApi.exportVolunteers({
+      keyword: keyword.value || '',
+      auditStatus: undefined,
+      status: undefined
+    })
+    downloadBlob(
+      response.data,
+      getDownloadFileName(response.headers['content-disposition'], 'volunteers.xlsx')
+    )
+    messageStore.success('志愿者导出已开始')
+  } catch (error: any) {
+    console.error('导出志愿者失败:', error)
+    messageStore.error(error.message || '导出志愿者失败，请稍后重试')
+  } finally {
+    exporting.value = false
+  }
+}
+
+const statusText = (status: VolunteerStatus) => ({
+  [VolunteerStatus.ACTIVE]: '活跃',
+  [VolunteerStatus.INACTIVE]: '非活跃',
+  [VolunteerStatus.OTHER]: '其他'
+}[status] || '未知')
+
+const statusClass = (status: VolunteerStatus) => ({
+  [VolunteerStatus.ACTIVE]: 'bg-emerald-100 text-emerald-700',
+  [VolunteerStatus.INACTIVE]: 'bg-amber-100 text-amber-700',
+  [VolunteerStatus.OTHER]: 'bg-slate-100 text-slate-600'
+}[status] || 'bg-slate-100 text-slate-600')
+
+const auditText = (status: VolunteerAuditStatus) => ({
+  [VolunteerAuditStatus.UNVERIFIED]: '未认证',
+  [VolunteerAuditStatus.PENDING]: '审核中',
+  [VolunteerAuditStatus.APPROVED]: '已通过',
+  [VolunteerAuditStatus.REJECTED]: '已驳回'
+}[status] || '未知')
+
+onMounted(() => {
+  void loadVolunteers()
+})
 </script>

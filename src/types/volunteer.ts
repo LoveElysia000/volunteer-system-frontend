@@ -30,10 +30,8 @@ export interface VolunteerHomeSummaryData {
 export interface VolunteerProfileInfo {
   id: number
   accountId: number
-  realName: string
   gender: number
   birthday: string
-  idCard: string
   avatarUrl: string
   introduction: string
   totalHours: number
@@ -45,16 +43,62 @@ export interface VolunteerProfileInfo {
   status: VolunteerStatus
 }
 
+export interface VolunteerAccountInfo {
+  userName: string
+  email: string
+  phone: string
+}
+
+export interface VolunteerVerificationInfo {
+  realName: string
+  idCard: string
+  auditStatus: VolunteerAuditStatus
+}
+
 export interface VolunteerProfileData {
   volunteer: VolunteerProfileInfo
+  accountInfo: VolunteerAccountInfo
+  profile: Pick<VolunteerProfileInfo, 'gender' | 'birthday' | 'avatarUrl' | 'introduction'>
+  verification: VolunteerVerificationInfo
+}
+
+export interface VolunteerListRequest {
+  keyword?: string
+  page: number
+  pageSize: number
+}
+
+export interface VolunteerListItem {
+  id: number
+  accountId: number
+  realName: string
+  gender: number
+  avatarUrl: string
+  totalHours: number
+  serviceCount: number
+  creditScore: number
+  auditStatus: VolunteerAuditStatus
+  createdAt: string
+  updatedAt: string
+  status: VolunteerStatus
+}
+
+export interface VolunteerListData {
+  total: number
+  list: VolunteerListItem[]
 }
 
 export interface UpdateVolunteerProfileRequest {
-  realName?: string
   gender?: number
   birthday?: string
   avatarUrl?: string
   introduction?: string
+}
+
+export interface UpdateVolunteerAccountRequest {
+  userName?: string
+  email?: string
+  phone?: string
 }
 
 export interface VolunteerRealNameSubmitRequest {

@@ -66,6 +66,8 @@ export interface ActivityListRequest {
 
 export interface ActivityListItem {
   id: number
+  orgId?: number
+  orgName?: string
   title: string
   description: string
   coverUrl?: string
@@ -269,4 +271,22 @@ export interface VolunteerActivityViewItem {
   signupStatus?: ActivitySignupStatus
   grantedHours?: number
   auditReason?: string
+}
+
+export interface OrganizationManagementActivityItem {
+  id: number
+  orgId?: number
+  orgName?: string
+  title: string
+  description: string
+  date: string
+  startTime: string
+  endTime: string
+  location: string
+  address?: string
+  status: string
+  statusClass: string
+  participants: number
+  maxPeople: number
+  duration: number
 }

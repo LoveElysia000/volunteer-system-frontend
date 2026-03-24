@@ -269,7 +269,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import {
   ArrowRightIcon,
@@ -288,6 +288,10 @@ import OrganizationPageHeader from '@/components/organization/OrganizationPageHe
 import OrganizationSectionCard from '@/components/organization/OrganizationSectionCard.vue'
 import OrganizationMetricCard from '@/components/organization/OrganizationMetricCard.vue'
 import { useOrganizationDashboardMetrics } from '@/composables/useOrganizationDashboardMetrics'
+import { useAnalyticsStore } from '@/store/modules/analytics'
+import { useMessageStore } from '@/store/modules/messages'
+import { adminApi } from '@/api/admin'
+import { useOrganizationContext } from '@/composables/useOrganizationContext'
 
 const {
   user,
@@ -297,6 +301,9 @@ const {
   topProjectRows,
   currentDateLabel
 } = useOrganizationDashboardMetrics()
+const analyticsStore = useAnalyticsStore()
+const messageStore = useMessageStore()
+const { ensureOrganizationId } = useOrganizationContext()
 
 const searchKeyword = ref('')
 const selectedTrendRange = ref<'12m' | 'qtr' | 'ytd'>('12m')
@@ -364,8 +371,74 @@ const taskProgressClass = (tone: 'green' | 'amber' | 'orange') => {
 
 const handleExport = async () => {
   if (isExporting.value) return
+  const orgId = await ensureOrganizationId()
+  if (!orgId) {
+    messageStore.error('当前没有可用的组织 ID，暂时无法导出运营报表')
+    return
+  }
+
+  const endDate = new Date()
+  const startDate = new Date(endDate)
+  startDate.setDate(endDate.getDate() - 30)
+  const formatDate = (value: Date) => value.toISOString().slice(0, 10)
+  const getDownloadFileName = (contentDisposition?: string | null, fallback = 'export.xlsx') => {
+    const match = contentDisposition?.match(/filename\*=UTF-8''([^;]+)|filename="?([^"]+)"?/)
+    return decodeURIComponent(match?.[1] || match?.[2] || fallback)
+  }
+  const downloadBlob = (blob: Blob, fileName: string) => {
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = fileName
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    URL.revokeObjectURL(url)
+  }
+
   isExporting.value = true
-  await new Promise(resolve => setTimeout(resolve, 520))
-  isExporting.value = false
+  try {
+    const response = await adminApi.exportOpsReport({
+      periodType: 'custom',
+      orgId,
+      start: formatDate(startDate),
+      end: formatDate(endDate)
+    })
+    downloadBlob(
+      response.data,
+      getDownloadFileName(response.headers['content-disposition'], 'ops-report.xlsx')
+    )
+    messageStore.success('运营报表导出已开始')
+  } catch (error: any) {
+    console.error('导出运营报表失败:', error)
+    messageStore.error(error.message || '导出运营报表失败，请稍后重试')
+  } finally {
+    isExporting.value = false
+  }
 }
+
+const loadAnalytics = async () => {
+  const orgId = await ensureOrganizationId()
+  if (!orgId) return
+
+  const endDate = new Date()
+  const startDate = new Date(endDate)
+  startDate.setDate(endDate.getDate() - 30)
+  const formatDate = (value: Date) => value.toISOString().slice(0, 10)
+
+  try {
+    await analyticsStore.fetchOrganizationAnalytics({
+      orgId,
+      start: formatDate(startDate),
+      end: formatDate(endDate)
+    })
+  } catch (error: any) {
+    console.error('加载组织看板统计失败:', error)
+    messageStore.error(error.message || '加载组织看板统计失败，请稍后重试')
+  }
+}
+
+onMounted(() => {
+  void loadAnalytics()
+})
 </script>

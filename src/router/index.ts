@@ -65,6 +65,15 @@ router.beforeEach(async (to, _from, next) => {
 
   const authStore = useAuthStore()
 
+  if (to.name === 'profile' && authStore.isAuthenticated) {
+    if (authStore.user?.role === 'volunteer') {
+      return next('/volunteer/profile')
+    }
+    if (authStore.user?.role === 'organization') {
+      return next('/organization/organization-info')
+    }
+  }
+
   // 检查是否需要认证
   if (to.meta.requiresAuth) {
     // 检查token是否存在

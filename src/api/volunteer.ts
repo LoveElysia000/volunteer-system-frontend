@@ -4,18 +4,29 @@ import type {
   EmptyObjectData,
   VolunteerRealNameSubmitData,
   VolunteerRealNameSubmitRequest,
+  UpdateVolunteerAccountRequest,
   UpdateVolunteerProfileRequest,
   VolunteerHomeSummaryData,
-  VolunteerProfileData
+  VolunteerProfileData,
+  VolunteerListData,
+  VolunteerListRequest
 } from '@/types/volunteer'
 
 export const volunteerApi = {
+  list: (data: VolunteerListRequest): Promise<ApiResponse<VolunteerListData>> => {
+    return http.post<ApiResponse<VolunteerListData>>('/api/volunteers/list', data)
+  },
+
   getHomeSummary: (): Promise<ApiResponse<VolunteerHomeSummaryData>> => {
     return http.get<ApiResponse<VolunteerHomeSummaryData>>('/api/volunteers/home/summary')
   },
 
   getMyProfile: (id: number): Promise<ApiResponse<VolunteerProfileData>> => {
     return http.get<ApiResponse<VolunteerProfileData>>(`/api/volunteers/my/profile/${id}`)
+  },
+
+  updateAccount: (data: UpdateVolunteerAccountRequest): Promise<ApiResponse<EmptyObjectData>> => {
+    return http.put<ApiResponse<EmptyObjectData>>('/api/volunteers/account', data)
   },
 
   updateProfile: (id: number, data: UpdateVolunteerProfileRequest): Promise<ApiResponse<EmptyObjectData>> => {

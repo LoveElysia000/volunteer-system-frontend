@@ -44,7 +44,7 @@ export const routes = [
   {
     path: '/profile',
     name: 'profile',
-    component: () => import('@/views/Profile/Index.vue'),
+    component: () => import('@/views/Volunteer/Profile.vue'),
     meta: { title: '个人中心', requiresAuth: true }
   },
   {
@@ -182,6 +182,12 @@ export const routes = [
         meta: { title: '通知管理' }
       },
       {
+        path: 'assistant',
+        name: 'organization-assistant',
+        component: () => import('@/views/Organization/AIAssistant.vue'),
+        meta: { title: 'AI 助手' }
+      },
+      {
         path: 'settings',
         name: 'organization-settings',
         component: () => import('@/views/Organization/Settings.vue'),
@@ -232,8 +238,8 @@ export const routes = [
       {
         path: 'statistics/financial',
         name: 'organization-statistics-financial',
-        component: () => import('@/views/Organization/StatisticsFinancial.vue'),
-        meta: { title: '财务统计' }
+        component: () => import('@/views/Organization/WorkHours.vue'),
+        meta: { title: '工时流水' }
       },
       {
         path: 'notifications/announcements',

@@ -8,6 +8,12 @@ export interface ApiResponse<T = unknown> {
   data: T
 }
 
+export const isApiSuccess = (code: number) => code === 0 || code === 200
+
+export const getApiMessage = (response: Pick<ApiResponse<unknown>, 'msg'> & { message?: string }) => {
+  return response.msg || response.message || '请求失败'
+}
+
 // 请求配置
 export interface RequestConfig {
   url: string

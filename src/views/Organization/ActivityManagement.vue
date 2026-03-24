@@ -1,131 +1,156 @@
 <template>
   <div class="space-y-6">
-    <div class="flex items-center justify-between">
-      <h1 class="text-2xl font-bold text-gray-900">
-        活动管理
-      </h1>
-      <router-link
-        to="/organization/activities/create"
-        class="btn btn-primary"
-      >
-        <PlusIcon class="h-4 w-4 mr-2" />
-        创建活动
-      </router-link>
-    </div>
+    <OrganizationPageHeader
+      eyebrow="Projects"
+      title="活动管理"
+      description="活动列表、状态筛选和执行操作均已接入真实接口，不再依赖模拟数据。"
+      :meta-items="headerMeta"
+    >
+      <template #actions>
+        <input
+          ref="importInputRef"
+          type="file"
+          class="hidden"
+          accept=".xlsx,.xls"
+          @change="handleImport"
+        >
+        <button
+          class="org-toolbar-button"
+          :disabled="importing"
+          @click="triggerImport"
+        >
+          {{ importing ? '导入中...' : '导入活动' }}
+        </button>
+        <button
+          class="org-toolbar-button"
+          :disabled="exporting"
+          @click="exportActivities"
+        >
+          {{ exporting ? '导出中...' : '导出活动' }}
+        </button>
+        <RouterLink
+          to="/organization/activities/create"
+          class="org-toolbar-button org-toolbar-button--soft"
+        >
+          <PlusIcon class="h-4 w-4" />
+          创建活动
+        </RouterLink>
+      </template>
+    </OrganizationPageHeader>
 
-    <!-- 活动列表 -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
-      <div class="p-6 border-b border-gray-200">
-        <div class="flex items-center justify-between">
-          <h2 class="text-lg font-semibold">
-            活动列表
-          </h2>
-          <div class="flex space-x-2">
-            <input
-              v-model="search"
-              type="text"
-              class="input input-sm"
-              placeholder="搜索活动..."
-            >
-            <select
-              v-model="filter"
-              class="select select-sm"
-            >
-              <option value="all">
-                全部状态
-              </option>
-              <option value="进行中">
-                进行中
-              </option>
-              <option value="已结束">
-                已结束
-              </option>
-              <option value="待审核">
-                待审核
-              </option>
-            </select>
-          </div>
+    <OrganizationSectionCard
+      title="活动列表"
+      description="按关键字和状态过滤当前组织可访问的活动。"
+    >
+      <template #header>
+        <div class="flex flex-wrap gap-3">
+          <input
+            v-model.trim="search"
+            type="text"
+            class="input max-w-xs"
+            placeholder="搜索活动标题或地点"
+          >
+          <select
+            v-model="filter"
+            class="select"
+          >
+            <option value="all">
+              全部状态
+            </option>
+            <option value="open">
+              进行中
+            </option>
+            <option value="ended">
+              已结束
+            </option>
+            <option value="cancelled">
+              已取消
+            </option>
+          </select>
+          <button
+            class="org-toolbar-button"
+            :disabled="loading"
+            @click="loadActivities"
+          >
+            {{ loading ? '加载中...' : '刷新列表' }}
+          </button>
         </div>
+      </template>
+
+      <div
+        v-if="loading"
+        class="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500"
+      >
+        正在加载活动列表...
       </div>
 
-      <div class="divide-y divide-gray-200">
-        <!-- 活动项 -->
-        <div
-          v-for="activity in filteredActivities"
+      <div
+        v-else-if="!activities.length"
+        class="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500"
+      >
+        当前没有可展示的活动。
+      </div>
+
+      <div
+        v-else
+        class="space-y-4"
+      >
+        <article
+          v-for="activity in activities"
           :key="activity.id"
-          class="p-6 hover:bg-gray-50"
+          class="organization-surface-lift rounded-[1.3rem] border border-slate-200 bg-white px-5 py-4"
         >
-          <div class="flex items-center justify-between">
-            <div class="flex items-center space-x-4">
-              <div class="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <CalendarIcon class="h-6 w-6 text-blue-600" />
-              </div>
-              <div>
-                <h3 class="font-semibold text-gray-900">
+          <div class="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+            <div class="min-w-0">
+              <div class="flex flex-wrap items-center gap-2">
+                <h2 class="text-base font-bold text-slate-900">
                   {{ activity.title }}
-                </h3>
-                <p class="text-sm text-gray-500">
-                  {{ activity.date }} | {{ activity.location }}
-                </p>
+                </h2>
+                <span
+                  class="rounded-full px-2.5 py-1 text-[11px] font-semibold"
+                  :class="activity.statusClass"
+                >
+                  {{ activity.status }}
+                </span>
               </div>
+              <p class="mt-2 text-sm leading-6 text-slate-500">
+                {{ activity.description }}
+              </p>
+              <p class="mt-3 text-sm text-slate-500">
+                {{ activity.date }} · {{ activity.location }} · {{ activity.participants }}/{{ activity.maxPeople }} 人 · {{ activity.duration }} 小时
+              </p>
             </div>
-            <div class="flex items-center space-x-2">
-              <span :class="`px-2 py-1 rounded-full text-xs font-medium ${activity.statusClass}`">
-                {{ activity.status }}
-              </span>
+
+            <div class="flex flex-wrap gap-2">
               <button
-                class="btn btn-sm btn-outline"
+                class="org-toolbar-button"
                 @click="selectActivity(activity)"
               >
-                编辑
-              </button>
-              <button
-                class="btn btn-sm btn-outline"
-                @click="inspectActivity(activity)"
-              >
-                执行操作
+                编辑与执行
               </button>
             </div>
           </div>
-          <div class="mt-3 flex items-center text-sm text-gray-500">
-            <UsersIcon class="h-4 w-4 mr-1" />
-            <span class="mr-4">{{ activity.participants }} 人报名</span>
-            <ClockIcon class="h-4 w-4 mr-1" />
-            <span>{{ activity.duration }} 小时</span>
-          </div>
-        </div>
+        </article>
       </div>
-    </div>
+    </OrganizationSectionCard>
 
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-6">
-      <div class="flex items-center justify-between">
-        <div>
-          <h2 class="text-lg font-semibold text-gray-900">
-            活动执行操作台
-          </h2>
-          <p class="mt-1 text-sm text-gray-500">
-            列表用于展示，真实联调操作请填写下方真实活动 ID 后再执行。
-          </p>
-        </div>
-        <span class="rounded-full bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-600">
-          当前真实活动 ID: {{ targetActivityId || '-' }}
-        </span>
-      </div>
-
+    <OrganizationSectionCard
+      title="活动执行操作台"
+      description="当前操作对象直接取自上方真实活动列表。"
+      tone="soft"
+    >
       <div
         v-if="selectedActivity"
         class="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]"
       >
         <div class="space-y-6">
-          <div class="rounded-xl border border-gray-200 bg-gray-50 p-4">
-            <label class="block text-sm font-medium text-gray-700 mb-1">真实活动 ID</label>
-            <input
-              v-model.number="targetActivityId"
-              type="number"
-              min="1"
-              class="input bg-white"
-              placeholder="请输入后端真实活动 ID"
-            >
+          <div class="rounded-xl border border-white/70 bg-white/90 p-4">
+            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+              当前活动
+            </p>
+            <p class="mt-2 text-base font-bold text-slate-900">
+              #{{ selectedActivity.id }} · {{ selectedActivity.title }}
+            </p>
           </div>
 
           <div class="grid gap-4 md:grid-cols-2">
@@ -135,7 +160,6 @@
                 v-model="editForm.title"
                 type="text"
                 class="input"
-                placeholder="请输入活动标题"
               >
             </div>
             <div class="md:col-span-2">
@@ -144,7 +168,6 @@
                 v-model="editForm.description"
                 rows="4"
                 class="textarea"
-                placeholder="请输入活动描述"
               />
             </div>
             <div>
@@ -153,7 +176,6 @@
                 v-model="editForm.location"
                 type="text"
                 class="input"
-                placeholder="请输入活动地点"
               >
             </div>
             <div>
@@ -162,7 +184,6 @@
                 v-model="editForm.address"
                 type="text"
                 class="input"
-                placeholder="请输入详细地址"
               >
             </div>
             <div>
@@ -227,13 +248,13 @@
             </button>
           </div>
 
-          <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 space-y-3">
+          <div class="rounded-xl border border-gray-200 bg-white p-4 space-y-3">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">取消原因</label>
               <textarea
                 v-model="cancelReason"
                 rows="3"
-                class="textarea bg-white"
+                class="textarea"
                 placeholder="请输入取消活动的原因"
               />
             </div>
@@ -250,7 +271,7 @@
         </div>
 
         <div class="space-y-6">
-          <div class="rounded-xl border border-gray-200 p-4 space-y-4">
+          <div class="rounded-xl border border-gray-200 bg-white p-4 space-y-4">
             <div class="flex items-center justify-between">
               <h3 class="text-base font-semibold text-gray-900">
                 签到码管理
@@ -316,7 +337,7 @@
             </div>
           </div>
 
-          <div class="rounded-xl border border-gray-200 p-4 space-y-4">
+          <div class="rounded-xl border border-gray-200 bg-white p-4 space-y-4">
             <h3 class="text-base font-semibold text-gray-900">
               补录考勤
             </h3>
@@ -374,83 +395,46 @@
         v-else
         class="rounded-xl border border-dashed border-gray-200 bg-gray-50 px-4 py-10 text-center text-sm text-gray-500"
       >
-        请先从上方活动列表选择一个活动，再进行联调操作。
+        请先从上方真实活动列表选择一个活动，再进行执行操作。
       </div>
-    </div>
+    </OrganizationSectionCard>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch, onActivated } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { usePageStateStore } from '@/store/modules/pageState'
+import { computed, onMounted, ref, watch } from 'vue'
+import { RouterLink } from 'vue-router'
+import OrganizationPageHeader from '@/components/organization/OrganizationPageHeader.vue'
+import OrganizationSectionCard from '@/components/organization/OrganizationSectionCard.vue'
+import { activitiesApi, ATTENDANCE_CODE_TYPE, mapActivityItemToOrganizationManagementView } from '@/api/activities'
+import { adminApi } from '@/api/admin'
+import {
+  ActivityStatus,
+  AttendanceCodeType,
+  type OrganizationManagementActivityItem,
+  type SupplementAttendanceRequest,
+  type UpdateOrganizationActivityRequest
+} from '@/types/activity'
 import { useMessageStore } from '@/store/modules/messages'
-import { activitiesApi, ATTENDANCE_CODE_TYPE } from '@/api/activities'
-import { AttendanceCodeType, type SupplementAttendanceRequest, type UpdateOrganizationActivityRequest } from '@/types/activity'
-import { CalendarIcon, UsersIcon, ClockIcon, PlusIcon } from 'lucide-vue-next'
+import { PlusIcon } from 'lucide-vue-next'
 
-// 路由和状态管理
-const route = useRoute()
-const router = useRouter()
-const pageStateStore = usePageStateStore()
 const messageStore = useMessageStore()
 
-// 使用store中的状态
-const filter = ref(pageStateStore.state.organizationActivities.filter)
-const search = ref(pageStateStore.state.organizationActivities.search)
-
-const activities = ref([
-  {
-    id: 1,
-    title: '城市公园清洁活动',
-    description: '针对公共区域开展垃圾清理与环保宣传。',
-    date: '2026-01-20',
-    startTime: '2026-01-20T09:00',
-    endTime: '2026-01-20T12:00',
-    location: '中央公园',
-    address: '中央公园东门集合',
-    status: '进行中',
-    statusClass: 'bg-green-100 text-green-800',
-    participants: 25,
-    duration: 3
-  },
-  {
-    id: 2,
-    title: '环保知识讲座',
-    description: '面向社区居民开展垃圾分类与低碳生活分享。',
-    date: '2026-01-25',
-    startTime: '2026-01-25T14:00',
-    endTime: '2026-01-25T16:00',
-    location: '社区中心',
-    address: '社区中心三楼多功能厅',
-    status: '待审核',
-    statusClass: 'bg-yellow-100 text-yellow-800',
-    participants: 15,
-    duration: 2
-  },
-  {
-    id: 3,
-    title: '河流清理志愿者活动',
-    description: '组织志愿者完成河岸垃圾清运与巡查记录。',
-    date: '2026-01-15',
-    startTime: '2026-01-15T08:00',
-    endTime: '2026-01-15T12:00',
-    location: '城市河岸',
-    address: '河岸步道服务站',
-    status: '已结束',
-    statusClass: 'bg-gray-100 text-gray-800',
-    participants: 32,
-    duration: 4
-  }
-])
-const selectedActivityId = ref<number | null>(activities.value[0]?.id ?? null)
+const importInputRef = ref<HTMLInputElement | null>(null)
+const search = ref('')
+const filter = ref<'all' | 'open' | 'ended' | 'cancelled'>('all')
+const loading = ref(false)
+const importing = ref(false)
+const exporting = ref(false)
 const updating = ref(false)
 const finishing = ref(false)
 const deleting = ref(false)
 const cancelling = ref(false)
 const attendanceLoading = ref(false)
 const supplementing = ref(false)
-const targetActivityId = ref<number | null>(null)
+
+const activities = ref<OrganizationManagementActivityItem[]>([])
+const selectedActivityId = ref<number | null>(null)
 const cancelReason = ref('')
 const editForm = ref<UpdateOrganizationActivityRequest>({
   title: '',
@@ -478,107 +462,22 @@ const supplementForm = ref<Omit<SupplementAttendanceRequest, 'activityId'>>({
   reason: ''
 })
 
-// 监听路由参数变化
-watch(() => route.query, (newQuery) => {
-  // 从路由参数恢复状态
-  if (newQuery.filter) {
-    filter.value = newQuery.filter as string
-    pageStateStore.updateOrganizationActivitiesState({ filter: newQuery.filter as string })
-  }
-  if (newQuery.search) {
-    search.value = newQuery.search as string
-    pageStateStore.updateOrganizationActivitiesState({ search: newQuery.search as string })
-  }
-  // 重新加载数据
-  loadActivities()
-}, { immediate: true })
-
-// 监听状态变化，同步到路由和store
-watch([filter, search], ([newFilter, newSearch]) => {
-  const query: any = {}
-  if (newFilter && newFilter !== 'all') query.filter = newFilter
-  if (newSearch) query.search = newSearch
-
-  // 更新路由参数
-  router.replace({ query })
-
-  // 更新store状态
-  pageStateStore.updateOrganizationActivitiesState({
-    filter: newFilter,
-    search: newSearch
-  })
-})
-
-// 数据加载函数
-const loadActivities = async () => {
-  console.log('加载组织活动数据:', {
-    filter: filter.value,
-    search: search.value
-  })
-  // 这里可以调用API进行数据加载
-  // 目前使用模拟数据
-}
-
-// 组件激活时恢复状态
-onActivated(() => {
-  console.log('组织活动管理页面激活，恢复状态')
-  loadActivities()
-})
-
-// 过滤活动列表
-const filteredActivities = computed(() => {
-  let filtered = activities.value
-
-  // 按状态过滤
-  if (filter.value !== 'all') {
-    filtered = filtered.filter(activity => activity.status === filter.value)
-  }
-
-  // 按搜索查询过滤
-  if (search.value) {
-    const query = search.value.toLowerCase()
-    filtered = filtered.filter(activity =>
-      activity.title.toLowerCase().includes(query) ||
-      activity.location.toLowerCase().includes(query)
-    )
-  }
-
-  return filtered
-})
-
 const selectedActivity = computed(() => (
-  activities.value.find(activity => activity.id === selectedActivityId.value) || null
+  activities.value.find((activity) => activity.id === selectedActivityId.value) || null
 ))
 
-const selectActivity = (activity: typeof activities.value[number]) => {
-  selectedActivityId.value = activity.id
-  editForm.value = {
-    title: activity.title,
-    description: activity.description,
-    location: activity.location,
-    address: activity.address,
-    startTime: activity.startTime,
-    endTime: activity.endTime,
-    duration: activity.duration,
-    maxPeople: Math.max(activity.participants + 10, 30)
-  }
-}
-
-const inspectActivity = async (activity: typeof activities.value[number]) => {
-  selectActivity(activity)
-}
+const headerMeta = computed(() => [
+  { label: '活动总数', value: `${activities.value.length}`, detail: '来自活动列表接口' },
+  { label: '当前筛选', value: filter.value === 'all' ? '全部状态' : filter.value === 'open' ? '进行中' : filter.value === 'ended' ? '已结束' : '已取消', detail: '可按状态切换' }
+])
 
 const toApiDateTime = (value: string) => {
-  if (!value) {
-    return ''
-  }
+  if (!value) return ''
   return new Date(value).toISOString().slice(0, 19).replace('T', ' ')
 }
 
 const toDateTimeLocal = (value?: string) => {
-  if (!value) {
-    return ''
-  }
+  if (!value) return ''
   return value.replace(' ', 'T').slice(0, 16)
 }
 
@@ -590,36 +489,158 @@ const updateSupplementDateTime = (field: 'checkInTime' | 'checkOutTime', event: 
   supplementForm.value[field] = toApiDateTime((event.target as HTMLInputElement).value)
 }
 
-const updateActivityLocalState = (patch: Partial<typeof activities.value[number]>) => {
-  if (!selectedActivity.value) {
-    return
-  }
-  activities.value = activities.value.map(activity => (
-    activity.id === selectedActivity.value?.id
-      ? { ...activity, ...patch, date: patch.startTime ? patch.startTime.slice(0, 10) : activity.date }
-      : activity
-  ))
+const mapFilterToStatus = () => {
+  if (filter.value === 'open') return ActivityStatus.OPEN
+  if (filter.value === 'ended') return ActivityStatus.ENDED
+  if (filter.value === 'cancelled') return ActivityStatus.CANCELLED
+  return undefined
 }
 
-const requireTargetActivityId = () => {
-  if (!targetActivityId.value) {
-    messageStore.error('请输入真实活动 ID 后再执行联调操作')
+const selectActivity = (activity: OrganizationManagementActivityItem) => {
+  selectedActivityId.value = activity.id
+  editForm.value = {
+    title: activity.title,
+    description: activity.description,
+    location: activity.location,
+    address: activity.address,
+    startTime: activity.startTime,
+    endTime: activity.endTime,
+    duration: activity.duration,
+    maxPeople: activity.maxPeople
+  }
+}
+
+const loadActivities = async () => {
+  loading.value = true
+  try {
+    const response = await activitiesApi.list({
+      page: 1,
+      pageSize: 20,
+      status: mapFilterToStatus(),
+      keyword: search.value || undefined,
+      sortBy: 'start_time',
+      sortOrder: 'asc'
+    })
+
+    if (response.code !== 200) {
+      throw new Error(response.msg || '获取活动列表失败')
+    }
+
+    activities.value = (response.data.list || []).map(mapActivityItemToOrganizationManagementView)
+    if (!selectedActivityId.value && activities.value.length) {
+      selectActivity(activities.value[0])
+    } else if (selectedActivityId.value) {
+      const current = activities.value.find((item) => item.id === selectedActivityId.value)
+      if (current) {
+        selectActivity(current)
+      } else {
+        selectedActivityId.value = null
+      }
+    }
+  } catch (error: any) {
+    console.error('加载活动列表失败:', error)
+    messageStore.error(error.message || '加载活动列表失败，请稍后重试')
+    activities.value = []
+    selectedActivityId.value = null
+  } finally {
+    loading.value = false
+  }
+}
+
+const triggerImport = () => {
+  importInputRef.value?.click()
+}
+
+const handleImport = async (event: Event) => {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (!file) return
+
+  importing.value = true
+  try {
+    const response = await adminApi.importActivities(file)
+    if (response.code !== 200) {
+      throw new Error(response.msg || '导入活动失败')
+    }
+    messageStore.success(`导入完成：成功 ${response.data.successCount} 条，失败 ${response.data.failedCount} 条`)
+    await loadActivities()
+  } catch (error: any) {
+    console.error('导入活动失败:', error)
+    messageStore.error(error.message || '导入活动失败，请稍后重试')
+  } finally {
+    importing.value = false
+    target.value = ''
+  }
+}
+
+const getDownloadFileName = (contentDisposition?: string | null, fallback = 'export.xlsx') => {
+  const match = contentDisposition?.match(/filename\*=UTF-8''([^;]+)|filename="?([^"]+)"?/)
+  return decodeURIComponent(match?.[1] || match?.[2] || fallback)
+}
+
+const downloadBlob = (blob: Blob, fileName: string) => {
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = fileName
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+  URL.revokeObjectURL(url)
+}
+
+const exportActivities = async () => {
+  exporting.value = true
+  try {
+    const response = await adminApi.exportActivities({
+      keyword: search.value || '',
+      status: mapFilterToStatus(),
+      startFrom: '',
+      startTo: ''
+    })
+    downloadBlob(
+      response.data,
+      getDownloadFileName(response.headers['content-disposition'], 'activities.xlsx')
+    )
+    messageStore.success('活动导出已开始')
+  } catch (error: any) {
+    console.error('导出活动失败:', error)
+    messageStore.error(error.message || '导出活动失败，请稍后重试')
+  } finally {
+    exporting.value = false
+  }
+}
+
+const requireSelectedActivityId = () => {
+  if (!selectedActivity.value?.id) {
+    messageStore.error('请先选择活动')
     return null
   }
-  return targetActivityId.value
+  return selectedActivity.value.id
+}
+
+const updateActivityLocalState = (patch: Partial<OrganizationManagementActivityItem>) => {
+  const targetId = selectedActivity.value?.id
+  if (!targetId) return
+  activities.value = activities.value.map((activity) => (
+    activity.id === targetId ? { ...activity, ...patch, date: patch.startTime ? patch.startTime.slice(0, 10) : activity.date } : activity
+  ))
+  const updated = activities.value.find((activity) => activity.id === targetId)
+  if (updated) {
+    selectActivity(updated)
+  }
 }
 
 const saveActivity = async () => {
-  if (!selectedActivity.value) return
-  const activityId = requireTargetActivityId()
+  const activityId = requireSelectedActivityId()
   if (!activityId) return
   updating.value = true
   try {
     const response = await activitiesApi.update(activityId, {
-      title: editForm.value.title.trim(),
-      description: editForm.value.description.trim(),
-      location: editForm.value.location.trim(),
-      address: editForm.value.address.trim() || undefined,
+      title: editForm.value.title?.trim(),
+      description: editForm.value.description?.trim(),
+      location: editForm.value.location?.trim(),
+      address: editForm.value.address?.trim() || undefined,
       startTime: editForm.value.startTime,
       endTime: editForm.value.endTime,
       duration: editForm.value.duration,
@@ -629,13 +650,14 @@ const saveActivity = async () => {
       throw new Error(response.msg || '更新活动失败')
     }
     updateActivityLocalState({
-      title: editForm.value.title.trim(),
-      description: editForm.value.description.trim(),
-      location: editForm.value.location.trim(),
-      address: editForm.value.address.trim(),
-      startTime: editForm.value.startTime,
-      endTime: editForm.value.endTime,
-      duration: editForm.value.duration
+      title: editForm.value.title?.trim() || '',
+      description: editForm.value.description?.trim() || '',
+      location: editForm.value.location?.trim() || '',
+      address: editForm.value.address?.trim() || '',
+      startTime: editForm.value.startTime || '',
+      endTime: editForm.value.endTime || '',
+      duration: editForm.value.duration || 0,
+      maxPeople: editForm.value.maxPeople || 0
     })
     messageStore.success(response.data.message || '活动信息已更新')
   } catch (error: any) {
@@ -647,8 +669,7 @@ const saveActivity = async () => {
 }
 
 const finishActivity = async () => {
-  if (!selectedActivity.value) return
-  const activityId = requireTargetActivityId()
+  const activityId = requireSelectedActivityId()
   if (!activityId) return
   finishing.value = true
   try {
@@ -656,10 +677,7 @@ const finishActivity = async () => {
     if (response.code !== 200) {
       throw new Error(response.msg || '完结活动失败')
     }
-    updateActivityLocalState({
-      status: '已结束',
-      statusClass: 'bg-gray-100 text-gray-800'
-    })
+    updateActivityLocalState({ status: '已结束', statusClass: 'bg-gray-100 text-gray-800' })
     messageStore.success(response.data.message || '活动已标记为完结')
   } catch (error: any) {
     console.error('完结活动失败:', error)
@@ -670,8 +688,7 @@ const finishActivity = async () => {
 }
 
 const cancelActivity = async () => {
-  if (!selectedActivity.value) return
-  const activityId = requireTargetActivityId()
+  const activityId = requireSelectedActivityId()
   if (!activityId) return
   if (!cancelReason.value.trim()) {
     messageStore.error('请输入取消原因')
@@ -679,16 +696,11 @@ const cancelActivity = async () => {
   }
   cancelling.value = true
   try {
-    const response = await activitiesApi.cancelByOrganization(activityId, {
-      reason: cancelReason.value.trim()
-    })
+    const response = await activitiesApi.cancelByOrganization(activityId, { reason: cancelReason.value.trim() })
     if (response.code !== 200) {
       throw new Error(response.msg || '取消活动失败')
     }
-    updateActivityLocalState({
-      status: '已取消',
-      statusClass: 'bg-red-100 text-red-700'
-    })
+    updateActivityLocalState({ status: '已取消', statusClass: 'bg-red-100 text-red-700' })
     messageStore.success(response.data.message || '活动已取消')
   } catch (error: any) {
     console.error('取消活动失败:', error)
@@ -699,8 +711,7 @@ const cancelActivity = async () => {
 }
 
 const deleteActivity = async () => {
-  if (!selectedActivity.value) return
-  const activityId = requireTargetActivityId()
+  const activityId = requireSelectedActivityId()
   if (!activityId) return
   deleting.value = true
   try {
@@ -708,11 +719,10 @@ const deleteActivity = async () => {
     if (response.code !== 200) {
       throw new Error(response.msg || '删除活动失败')
     }
-    targetActivityId.value = null
-    attendanceCodeInfo.value = {
-      checkInCode: '',
-      checkOutCode: '',
-      attendanceCodeVersion: 0
+    activities.value = activities.value.filter((activity) => activity.id !== activityId)
+    selectedActivityId.value = activities.value[0]?.id ?? null
+    if (activities.value[0]) {
+      selectActivity(activities.value[0])
     }
     messageStore.success(response.data.message || '活动已删除')
   } catch (error: any) {
@@ -724,8 +734,7 @@ const deleteActivity = async () => {
 }
 
 const loadAttendanceCodes = async () => {
-  if (!selectedActivity.value) return
-  const activityId = requireTargetActivityId()
+  const activityId = requireSelectedActivityId()
   if (!activityId) return
   attendanceLoading.value = true
   try {
@@ -747,8 +756,7 @@ const loadAttendanceCodes = async () => {
 }
 
 const generateAttendanceCodes = async () => {
-  if (!selectedActivity.value) return
-  const activityId = requireTargetActivityId()
+  const activityId = requireSelectedActivityId()
   if (!activityId) return
   attendanceLoading.value = true
   try {
@@ -771,18 +779,14 @@ const generateAttendanceCodes = async () => {
 }
 
 const resetAttendanceCode = async (codeType: AttendanceCodeType) => {
-  if (!selectedActivity.value) return
-  const activityId = requireTargetActivityId()
+  const activityId = requireSelectedActivityId()
   if (!activityId) return
   attendanceLoading.value = true
   try {
     const validMinutes = codeType === ATTENDANCE_CODE_TYPE.CHECK_IN
       ? attendanceForm.value.checkInValidMinutes
       : attendanceForm.value.checkOutValidMinutes
-    const response = await activitiesApi.resetAttendanceCode(activityId, {
-      codeType,
-      validMinutes
-    })
+    const response = await activitiesApi.resetAttendanceCode(activityId, { codeType, validMinutes })
     if (response.code !== 200) {
       throw new Error(response.msg || '重置签到码失败')
     }
@@ -802,8 +806,7 @@ const resetAttendanceCode = async (codeType: AttendanceCodeType) => {
 }
 
 const submitSupplementAttendance = async () => {
-  if (!selectedActivity.value) return
-  const activityId = requireTargetActivityId()
+  const activityId = requireSelectedActivityId()
   if (!activityId) return
   if (!supplementForm.value.volunteerId || !supplementForm.value.checkInTime || !supplementForm.value.checkOutTime || !supplementForm.value.reason.trim()) {
     messageStore.error('请完整填写补录考勤信息')
@@ -830,12 +833,11 @@ const submitSupplementAttendance = async () => {
   }
 }
 
-// 组件挂载时加载数据
+watch([search, filter], () => {
+  void loadActivities()
+})
+
 onMounted(() => {
-  console.log('组织活动管理页面挂载')
-  if (activities.value[0]) {
-    selectActivity(activities.value[0])
-  }
-  loadActivities()
+  void loadActivities()
 })
 </script>

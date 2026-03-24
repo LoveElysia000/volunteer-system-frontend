@@ -344,7 +344,8 @@ const pageDescriptions: Record<string, string> = {
   'organization-volunteers-evaluations': '管理评价反馈与改进建议，形成正向协作闭环。',
   'organization-statistics-activities': '查看活动维度报表，评估执行质量与投入产出。',
   'organization-statistics-volunteers': '查看志愿者结构、活跃人群和增长状态。',
-  'organization-statistics-financial': '查看资金流向、成本结构和筹资成果。',
+  'organization-statistics-financial': '查看工时发放、作废和重算流水，处理异常记录。',
+  'organization-assistant': '使用 AI 助手生成活动草案、整理运营内容并查看对话历史。',
   'organization-notifications-announcements': '发布公告并追踪触达效果。',
   'organization-settings-permissions': '配置组织角色权限与访问策略。'
 }

@@ -29,7 +29,8 @@ import {
   BuildingIcon,
   BellIcon,
   BookmarkIcon,
-  FolderKanbanIcon
+  FolderKanbanIcon,
+  SparklesIcon
 } from 'lucide-vue-next'
 import MenuItem from './MenuItem.vue'
 import { hasChildActive } from '@/utils/pathMatcher'
@@ -154,11 +155,17 @@ const menuItems = computed<SidebarMenuItem[]>(() => [
       },
       {
         key: 'financial-statistics',
-        label: '财务统计',
+        label: '工时流水',
         icon: TrophyIcon,
         to: '/organization/statistics/financial'
       }
     ]
+  },
+  {
+    key: 'assistant',
+    label: 'AI 助手',
+    icon: SparklesIcon,
+    to: '/organization/assistant'
   },
   {
     key: 'notifications',

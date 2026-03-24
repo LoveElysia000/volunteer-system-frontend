@@ -4,6 +4,7 @@ import type {
   OrganizationDetailData,
   OrganizationListData,
   OrganizationListRequest,
+  UpdateOrganizationAccountRequest,
   UpdateOrganizationData,
   UpdateOrganizationRequest
 } from '@/types/organization'
@@ -15,6 +16,10 @@ export const organizationsApi = {
 
   detail: (id: number): Promise<ApiResponse<OrganizationDetailData>> => {
     return http.get<ApiResponse<OrganizationDetailData>>(`/api/organizations/${id}`)
+  },
+
+  updateAccount: (data: UpdateOrganizationAccountRequest): Promise<ApiResponse<Record<string, never>>> => {
+    return http.put<ApiResponse<Record<string, never>>>('/api/organizations/account', data)
   },
 
   update: (id: number, data: UpdateOrganizationRequest): Promise<ApiResponse<UpdateOrganizationData>> => {
