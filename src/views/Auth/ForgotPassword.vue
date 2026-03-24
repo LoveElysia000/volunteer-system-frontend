@@ -187,39 +187,51 @@
                     </div>
                   </div>
 
-                  <div class="floating-field relative">
-                    <input
-                      v-if="recoveryState.mode === RecoveryMode.EMAIL"
-                      id="identifier"
-                      v-model="recoveryState.form.email"
-                      type="email"
-                      placeholder=" "
-                      class="peer recovery-input"
-                      :class="{ 'recovery-input-error': currentIdentifierError }"
-                      autocomplete="email"
-                      @blur="() => handleBlur('email')"
-                    >
-                    <input
-                      v-else
-                      id="identifier"
-                      v-model="recoveryState.form.phone"
-                      type="tel"
-                      placeholder=" "
-                      class="peer recovery-input"
-                      :class="{ 'recovery-input-error': currentIdentifierError }"
-                      autocomplete="tel"
-                      @blur="() => handleBlur('phone')"
-                    >
-                    <label
-                      for="identifier"
-                      class="recovery-label"
-                    >
-                      {{ recoveryState.mode === RecoveryMode.EMAIL ? '请输入注册邮箱' : '请输入绑定手机号' }}
-                    </label>
-                    <component
-                      :is="recoveryState.mode === RecoveryMode.EMAIL ? MailIcon : PhoneIcon"
-                      class="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400 transition peer-focus:text-primary-500"
-                    />
+                  <div class="floating-field">
+                    <div class="relative">
+                      <input
+                        v-if="recoveryState.mode === RecoveryMode.EMAIL"
+                        id="identifier"
+                        v-model="recoveryState.form.email"
+                        type="email"
+                        placeholder=" "
+                        class="peer recovery-input"
+                        :class="{
+                          'recovery-input-error': currentIdentifierError,
+                          'recovery-input-raised': identifierFieldRaised
+                        }"
+                        autocomplete="email"
+                        @focus="handleFocus('email')"
+                        @blur="() => handleBlur('email')"
+                      >
+                      <input
+                        v-else
+                        id="identifier"
+                        v-model="recoveryState.form.phone"
+                        type="tel"
+                        placeholder=" "
+                        class="peer recovery-input"
+                        :class="{
+                          'recovery-input-error': currentIdentifierError,
+                          'recovery-input-raised': identifierFieldRaised
+                        }"
+                        autocomplete="tel"
+                        @focus="handleFocus('phone')"
+                        @blur="() => handleBlur('phone')"
+                      >
+                      <label
+                        for="identifier"
+                        class="recovery-label"
+                        :class="{ 'recovery-label-raised': identifierFieldRaised }"
+                      >
+                        {{ recoveryState.mode === RecoveryMode.EMAIL ? '请输入注册邮箱' : '请输入绑定手机号' }}
+                      </label>
+                      <component
+                        :is="recoveryState.mode === RecoveryMode.EMAIL ? MailIcon : PhoneIcon"
+                        class="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400 transition"
+                        :class="{ 'recovery-trailing-icon-raised text-primary-500': identifierFieldRaised }"
+                      />
+                    </div>
                     <p
                       v-if="currentIdentifierError"
                       class="mt-2 text-sm font-medium text-rose-500"
@@ -296,6 +308,7 @@ const messageStore = useMessageStore()
 const submitting = ref(false)
 const submitted = ref(false)
 const successMessage = ref('')
+const focusedField = ref<'email' | 'phone' | null>(null)
 
 const recoveryState = reactive({
   mode: RecoveryMode.EMAIL,
@@ -315,6 +328,12 @@ const recoveryState = reactive({
 
 const currentIdentifierError = computed(() => {
   return recoveryState.mode === RecoveryMode.EMAIL ? recoveryState.errors.email : recoveryState.errors.phone
+})
+
+const identifierFieldRaised = computed(() => {
+  return recoveryState.mode === RecoveryMode.EMAIL
+    ? focusedField.value === 'email' || Boolean(recoveryState.form.email)
+    : focusedField.value === 'phone' || Boolean(recoveryState.form.phone)
 })
 
 const validateField = (field: 'email' | 'phone', value: string) => {
@@ -343,17 +362,30 @@ const switchMode = (mode: RecoveryMode) => {
   recoveryState.mode = mode
 
   if (mode === RecoveryMode.EMAIL) {
+    if (focusedField.value === 'phone') {
+      focusedField.value = null
+    }
     recoveryState.form.phone = ''
     recoveryState.errors.phone = ''
     recoveryState.touched.phone = false
   } else {
+    if (focusedField.value === 'email') {
+      focusedField.value = null
+    }
     recoveryState.form.email = ''
     recoveryState.errors.email = ''
     recoveryState.touched.email = false
   }
 }
 
+const handleFocus = (field: 'email' | 'phone') => {
+  focusedField.value = field
+}
+
 const handleBlur = (field: 'email' | 'phone') => {
+  if (focusedField.value === field) {
+    focusedField.value = null
+  }
   recoveryState.touched[field] = true
   recoveryState.errors[field] = validateField(field, recoveryState.form[field])
 }
@@ -376,6 +408,7 @@ const resetForm = () => {
   recoveryState.touched.email = false
   recoveryState.touched.phone = false
   recoveryState.mode = RecoveryMode.EMAIL
+  focusedField.value = null
 }
 
 const showHelpMessage = () => {
@@ -413,13 +446,16 @@ const handleSubmit = async () => {
 
 .recovery-input {
   width: 100%;
+  min-height: 3.75rem;
   border-radius: 1rem;
   border: 1px solid #e2e8f0;
   background: #f8fafc;
   padding: 1rem 3.25rem 1rem 1rem;
+  line-height: 1.5rem;
   color: #0f172a;
   outline: none;
   transition: all 0.2s ease;
+  appearance: none;
 }
 
 .recovery-input:focus {
@@ -443,16 +479,18 @@ const handleSubmit = async () => {
   pointer-events: none;
 }
 
-.floating-field .peer:focus ~ .recovery-label,
-.floating-field .peer:not(:placeholder-shown) ~ .recovery-label {
+.floating-field .recovery-label-raised {
   transform: translateY(-0.72rem) scale(0.84);
   color: #38a169;
 }
 
-.floating-field .peer:focus,
-.floating-field .peer:not(:placeholder-shown) {
+.floating-field .recovery-input-raised {
   padding-top: 1.5rem;
   padding-bottom: 0.75rem;
+}
+
+.floating-field .recovery-trailing-icon-raised {
+  top: calc(50% + 0.3rem);
 }
 </style>
 
