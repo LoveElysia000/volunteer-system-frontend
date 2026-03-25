@@ -11,9 +11,11 @@
     :multi-dates="multiDates"
     :week-start="weekStart"
     :enable-time-picker="enableTimePicker"
+    :enable-seconds="enableSeconds"
     :is24="is24"
     :minutes-increment="minutesIncrement"
     :hours-increment="hoursIncrement"
+    :seconds-increment="secondsIncrement"
     :start-time="startTime"
     :preset-dates="presetDates"
     :filters="filters"
@@ -22,7 +24,7 @@
     :auto-apply="autoApply"
     :close-on-auto-apply="closeOnAutoApply"
     :teleport="true"
-    :class="['date-picker', { 'date-picker-error': error }]"
+    :class="['date-picker', `date-picker--${theme}`, { 'date-picker-error': error }]"
     :ui="{
       input: 'dp-input',
       menu: 'dp-menu',
@@ -46,7 +48,7 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import VueDatePicker from '@vuepic/vue-datepicker'
+import { VueDatePicker } from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
 
 type DateValue = Date | Date[] | [Date, Date] | null
@@ -63,9 +65,11 @@ interface Props {
   multiDates?: boolean
   weekStart?: 0 | 1 | 2 | 3 | 4 | 5 | 6
   enableTimePicker?: boolean
+  enableSeconds?: boolean
   is24?: boolean
   minutesIncrement?: number
   hoursIncrement?: number
+  secondsIncrement?: number
   startTime?: { hours: number; minutes: number }
   presetDates?: Array<{ label: string; value: Date | [Date, Date] }>
   filters?: { months?: number[]; years?: number[]; times?: { hours?: number[]; minutes?: number[]; seconds?: number[] } }
@@ -74,6 +78,7 @@ interface Props {
   autoApply?: boolean
   closeOnAutoApply?: boolean
   error?: string
+  theme?: 'orange' | 'emerald'
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -86,11 +91,14 @@ const props = withDefaults(defineProps<Props>(), {
   multiDates: false,
   weekStart: 1,
   enableTimePicker: false,
+  enableSeconds: false,
   is24: true,
   minutesIncrement: 1,
   hoursIncrement: 1,
+  secondsIncrement: 1,
   autoApply: true,
-  closeOnAutoApply: true
+  closeOnAutoApply: true,
+  theme: 'orange'
 })
 
 const emit = defineEmits<{
@@ -120,51 +128,80 @@ const handleUpdate = (val: DateValue) => {
 
 .dp-input {
   width: 100%;
+  min-height: 44px;
   padding: 10px 14px;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
   font-size: 0.9375rem;
-  color: #111827;
-  background: white;
+  font-weight: 500;
+  color: #0f172a;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.95) 100%);
+  box-shadow: 0 10px 30px -26px rgba(15, 23, 42, 0.38);
   transition: all 0.2s ease;
 }
 
 .dp-input:hover {
-  border-color: #d1d5db;
+  border-color: #cbd5e1;
+  box-shadow: 0 18px 42px -34px rgba(15, 23, 42, 0.26);
 }
 
-.dp-input:focus {
+.date-picker--orange .dp-input:focus {
   outline: none;
-  border-color: var(--tw-colors-primary-500, #10b981);
-  box-shadow: 0 0 0 3px rgba(var(--tw-colors-primary-rgb, 16, 185, 129), 0.1);
+  border-color: #ec5b13;
+  box-shadow: 0 0 0 4px rgba(251, 146, 60, 0.15);
+}
+
+.date-picker--emerald .dp-input:focus {
+  outline: none;
+  border-color: #059669;
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15);
 }
 
 .dp-menu {
-  border-radius: 12px;
-  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.2);
-  border: 1px solid #e5e7eb;
+  border-radius: 20px;
+  box-shadow: 0 24px 48px -24px rgba(15, 23, 42, 0.35);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  overflow: hidden;
 }
 
-/* 选中日期样式 - 使用主题绿色 */
-.dp__cell_inner.dp__active_date,
-.dp__range_start,
-.dp__range_end {
-  background: #10b981 !important;
+.date-picker--orange .dp__cell_inner.dp__active_date,
+.date-picker--orange .dp__range_start,
+.date-picker--orange .dp__range_end {
+  background: #ec5b13 !important;
 }
 
-.dp__range_between {
+.date-picker--orange .dp__range_between {
+  background: rgba(236, 91, 19, 0.1) !important;
+  color: #ec5b13 !important;
+}
+
+.date-picker--emerald .dp__cell_inner.dp__active_date,
+.date-picker--emerald .dp__range_start,
+.date-picker--emerald .dp__range_end {
+  background: #059669 !important;
+}
+
+.date-picker--emerald .dp__range_between {
   background: rgba(16, 185, 129, 0.1) !important;
-  color: #10b981 !important;
+  color: #059669 !important;
 }
 
 /* 悬浮样式 */
-.dp__cell_inner:hover:not(.dp__active_date):not(.dp__range_start):not(.dp__range_end) {
-  background: #f3f4f6;
+.date-picker--orange .dp__cell_inner:hover:not(.dp__active_date):not(.dp__range_start):not(.dp__range_end) {
+  background: #fff7ed;
+}
+
+.date-picker--emerald .dp__cell_inner:hover:not(.dp__active_date):not(.dp__range_start):not(.dp__range_end) {
+  background: #ecfdf5;
 }
 
 /* 今日标记 */
-.dp__today {
-  border-color: #10b981 !important;
+.date-picker--orange .dp__today {
+  border-color: #ec5b13 !important;
+}
+
+.date-picker--emerald .dp__today {
+  border-color: #059669 !important;
 }
 
 /* 错误状态 */

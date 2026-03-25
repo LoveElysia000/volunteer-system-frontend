@@ -79,23 +79,12 @@
         description="基于当前活跃活动的综合表现，观察阶段性变化。"
       >
         <template #header>
-          <label class="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-600">
-            <span class="h-2 w-2 rounded-full bg-[#ec5b13]" />
-            <select
-              v-model="selectedTrendRange"
-              class="border-none bg-transparent p-0 pr-5 text-xs font-semibold text-slate-600 focus:ring-0"
-            >
-              <option value="12m">
-                近 12 个月
-              </option>
-              <option value="qtr">
-                近一季度
-              </option>
-              <option value="ytd">
-                年初至今
-              </option>
-            </select>
-          </label>
+          <FilterSelect
+            v-model="selectedTrendRange"
+            :options="trendRangeOptions"
+            :icon="CalendarRangeIcon"
+            compact
+          />
         </template>
 
         <div class="flex min-h-[280px] items-end gap-3 border-b border-slate-100 pb-5">
@@ -279,6 +268,7 @@ import { RouterLink } from 'vue-router'
 import {
   ArrowRightIcon,
   BarChart3Icon,
+  CalendarRangeIcon,
   CircleDollarSignIcon,
   DownloadIcon,
   LeafIcon,
@@ -289,6 +279,7 @@ import {
   TrendingUpIcon,
   UsersIcon
 } from 'lucide-vue-next'
+import FilterSelect from '@/components/ui/FilterSelect.vue'
 import OrganizationPageHeader from '@/components/organization/OrganizationPageHeader.vue'
 import OrganizationSectionCard from '@/components/organization/OrganizationSectionCard.vue'
 import OrganizationMetricCard from '@/components/organization/OrganizationMetricCard.vue'
@@ -312,6 +303,11 @@ const { ensureOrganizationId } = useOrganizationContext()
 
 const searchKeyword = ref('')
 const selectedTrendRange = ref<'12m' | 'qtr' | 'ytd'>('12m')
+const trendRangeOptions = [
+  { value: '12m', label: '近 12 个月', description: '查看完整年度趋势' },
+  { value: 'qtr', label: '近一季度', description: '聚焦最近 4 个周期变化' },
+  { value: 'ytd', label: '年初至今', description: '查看本年度累计走势' }
+] as const
 const isExporting = ref(false)
 
 const normalizeKeyword = (value: string) => value.trim().toLowerCase()

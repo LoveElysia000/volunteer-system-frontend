@@ -481,30 +481,16 @@
                           for="gender"
                           class="field-label"
                         >性别</label>
-                        <div
-                          class="input-shell select-shell"
-                          :class="{ 'input-shell-error': errors.gender }"
-                        >
-                          <UsersIcon class="field-icon" />
-                          <select
-                            id="gender"
-                            v-model="form.gender"
-                            class="field-input field-select"
-                            @blur="() => handleBlur('gender')"
-                          >
-                            <option value="">
-                              请选择性别
-                            </option>
-                            <option value="男">
-                              男
-                            </option>
-                            <option value="女">
-                              女
-                            </option>
-                            <option value="其他">
-                              其他
-                            </option>
-                          </select>
+                        <div class="mt-2">
+                          <FilterSelect
+                            :model-value="form.gender"
+                            :icon="UsersIcon"
+                            :options="genderOptions"
+                            placeholder="请选择性别"
+                            theme="emerald"
+                            :error="errors.gender"
+                            @update:model-value="updateGender"
+                          />
                         </div>
                         <p
                           v-if="errors.gender"
@@ -672,6 +658,7 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import FilterSelect from '@/components/ui/FilterSelect.vue'
 import { useAuthStore } from '@/store/modules/auth'
 import { useMessageStore } from '@/store/modules/messages'
 import { UserIdentity, type VolunteerRegisterRequest, type OrganizationRegisterRequest } from '@/types/auth'
@@ -743,6 +730,13 @@ const errors = reactive<Record<RegisterFormField, string>>({
   agreement: ''
 })
 
+const genderOptions = [
+  { value: '', label: '请选择性别', description: '选择后用于完善志愿者档案' },
+  { value: '男', label: '男', description: '男性' },
+  { value: '女', label: '女', description: '女性' },
+  { value: '其他', label: '其他', description: '其他/不便透露' }
+] as const
+
 const touched = reactive<Record<RegisterFormField, boolean>>({
   username: false,
   email: false,
@@ -757,6 +751,11 @@ const touched = reactive<Record<RegisterFormField, boolean>>({
   role: false,
   agreement: false
 })
+
+const updateGender = (value: string | number | boolean | null | undefined) => {
+  form.value.gender = typeof value === 'string' ? value : ''
+  handleBlur('gender')
+}
 
 const loading = ref(false)
 const passwordVisible = ref(false)
@@ -1029,20 +1028,6 @@ const handleRegister = async () => {
 .input-shell:focus-within .field-input:-webkit-autofill:focus {
   -webkit-box-shadow: 0 0 0 1000px #ffffff inset;
   box-shadow: 0 0 0 1000px #ffffff inset;
-}
-
-.select-shell::after {
-  content: '▾';
-  position: absolute;
-  right: 1rem;
-  color: #94a3b8;
-  font-size: 0.85rem;
-  pointer-events: none;
-}
-
-.field-select {
-  appearance: none;
-  padding-right: 2.5rem;
 }
 
 .toggle-button {

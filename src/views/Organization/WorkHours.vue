@@ -27,23 +27,12 @@
               class="input"
               placeholder="报名 ID"
             >
-            <select
+            <FilterSelect
               v-model="operationType"
-              class="select"
-            >
-              <option :value="undefined">
-                全部操作
-              </option>
-              <option :value="WorkHourOperationType.GRANT">
-                发放
-              </option>
-              <option :value="WorkHourOperationType.VOID">
-                作废
-              </option>
-              <option :value="WorkHourOperationType.RECALCULATE">
-                重算
-              </option>
-            </select>
+              title="操作类型"
+              :icon="HistoryIcon"
+              :options="operationTypeOptions"
+            />
             <Button
               variant="outline"
               :loading="loading"
@@ -131,11 +120,14 @@
             </div>
             <div>
               <label class="mb-1 block text-sm font-medium text-gray-700">原因</label>
-              <textarea
-                v-model.trim="actionForm.reason"
-                rows="3"
-                class="textarea"
+              <Textarea
+                v-model="actionForm.reason"
                 placeholder="请输入处理原因"
+                :min-rows="2"
+                :max-rows="5"
+                allow-clear
+                show-word-limit
+                :max-length="{ length: 120, errorOnly: true }"
               />
             </div>
 
@@ -287,11 +279,14 @@
               </div>
               <div class="md:col-span-2">
                 <label class="mb-1 block text-sm font-medium text-gray-700">原因</label>
-                <textarea
-                  v-model.trim="actionForm.reason"
-                  rows="3"
-                  class="textarea"
+                <Textarea
+                  v-model="actionForm.reason"
                   placeholder="请输入原因"
+                  :min-rows="2"
+                  :max-rows="5"
+                  allow-clear
+                  show-word-limit
+                  :max-length="{ length: 120, errorOnly: true }"
                 />
               </div>
             </div>
@@ -333,6 +328,8 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import Button from '@/components/ui/Button.vue'
+import FilterSelect from '@/components/ui/FilterSelect.vue'
+import Textarea from '@/components/ui/Textarea.vue'
 import DataListPage from '@/components/data-list/DataListPage.vue'
 import DataToolbar from '@/components/data-list/DataToolbar.vue'
 import DataTable, { type DataTableColumn } from '@/components/data-list/DataTable.vue'
@@ -343,12 +340,19 @@ import OrganizationSectionCard from '@/components/organization/OrganizationSecti
 import { workHoursApi } from '@/api/work-hours'
 import { useMessageStore } from '@/store/modules/messages'
 import { WorkHourOperationType, type WorkHourLogItem } from '@/types/work-hour'
+import { HistoryIcon } from 'lucide-vue-next'
 
 const messageStore = useMessageStore()
 
 const activityId = ref<number | undefined>()
 const signupId = ref<number | undefined>()
 const operationType = ref<WorkHourOperationType | undefined>()
+const operationTypeOptions = [
+  { key: 'all-operations', value: undefined, label: '全部操作', description: '查看所有工时变更类型' },
+  { key: 'grant', value: WorkHourOperationType.GRANT, label: '发放', description: '查看正常发放的工时记录' },
+  { key: 'void', value: WorkHourOperationType.VOID, label: '作废', description: '查看被作废的工时记录' },
+  { key: 'recalculate', value: WorkHourOperationType.RECALCULATE, label: '重算', description: '查看重新计算的工时记录' }
+] as const
 const logs = ref<WorkHourLogItem[]>([])
 const total = ref(0)
 const loading = ref(false)

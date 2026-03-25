@@ -50,23 +50,12 @@
               class="input"
               placeholder="搜索活动标题或地点"
             >
-            <select
+            <FilterSelect
               v-model="filter"
-              class="select"
-            >
-              <option value="all">
-                全部状态
-              </option>
-              <option value="open">
-                进行中
-              </option>
-              <option value="ended">
-                已结束
-              </option>
-              <option value="cancelled">
-                已取消
-              </option>
-            </select>
+              title="状态筛选"
+              :icon="SlidersHorizontalIcon"
+              :options="filterOptions"
+            />
           </div>
         </template>
 
@@ -236,10 +225,13 @@
               </div>
               <div class="md:col-span-2">
                 <label class="mb-1 block text-sm font-medium text-gray-700">活动描述</label>
-                <textarea
+                <Textarea
                   v-model="editForm.description"
-                  rows="4"
-                  class="textarea"
+                  :min-rows="3"
+                  :max-rows="6"
+                  allow-clear
+                  show-word-limit
+                  :max-length="500"
                 />
               </div>
               <div>
@@ -260,21 +252,23 @@
               </div>
               <div>
                 <label class="mb-1 block text-sm font-medium text-gray-700">开始时间</label>
-                <input
-                  :value="toDateTimeLocal(editForm.startTime)"
-                  type="datetime-local"
-                  class="input"
-                  @input="updateEditDateTime('startTime', $event)"
-                >
+                <DatePicker
+                  v-model="editStartTime"
+                  format="yyyy-MM-dd HH:mm"
+                  placeholder="请选择开始时间"
+                  enable-time-picker
+                  :minutes-increment="1"
+                />
               </div>
               <div>
                 <label class="mb-1 block text-sm font-medium text-gray-700">结束时间</label>
-                <input
-                  :value="toDateTimeLocal(editForm.endTime)"
-                  type="datetime-local"
-                  class="input"
-                  @input="updateEditDateTime('endTime', $event)"
-                >
+                <DatePicker
+                  v-model="editEndTime"
+                  format="yyyy-MM-dd HH:mm"
+                  placeholder="请选择结束时间"
+                  enable-time-picker
+                  :minutes-increment="1"
+                />
               </div>
               <div>
                 <label class="mb-1 block text-sm font-medium text-gray-700">活动时长（小时）</label>
@@ -392,29 +386,34 @@
               </div>
               <div>
                 <label class="mb-1 block text-sm font-medium text-gray-700">签到时间</label>
-                <input
-                  :value="toDateTimeLocal(supplementForm.checkInTime)"
-                  type="datetime-local"
-                  class="input"
-                  @input="updateSupplementDateTime('checkInTime', $event)"
-                >
+                <DatePicker
+                  v-model="supplementCheckInTime"
+                  format="yyyy-MM-dd HH:mm"
+                  placeholder="请选择签到时间"
+                  enable-time-picker
+                  :minutes-increment="1"
+                />
               </div>
               <div>
                 <label class="mb-1 block text-sm font-medium text-gray-700">签退时间</label>
-                <input
-                  :value="toDateTimeLocal(supplementForm.checkOutTime)"
-                  type="datetime-local"
-                  class="input"
-                  @input="updateSupplementDateTime('checkOutTime', $event)"
-                >
+                <DatePicker
+                  v-model="supplementCheckOutTime"
+                  format="yyyy-MM-dd HH:mm"
+                  placeholder="请选择签退时间"
+                  enable-time-picker
+                  :minutes-increment="1"
+                />
               </div>
               <div>
                 <label class="mb-1 block text-sm font-medium text-gray-700">补录原因</label>
-                <textarea
+                <Textarea
                   v-model="supplementForm.reason"
-                  rows="3"
-                  class="textarea"
                   placeholder="请输入补录原因"
+                  :min-rows="2"
+                  :max-rows="5"
+                  allow-clear
+                  show-word-limit
+                  :max-length="200"
                 />
               </div>
               <div class="flex justify-end">
@@ -442,11 +441,14 @@
             <div class="rounded-xl border border-slate-200 bg-slate-50/70 p-4 space-y-3">
               <div>
                 <label class="mb-1 block text-sm font-medium text-gray-700">取消原因</label>
-                <textarea
+                <Textarea
                   v-model="cancelReason"
-                  rows="3"
-                  class="textarea"
                   placeholder="请输入取消活动的原因"
+                  :min-rows="2"
+                  :max-rows="5"
+                  allow-clear
+                  show-word-limit
+                  :max-length="120"
                 />
               </div>
             </div>
@@ -505,6 +507,9 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 import Button from '@/components/ui/Button.vue'
+import DatePicker from '@/components/ui/DatePicker.vue'
+import FilterSelect from '@/components/ui/FilterSelect.vue'
+import Textarea from '@/components/ui/Textarea.vue'
 import DataListPage from '@/components/data-list/DataListPage.vue'
 import DataToolbar from '@/components/data-list/DataToolbar.vue'
 import DataTable, { type DataTableColumn } from '@/components/data-list/DataTable.vue'
@@ -522,13 +527,19 @@ import {
   type UpdateOrganizationActivityRequest
 } from '@/types/activity'
 import { useMessageStore } from '@/store/modules/messages'
-import { PlusIcon } from 'lucide-vue-next'
+import { PlusIcon, SlidersHorizontalIcon } from 'lucide-vue-next'
 
 const messageStore = useMessageStore()
 
 const importInputRef = ref<HTMLInputElement | null>(null)
 const search = ref('')
 const filter = ref<'all' | 'open' | 'ended' | 'cancelled'>('all')
+const filterOptions = [
+  { value: 'all', label: '全部状态', description: '查看所有活动' },
+  { value: 'open', label: '进行中', description: '仅显示正在开放或执行中的活动' },
+  { value: 'ended', label: '已结束', description: '查看已经完结的活动' },
+  { value: 'cancelled', label: '已取消', description: '查看被取消的活动' }
+] as const
 const loading = ref(false)
 const importing = ref(false)
 const exporting = ref(false)
@@ -604,10 +615,13 @@ const supplementForm = ref<Omit<SupplementAttendanceRequest, 'activityId'>>({
 const selectedActivity = computed(() => (
   activities.value.find((activity) => activity.id === selectedActivityId.value) || null
 ))
+const currentFilterOption = computed(() => (
+  filterOptions.find((option) => option.value === filter.value) ?? filterOptions[0]
+))
 
 const headerMeta = computed(() => [
   { label: '活动总数', value: `${activities.value.length}`, detail: '来自活动列表接口' },
-  { label: '当前筛选', value: filter.value === 'all' ? '全部状态' : filter.value === 'open' ? '进行中' : filter.value === 'ended' ? '已结束' : '已取消', detail: '可按状态切换' }
+  { label: '当前筛选', value: currentFilterOption.value.label, detail: '可按状态切换' }
 ])
 
 const statusTone = (statusClass: string) => {
@@ -617,23 +631,45 @@ const statusTone = (statusClass: string) => {
   return 'slate'
 }
 
-const toApiDateTime = (value: string) => {
+const toDateValue = (value?: string) => {
+  if (!value) return null
+  const parsed = new Date(value.replace(' ', 'T'))
+  return Number.isNaN(parsed.getTime()) ? null : parsed
+}
+
+const fromDateValue = (value: Date | null) => {
   if (!value) return ''
-  return new Date(value).toISOString().slice(0, 19).replace('T', ' ')
+  const pad = (part: number) => `${part}`.padStart(2, '0')
+  return `${value.getFullYear()}-${pad(value.getMonth() + 1)}-${pad(value.getDate())} ${pad(value.getHours())}:${pad(value.getMinutes())}:00`
 }
 
-const toDateTimeLocal = (value?: string) => {
-  if (!value) return ''
-  return value.replace(' ', 'T').slice(0, 16)
-}
+const editStartTime = computed<Date | null>({
+  get: () => toDateValue(editForm.value.startTime),
+  set: (value) => {
+    editForm.value.startTime = fromDateValue(value)
+  }
+})
 
-const updateEditDateTime = (field: 'startTime' | 'endTime', event: Event) => {
-  editForm.value[field] = toApiDateTime((event.target as HTMLInputElement).value)
-}
+const editEndTime = computed<Date | null>({
+  get: () => toDateValue(editForm.value.endTime),
+  set: (value) => {
+    editForm.value.endTime = fromDateValue(value)
+  }
+})
 
-const updateSupplementDateTime = (field: 'checkInTime' | 'checkOutTime', event: Event) => {
-  supplementForm.value[field] = toApiDateTime((event.target as HTMLInputElement).value)
-}
+const supplementCheckInTime = computed<Date | null>({
+  get: () => toDateValue(supplementForm.value.checkInTime),
+  set: (value) => {
+    supplementForm.value.checkInTime = fromDateValue(value)
+  }
+})
+
+const supplementCheckOutTime = computed<Date | null>({
+  get: () => toDateValue(supplementForm.value.checkOutTime),
+  set: (value) => {
+    supplementForm.value.checkOutTime = fromDateValue(value)
+  }
+})
 
 const mapFilterToStatus = () => {
   if (filter.value === 'open') return ActivityStatus.OPEN

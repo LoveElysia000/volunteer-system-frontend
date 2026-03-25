@@ -17,30 +17,35 @@
         </div>
         <div class="md:col-span-2">
           <label class="block text-sm font-medium text-gray-700 mb-1">活动描述</label>
-          <textarea
+          <Textarea
             v-model="form.description"
-            class="textarea"
-            rows="4"
             placeholder="请输入活动描述"
+            :min-rows="3"
+            :max-rows="6"
+            allow-clear
+            show-word-limit
+            :max-length="500"
           />
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">开始时间</label>
-          <input
-            :value="toDateTimeLocal(form.startTime)"
-            type="datetime-local"
-            class="input"
-            @input="updateDateTimeField('startTime', $event)"
-          >
+          <DatePicker
+            v-model="startTimeValue"
+            format="yyyy-MM-dd HH:mm"
+            placeholder="请选择开始时间"
+            enable-time-picker
+            :minutes-increment="1"
+          />
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">结束时间</label>
-          <input
-            :value="toDateTimeLocal(form.endTime)"
-            type="datetime-local"
-            class="input"
-            @input="updateDateTimeField('endTime', $event)"
-          >
+          <DatePicker
+            v-model="endTimeValue"
+            format="yyyy-MM-dd HH:mm"
+            placeholder="请选择结束时间"
+            enable-time-picker
+            :minutes-increment="1"
+          />
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">活动地点</label>
@@ -108,6 +113,8 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { activitiesApi } from '@/api/activities'
+import DatePicker from '@/components/ui/DatePicker.vue'
+import Textarea from '@/components/ui/Textarea.vue'
 import { useMessageStore } from '@/store/modules/messages'
 import { useOrganizationStore } from '@/store/modules/organization'
 import type { CreateOrganizationActivityRequest } from '@/types/activity'
@@ -131,23 +138,31 @@ const form = reactive<CreateOrganizationActivityRequest>({
   maxPeople: 30
 })
 
-const toApiDateTime = (value: string) => {
-  if (!value) {
-    return ''
-  }
-  return new Date(value).toISOString().slice(0, 19).replace('T', ' ')
+const toDateValue = (value: string) => {
+  if (!value) return null
+  const parsed = new Date(value.replace(' ', 'T'))
+  return Number.isNaN(parsed.getTime()) ? null : parsed
 }
 
-const toDateTimeLocal = (value: string) => {
-  if (!value) {
-    return ''
-  }
-  return value.replace(' ', 'T').slice(0, 16)
+const fromDateValue = (value: Date | null) => {
+  if (!value) return ''
+  const pad = (part: number) => `${part}`.padStart(2, '0')
+  return `${value.getFullYear()}-${pad(value.getMonth() + 1)}-${pad(value.getDate())} ${pad(value.getHours())}:${pad(value.getMinutes())}:00`
 }
 
-const updateDateTimeField = (field: 'startTime' | 'endTime', event: Event) => {
-  form[field] = toApiDateTime((event.target as HTMLInputElement).value)
-}
+const startTimeValue = computed<Date | null>({
+  get: () => toDateValue(form.startTime),
+  set: (value) => {
+    form.startTime = fromDateValue(value)
+  }
+})
+
+const endTimeValue = computed<Date | null>({
+  get: () => toDateValue(form.endTime),
+  set: (value) => {
+    form.endTime = fromDateValue(value)
+  }
+})
 
 const submitActivity = async () => {
   if (!organizationId.value) {

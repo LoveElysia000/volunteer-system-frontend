@@ -147,35 +147,38 @@
           <div class="grid gap-4 md:grid-cols-2">
             <label class="text-sm font-medium text-slate-600">
               性别
-              <select
-                v-model.number="profileForm.gender"
-                class="input mt-2 rounded-2xl border-slate-200 bg-slate-50 shadow-none"
-              >
-                <option :value="0">
-                  未知
-                </option>
-                <option :value="1">
-                  男
-                </option>
-                <option :value="2">
-                  女
-                </option>
-              </select>
+              <div class="mt-2">
+                <FilterSelect
+                  v-model="profileForm.gender"
+                  title="性别"
+                  :icon="UsersIcon"
+                  :options="genderOptions"
+                  theme="emerald"
+                />
+              </div>
             </label>
             <label class="text-sm font-medium text-slate-600">
               生日
-              <input
-                v-model="profileForm.birthday"
-                type="date"
-                class="input mt-2 rounded-2xl border-slate-200 bg-slate-50 shadow-none"
-              >
+              <div class="mt-2">
+                <DatePicker
+                  v-model="birthdayValue"
+                  format="yyyy-MM-dd"
+                  placeholder="请选择生日"
+                  theme="emerald"
+                />
+              </div>
             </label>
             <label class="text-sm font-medium text-slate-600 md:col-span-2">
               个人简介
-              <textarea
+              <Textarea
                 v-model="profileForm.introduction"
-                rows="4"
-                class="input mt-2 rounded-2xl border-slate-200 bg-slate-50 shadow-none"
+                class="mt-2"
+                :min-rows="3"
+                :max-rows="6"
+                allow-clear
+                show-word-limit
+                :max-length="300"
+                theme="emerald"
               />
             </label>
           </div>
@@ -259,6 +262,9 @@
 
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
+import DatePicker from '@/components/ui/DatePicker.vue'
+import FilterSelect from '@/components/ui/FilterSelect.vue'
+import Textarea from '@/components/ui/Textarea.vue'
 import { VOLUNTEER_AUDIT_STATUS_LABELS } from '@/constants/status'
 import { useAuthStore } from '@/store/modules/auth'
 import { useVolunteerStore } from '@/store/modules/volunteer'
@@ -269,7 +275,7 @@ import {
   type UpdateVolunteerProfileRequest,
   type VolunteerRealNameSubmitRequest
 } from '@/types/volunteer'
-import { CameraIcon } from 'lucide-vue-next'
+import { CameraIcon, UsersIcon } from 'lucide-vue-next'
 import VolunteerPageHeader from '@/components/volunteer/VolunteerPageHeader.vue'
 import VolunteerSectionCard from '@/components/volunteer/VolunteerSectionCard.vue'
 
@@ -284,6 +290,11 @@ const avatarPreview = ref('')
 const accountSaving = ref(false)
 const profileSaving = ref(false)
 const realNameSubmitting = ref(false)
+const genderOptions = [
+  { key: 'gender-unknown', value: 0, label: '未知', description: '暂不设置性别信息' },
+  { key: 'gender-male', value: 1, label: '男', description: '选择男性' },
+  { key: 'gender-female', value: 2, label: '女', description: '选择女性' }
+] as const
 
 const profileForm = reactive({
   gender: 0,
@@ -309,6 +320,24 @@ const displayName = computed(() => {
 })
 const userInitials = computed(() => displayName.value.charAt(0))
 const volunteerLevel = computed(() => Math.floor((user.value?.totalHours || 0) / 10) + 1)
+const birthdayValue = computed<Date | null>({
+  get: () => {
+    if (!profileForm.birthday) return null
+    const match = profileForm.birthday.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+    if (!match) return null
+    const [, year, month, day] = match
+    const parsed = new Date(Number(year), Number(month) - 1, Number(day))
+    return Number.isNaN(parsed.getTime()) ? null : parsed
+  },
+  set: (value) => {
+    if (!value) {
+      profileForm.birthday = ''
+      return
+    }
+    const pad = (part: number) => `${part}`.padStart(2, '0')
+    profileForm.birthday = `${value.getFullYear()}-${pad(value.getMonth() + 1)}-${pad(value.getDate())}`
+  }
+})
 
 const headerMeta = computed(() => [
   { label: '当前等级', value: `Lv.${volunteerLevel.value}`, detail: `${user.value?.points || 0} 当前积分` },

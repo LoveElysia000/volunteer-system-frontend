@@ -128,6 +128,7 @@
           <Input
             v-model="draftForm.topic"
             placeholder="例如：社区垃圾分类宣传日"
+            allow-clear
           />
         </div>
         <div>
@@ -135,6 +136,7 @@
           <Input
             v-model="draftForm.target_people"
             placeholder="例如：社区家庭、青少年志愿者"
+            allow-clear
           />
         </div>
         <div>
@@ -142,6 +144,7 @@
           <Input
             v-model="draftForm.location"
             placeholder="例如：浦东新区社区广场"
+            allow-clear
           />
         </div>
         <div class="flex justify-end gap-3 pt-2">

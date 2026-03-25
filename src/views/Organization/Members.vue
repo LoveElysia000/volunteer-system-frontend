@@ -22,44 +22,19 @@
       <DataToolbar>
         <template #filters>
           <div class="grid gap-3 lg:grid-cols-2">
-            <select
+            <FilterSelect
               v-model="statusFilter"
-              class="select"
-            >
-              <option :value="undefined">
-                全部状态
-              </option>
-              <option :value="MembershipStatus.PENDING">
-                待审核
-              </option>
-              <option :value="MembershipStatus.ACTIVE">
-                正式成员
-              </option>
-              <option :value="MembershipStatus.REJECTED">
-                已拒绝
-              </option>
-              <option :value="MembershipStatus.LEFT">
-                已退出
-              </option>
-            </select>
+              title="成员状态"
+              :icon="UserRoundSearchIcon"
+              :options="statusFilterOptions"
+            />
 
-            <select
+            <FilterSelect
               v-model="roleFilter"
-              class="select"
-            >
-              <option :value="undefined">
-                全部角色
-              </option>
-              <option :value="MembershipRole.MEMBER">
-                普通成员
-              </option>
-              <option :value="MembershipRole.ADMIN">
-                管理员
-              </option>
-              <option :value="MembershipRole.OWNER">
-                负责人
-              </option>
-            </select>
+              title="成员角色"
+              :icon="ShieldCheckIcon"
+              :options="roleFilterOptions"
+            />
           </div>
         </template>
 
@@ -271,6 +246,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import Button from '@/components/ui/Button.vue'
+import FilterSelect from '@/components/ui/FilterSelect.vue'
 import DataListPage from '@/components/data-list/DataListPage.vue'
 import DataToolbar from '@/components/data-list/DataToolbar.vue'
 import DataTable, { type DataTableColumn } from '@/components/data-list/DataTable.vue'
@@ -281,6 +257,7 @@ import { useMembershipsStore } from '@/store/modules/memberships'
 import { useMessageStore } from '@/store/modules/messages'
 import { useOrganizationContext } from '@/composables/useOrganizationContext'
 import { MembershipRole, MembershipStatus, type MemberInfo } from '@/types/membership'
+import { ShieldCheckIcon, UserRoundSearchIcon } from 'lucide-vue-next'
 
 const membershipsStore = useMembershipsStore()
 const messageStore = useMessageStore()
@@ -289,6 +266,19 @@ const { ensureOrganizationId } = useOrganizationContext()
 const keyword = ref('')
 const statusFilter = ref<MembershipStatus | undefined>()
 const roleFilter = ref<MembershipRole | undefined>()
+const statusFilterOptions = [
+  { key: 'all-status', value: undefined, label: '全部状态', description: '查看所有成员审批状态' },
+  { key: 'pending', value: MembershipStatus.PENDING, label: '待审核', description: '仅显示等待处理的申请' },
+  { key: 'active', value: MembershipStatus.ACTIVE, label: '正式成员', description: '查看已通过审核的成员' },
+  { key: 'rejected', value: MembershipStatus.REJECTED, label: '已拒绝', description: '查看被驳回的申请' },
+  { key: 'left', value: MembershipStatus.LEFT, label: '已退出', description: '查看已离开组织的成员' }
+] as const
+const roleFilterOptions = [
+  { key: 'all-role', value: undefined, label: '全部角色', description: '查看所有成员角色' },
+  { key: 'member', value: MembershipRole.MEMBER, label: '普通成员', description: '组织中的基础成员角色' },
+  { key: 'admin', value: MembershipRole.ADMIN, label: '管理员', description: '拥有部分管理权限的成员' },
+  { key: 'owner', value: MembershipRole.OWNER, label: '负责人', description: '组织负责人或最高权限成员' }
+] as const
 const selectedMembershipId = ref<number | null>(null)
 const selectedMembershipSnapshot = ref<MemberInfo | null>(null)
 const drawerOpen = ref(false)

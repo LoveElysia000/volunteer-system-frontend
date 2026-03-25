@@ -125,7 +125,6 @@ const loadAnalytics = async () => {
   const endDate = new Date()
   const startDate = new Date(endDate)
   startDate.setDate(endDate.getDate() - 30)
-
   const formatDate = (value: Date) => value.toISOString().slice(0, 10)
 
   try {

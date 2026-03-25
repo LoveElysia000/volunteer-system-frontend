@@ -329,10 +329,14 @@
                       <div class="grid gap-4">
                         <label class="drawer-edit-label">
                           组织介绍
-                          <textarea
+                          <Textarea
                             v-model="organizationForm.description"
-                            class="textarea mt-2"
-                            rows="4"
+                            class="mt-2"
+                            :min-rows="3"
+                            :max-rows="6"
+                            allow-clear
+                            show-word-limit
+                            :max-length="500"
                           />
                         </label>
                         <label class="drawer-edit-label">
@@ -440,6 +444,7 @@
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
+import Textarea from '@/components/ui/Textarea.vue'
 import OrganizationPageHeader from '@/components/organization/OrganizationPageHeader.vue'
 import OrganizationSectionCard from '@/components/organization/OrganizationSectionCard.vue'
 import { useMessageStore } from '@/store/modules/messages'

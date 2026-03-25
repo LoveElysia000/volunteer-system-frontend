@@ -19,20 +19,12 @@
               class="input"
               placeholder="搜索标题、说明或审核单号"
             >
-            <select
+            <FilterSelect
               v-model="queueFilter"
-              class="select"
-            >
-              <option value="all">
-                全部队列
-              </option>
-              <option value="overdue">
-                已超时
-              </option>
-              <option value="pending">
-                正常待处理
-              </option>
-            </select>
+              title="审核队列"
+              :icon="TimerResetIcon"
+              :options="queueFilterOptions"
+            />
           </div>
         </template>
 
@@ -183,11 +175,15 @@
             <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
               审核说明
             </p>
-            <textarea
-              v-model.trim="auditReason"
-              rows="3"
-              class="textarea mt-2"
+            <Textarea
+              v-model="auditReason"
               placeholder="选填：填写审核说明"
+              class="mt-2"
+              :min-rows="2"
+              :max-rows="5"
+              allow-clear
+              show-word-limit
+              :max-length="{ length: 120, errorOnly: true }"
             />
           </section>
         </div>
@@ -227,6 +223,8 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import Button from '@/components/ui/Button.vue'
+import FilterSelect from '@/components/ui/FilterSelect.vue'
+import Textarea from '@/components/ui/Textarea.vue'
 import DataListPage from '@/components/data-list/DataListPage.vue'
 import DataToolbar from '@/components/data-list/DataToolbar.vue'
 import DataTable, { type DataTableColumn } from '@/components/data-list/DataTable.vue'
@@ -237,6 +235,7 @@ import OrganizationSectionCard from '@/components/organization/OrganizationSecti
 import { useAuditsStore } from '@/store/modules/audits'
 import { useMessageStore } from '@/store/modules/messages'
 import { AuditTargetType } from '@/types/audit'
+import { TimerResetIcon } from 'lucide-vue-next'
 
 const auditsStore = useAuditsStore()
 const messageStore = useMessageStore()
@@ -248,6 +247,11 @@ const actionLoading = ref(false)
 const drawerOpen = ref(false)
 const searchQuery = ref('')
 const queueFilter = ref<'all' | 'overdue' | 'pending'>('all')
+const queueFilterOptions = [
+  { value: 'all', label: '全部队列', description: '查看所有待审核记录' },
+  { value: 'overdue', label: '已超时', description: '优先处理超过时限的审核单' },
+  { value: 'pending', label: '正常待处理', description: '查看仍在正常处理时限内的记录' }
+] as const
 
 const columns: DataTableColumn[] = [
   {
