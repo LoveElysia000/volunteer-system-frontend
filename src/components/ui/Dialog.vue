@@ -4,6 +4,7 @@
       <div
         v-if="modelValue"
         class="dialog-mask"
+        :style="dialogStyle"
         @click="handleMaskClick"
       >
         <Transition name="dialog-content">
@@ -14,6 +15,10 @@
             :class="dialogClass"
             role="dialog"
             aria-modal="true"
+            tabindex="-1"
+            :aria-labelledby="title && !hasCustomHeader ? titleId : undefined"
+            :aria-label="hasCustomHeader ? ariaLabel || title || undefined : (!title ? ariaLabel || undefined : undefined)"
+            @click.stop
           >
             <!-- 头部 -->
             <div
@@ -21,12 +26,17 @@
               class="dialog-header"
             >
               <slot name="header">
-                <h3 class="dialog-title">
+                <h3
+                  :id="title ? titleId : undefined"
+                  class="dialog-title"
+                >
                   {{ title }}
                 </h3>
                 <button
                   v-if="showClose"
+                  type="button"
                   class="dialog-close"
+                  :aria-label="closeLabel"
                   @click="close"
                 >
                   <XIcon class="h-5 w-5" />
@@ -69,26 +79,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, nextTick } from 'vue'
+import { computed, ref, watch, nextTick, onBeforeUnmount, useSlots } from 'vue'
 import { XIcon } from 'lucide-vue-next'
 import Button from './Button.vue'
-
-// 全局滚动锁定计数器（模块级别）
-let globalScrollLockCount = 0
-
-const lockBodyScroll = () => {
-  globalScrollLockCount++
-  if (globalScrollLockCount === 1) {
-    document.body.style.overflow = 'hidden'
-  }
-}
-
-const unlockBodyScroll = () => {
-  globalScrollLockCount = Math.max(0, globalScrollLockCount - 1)
-  if (globalScrollLockCount === 0) {
-    document.body.style.overflow = ''
-  }
-}
+import { lockBodyScroll, unlockBodyScroll } from './bodyScrollLock'
+import { getOverlayZIndex, getTopOverlayElement, hasOpenOverlays, isTopOverlay, registerOverlay, setOverlayElement, unregisterOverlay } from './overlayStack'
+import { captureFocusedElement, focusInitialElement, restoreFocusIfAllowed, trapTabWithinOverlay } from './overlayFocus'
 
 interface Props {
   modelValue?: boolean
@@ -103,6 +99,7 @@ interface Props {
   confirmVariant?: 'primary' | 'danger'
   confirmLoading?: boolean
   dialogClass?: string
+  ariaLabel?: string
   maskClosable?: boolean
   closeOnEsc?: boolean
 }
@@ -119,6 +116,8 @@ const props = withDefaults(defineProps<Props>(), {
   confirmText: '确定',
   confirmVariant: 'primary',
   confirmLoading: false,
+  dialogClass: '',
+  ariaLabel: '',
   maskClosable: true,
   closeOnEsc: true
 })
@@ -131,6 +130,31 @@ const emit = defineEmits<{
 }>()
 
 const dialogRef = ref<HTMLElement>()
+const overlayId = ref<number | null>(null)
+const previouslyFocusedElement = ref<HTMLElement | null>(null)
+const titleId = computed(() => overlayId.value !== null ? `dialog-title-${overlayId.value}` : undefined)
+const slots = useSlots()
+const hasCustomHeader = computed(() => Boolean(slots.header))
+const dialogStyle = computed(() => ({ zIndex: getOverlayZIndex(overlayId.value) }))
+const closeLabel = computed(() => props.title ? `关闭 ${props.title}` : '关闭对话框')
+
+const openOverlay = () => {
+  if (overlayId.value === null) {
+    previouslyFocusedElement.value = captureFocusedElement()
+    overlayId.value = registerOverlay()
+  }
+}
+
+const closeOverlay = () => {
+  if (overlayId.value !== null) {
+    unregisterOverlay(overlayId.value)
+    overlayId.value = null
+  }
+
+  const topOverlayElement = getTopOverlayElement()
+  restoreFocusIfAllowed(previouslyFocusedElement.value, topOverlayElement, hasOpenOverlays())
+  previouslyFocusedElement.value = null
+}
 
 const close = () => {
   emit('update:modelValue', false)
@@ -141,6 +165,18 @@ const handleMaskClick = () => {
   if (props.maskClosable) {
     close()
   }
+}
+
+const handleOverlayKeydown = (event: KeyboardEvent) => {
+  if (!props.modelValue || !isTopOverlay(overlayId.value)) {
+    return
+  }
+
+  if (dialogRef.value && trapTabWithinOverlay(event, dialogRef.value)) {
+    return
+  }
+
+  handleKeydown(event)
 }
 
 const handleCancel = () => {
@@ -154,23 +190,41 @@ const handleConfirm = () => {
 
 // ESC 关闭
 const handleKeydown = (e: KeyboardEvent) => {
-  if (e.key === 'Escape' && props.modelValue && props.closeOnEsc) {
-    close()
+  if (e.key !== 'Escape' || !props.modelValue || !props.closeOnEsc || e.defaultPrevented || !isTopOverlay(overlayId.value)) {
+    return
   }
+
+  e.preventDefault()
+  close()
 }
 
 // 滚动锁定
 watch(() => props.modelValue, (val) => {
   if (val) {
+    openOverlay()
     lockBodyScroll()
-    document.addEventListener('keydown', handleKeydown)
+    document.addEventListener('keydown', handleOverlayKeydown)
     nextTick(() => {
-      dialogRef.value?.focus()
+      if (dialogRef.value) {
+        if (overlayId.value !== null) {
+          setOverlayElement(overlayId.value, dialogRef.value)
+        }
+        focusInitialElement(dialogRef.value)
+      }
     })
   } else {
+    closeOverlay()
     unlockBodyScroll()
-    document.removeEventListener('keydown', handleKeydown)
+    document.removeEventListener('keydown', handleOverlayKeydown)
   }
+}, { immediate: true })
+
+onBeforeUnmount(() => {
+  if (props.modelValue) {
+    closeOverlay()
+    unlockBodyScroll()
+  }
+  document.removeEventListener('keydown', handleOverlayKeydown)
 })
 </script>
 
@@ -178,7 +232,6 @@ watch(() => props.modelValue, (val) => {
 .dialog-mask {
   position: fixed;
   inset: 0;
-  z-index: 50;
   display: flex;
   align-items: center;
   justify-content: center;

@@ -1,409 +1,518 @@
 <template>
-  <div class="space-y-6">
-    <OrganizationPageHeader
-      eyebrow="Projects"
-      title="活动管理"
-      description="活动列表、状态筛选和执行操作均已接入真实接口，不再依赖模拟数据。"
-      :meta-items="headerMeta"
-    >
-      <template #actions>
-        <input
-          ref="importInputRef"
-          type="file"
-          class="hidden"
-          accept=".xlsx,.xls"
-          @change="handleImport"
-        >
-        <button
-          class="org-toolbar-button"
-          :disabled="importing"
-          @click="triggerImport"
-        >
-          {{ importing ? '导入中...' : '导入活动' }}
-        </button>
-        <button
-          class="org-toolbar-button"
-          :disabled="exporting"
-          @click="exportActivities"
-        >
-          {{ exporting ? '导出中...' : '导出活动' }}
-        </button>
-        <RouterLink
-          to="/organization/activities/create"
-          class="org-toolbar-button org-toolbar-button--soft"
-        >
-          <PlusIcon class="h-4 w-4" />
-          创建活动
-        </RouterLink>
-      </template>
-    </OrganizationPageHeader>
-
-    <OrganizationSectionCard
-      title="活动列表"
-      description="按关键字和状态过滤当前组织可访问的活动。"
-    >
-      <template #header>
-        <div class="flex flex-wrap gap-3">
+  <DataListPage>
+    <template #header>
+      <OrganizationPageHeader
+        eyebrow="活动"
+        title="活动管理"
+        description="活动列表、状态筛选和执行操作均已接入真实接口，不再依赖模拟数据。"
+        :meta-items="headerMeta"
+      >
+        <template #actions>
           <input
-            v-model.trim="search"
-            type="text"
-            class="input max-w-xs"
-            placeholder="搜索活动标题或地点"
+            ref="importInputRef"
+            type="file"
+            class="hidden"
+            accept=".xlsx,.xls"
+            @change="handleImport"
           >
-          <select
-            v-model="filter"
-            class="select"
-          >
-            <option value="all">
-              全部状态
-            </option>
-            <option value="open">
-              进行中
-            </option>
-            <option value="ended">
-              已结束
-            </option>
-            <option value="cancelled">
-              已取消
-            </option>
-          </select>
           <button
             class="org-toolbar-button"
-            :disabled="loading"
+            :disabled="importing"
+            @click="triggerImport"
+          >
+            {{ importing ? '导入中...' : '导入活动' }}
+          </button>
+          <button
+            class="org-toolbar-button"
+            :disabled="exporting"
+            @click="exportActivities"
+          >
+            {{ exporting ? '导出中...' : '导出活动' }}
+          </button>
+          <RouterLink
+            to="/organization/activities/create"
+            class="org-toolbar-button org-toolbar-button--soft"
+          >
+            <PlusIcon class="h-4 w-4" />
+            创建活动
+          </RouterLink>
+        </template>
+      </OrganizationPageHeader>
+    </template>
+
+    <template #toolbar>
+      <DataToolbar>
+        <template #filters>
+          <div class="grid gap-3 lg:grid-cols-[minmax(220px,320px)_180px]">
+            <input
+              v-model.trim="search"
+              type="text"
+              class="input"
+              placeholder="搜索活动标题或地点"
+            >
+            <select
+              v-model="filter"
+              class="select"
+            >
+              <option value="all">
+                全部状态
+              </option>
+              <option value="open">
+                进行中
+              </option>
+              <option value="ended">
+                已结束
+              </option>
+              <option value="cancelled">
+                已取消
+              </option>
+            </select>
+          </div>
+        </template>
+
+        <template #actions>
+          <Button
+            variant="outline"
+            :loading="loading"
             @click="loadActivities"
           >
-            {{ loading ? '加载中...' : '刷新列表' }}
-          </button>
-        </div>
-      </template>
+            刷新活动列表
+          </Button>
+        </template>
+      </DataToolbar>
+    </template>
 
-      <div
-        v-if="loading"
-        class="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500"
+    <template #body>
+      <OrganizationSectionCard
+        title="活动列表"
+        description="按关键字和状态过滤当前组织可访问的活动，点击一行在右侧打开详情与执行抽屉。"
       >
-        正在加载活动列表...
-      </div>
-
-      <div
-        v-else-if="!activities.length"
-        class="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500"
-      >
-        当前没有可展示的活动。
-      </div>
-
-      <div
-        v-else
-        class="space-y-4"
-      >
-        <article
-          v-for="activity in activities"
-          :key="activity.id"
-          class="organization-surface-lift rounded-[1.3rem] border border-slate-200 bg-white px-5 py-4"
+        <DataTable
+          :columns="columns"
+          :items="activities"
+          :loading="loading"
+          row-key="id"
+          :selected-key="selectedActivityId"
+          interactive
+          open-text="查看"
+          open-style="text"
+          density="compact"
+          empty-title="当前没有可展示的活动"
+          empty-description="调整筛选条件后再试，或新建一场活动。"
+          @row-click="openActivityDrawer"
         >
-          <div class="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-            <div class="min-w-0">
-              <div class="flex flex-wrap items-center gap-2">
-                <h2 class="text-base font-bold text-slate-900">
-                  {{ activity.title }}
-                </h2>
-                <span
-                  class="rounded-full px-2.5 py-1 text-[11px] font-semibold"
-                  :class="activity.statusClass"
-                >
-                  {{ activity.status }}
-                </span>
-              </div>
-              <p class="mt-2 text-sm leading-6 text-slate-500">
-                {{ activity.description }}
+          <template #cell-identity="{ item }">
+            <div class="min-w-0 space-y-1">
+              <p class="truncate text-sm font-semibold text-slate-900">
+                {{ item.title }}
               </p>
-              <p class="mt-3 text-sm text-slate-500">
-                {{ activity.date }} · {{ activity.location }} · {{ activity.participants }}/{{ activity.maxPeople }} 人 · {{ activity.duration }} 小时
+              <p class="truncate text-xs text-slate-500">
+                {{ item.description }}
+              </p>
+            </div>
+          </template>
+
+          <template #cell-status="{ item }">
+            <StatusBadge
+              :label="item.status"
+              :tone="statusTone(item.statusClass)"
+            />
+          </template>
+
+          <template #cell-schedule="{ item }">
+            <div class="space-y-1 text-sm text-slate-600">
+              <p>{{ item.date }}</p>
+              <p class="text-xs text-slate-500">
+                {{ item.duration }} 小时
+              </p>
+            </div>
+          </template>
+
+          <template #cell-location="{ item }">
+            {{ item.location }}
+          </template>
+
+          <template #cell-capacity="{ item }">
+            {{ item.participants }}/{{ item.maxPeople }}
+          </template>
+        </DataTable>
+      </OrganizationSectionCard>
+    </template>
+
+    <template #drawer>
+      <DetailDrawer
+        v-model="drawerOpen"
+        width="760px"
+        :aria-label="selectedActivity ? `${selectedActivity.title} 的活动详情与执行` : '活动详情与执行'"
+        @close="closeActivityDrawer"
+      >
+        <template #header>
+          <div
+            v-if="selectedActivity"
+            class="space-y-3"
+          >
+            <div class="space-y-1">
+              <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                活动详情与执行
+              </p>
+              <h2 class="text-lg font-bold tracking-tight text-slate-900">
+                #{{ selectedActivity.id }} · {{ selectedActivity.title }}
+              </h2>
+              <p class="text-sm text-slate-500">
+                {{ selectedActivity.location }} · {{ selectedActivity.date }}
               </p>
             </div>
 
             <div class="flex flex-wrap gap-2">
-              <button
-                class="org-toolbar-button"
-                @click="selectActivity(activity)"
-              >
-                编辑与执行
-              </button>
-            </div>
-          </div>
-        </article>
-      </div>
-    </OrganizationSectionCard>
-
-    <OrganizationSectionCard
-      title="活动执行操作台"
-      description="当前操作对象直接取自上方真实活动列表。"
-      tone="soft"
-    >
-      <div
-        v-if="selectedActivity"
-        class="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]"
-      >
-        <div class="space-y-6">
-          <div class="rounded-xl border border-white/70 bg-white/90 p-4">
-            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
-              当前活动
-            </p>
-            <p class="mt-2 text-base font-bold text-slate-900">
-              #{{ selectedActivity.id }} · {{ selectedActivity.title }}
-            </p>
-          </div>
-
-          <div class="grid gap-4 md:grid-cols-2">
-            <div class="md:col-span-2">
-              <label class="block text-sm font-medium text-gray-700 mb-1">活动标题</label>
-              <input
-                v-model="editForm.title"
-                type="text"
-                class="input"
-              >
-            </div>
-            <div class="md:col-span-2">
-              <label class="block text-sm font-medium text-gray-700 mb-1">活动描述</label>
-              <textarea
-                v-model="editForm.description"
-                rows="4"
-                class="textarea"
+              <StatusBadge
+                :label="selectedActivity.status"
+                :tone="statusTone(selectedActivity.statusClass)"
               />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">活动地点</label>
-              <input
-                v-model="editForm.location"
-                type="text"
-                class="input"
-              >
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">详细地址</label>
-              <input
-                v-model="editForm.address"
-                type="text"
-                class="input"
-              >
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">开始时间</label>
-              <input
-                :value="toDateTimeLocal(editForm.startTime)"
-                type="datetime-local"
-                class="input"
-                @input="updateEditDateTime('startTime', $event)"
-              >
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">结束时间</label>
-              <input
-                :value="toDateTimeLocal(editForm.endTime)"
-                type="datetime-local"
-                class="input"
-                @input="updateEditDateTime('endTime', $event)"
-              >
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">活动时长（小时）</label>
-              <input
-                v-model.number="editForm.duration"
-                type="number"
-                min="1"
-                class="input"
-              >
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">人数上限</label>
-              <input
-                v-model.number="editForm.maxPeople"
-                type="number"
-                min="1"
-                class="input"
-              >
+              <span class="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-semibold text-slate-600">
+                {{ selectedActivity.participants }}/{{ selectedActivity.maxPeople }} 人
+              </span>
             </div>
           </div>
+        </template>
 
-          <div class="flex flex-wrap gap-3">
-            <button
-              class="btn btn-primary"
-              :disabled="updating"
+        <div
+          v-if="selectedActivity"
+          class="space-y-6"
+        >
+          <section class="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+            <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                  活动日期
+                </p>
+                <p class="mt-1 text-sm font-semibold text-slate-900">
+                  {{ selectedActivity.date }}
+                </p>
+              </div>
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                  服务地点
+                </p>
+                <p class="mt-1 text-sm font-semibold text-slate-900">
+                  {{ selectedActivity.location }}
+                </p>
+              </div>
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                  时长
+                </p>
+                <p class="mt-1 text-sm font-semibold text-slate-900">
+                  {{ selectedActivity.duration }} 小时
+                </p>
+              </div>
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                  当前人数
+                </p>
+                <p class="mt-1 text-sm font-semibold text-slate-900">
+                  {{ selectedActivity.participants }}/{{ selectedActivity.maxPeople }}
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section class="rounded-2xl border border-slate-200 bg-white p-5">
+            <div class="mb-4 flex items-center justify-between gap-3">
+              <div>
+                <p class="text-sm font-semibold text-slate-900">
+                  活动信息编辑
+                </p>
+                <p class="text-xs text-slate-500">
+                  直接在抽屉中维护活动信息并同步到真实接口。
+                </p>
+              </div>
+            </div>
+
+            <div class="grid gap-4 md:grid-cols-2">
+              <div class="md:col-span-2">
+                <label class="mb-1 block text-sm font-medium text-gray-700">活动标题</label>
+                <input
+                  v-model="editForm.title"
+                  type="text"
+                  class="input"
+                >
+              </div>
+              <div class="md:col-span-2">
+                <label class="mb-1 block text-sm font-medium text-gray-700">活动描述</label>
+                <textarea
+                  v-model="editForm.description"
+                  rows="4"
+                  class="textarea"
+                />
+              </div>
+              <div>
+                <label class="mb-1 block text-sm font-medium text-gray-700">活动地点</label>
+                <input
+                  v-model="editForm.location"
+                  type="text"
+                  class="input"
+                >
+              </div>
+              <div>
+                <label class="mb-1 block text-sm font-medium text-gray-700">详细地址</label>
+                <input
+                  v-model="editForm.address"
+                  type="text"
+                  class="input"
+                >
+              </div>
+              <div>
+                <label class="mb-1 block text-sm font-medium text-gray-700">开始时间</label>
+                <input
+                  :value="toDateTimeLocal(editForm.startTime)"
+                  type="datetime-local"
+                  class="input"
+                  @input="updateEditDateTime('startTime', $event)"
+                >
+              </div>
+              <div>
+                <label class="mb-1 block text-sm font-medium text-gray-700">结束时间</label>
+                <input
+                  :value="toDateTimeLocal(editForm.endTime)"
+                  type="datetime-local"
+                  class="input"
+                  @input="updateEditDateTime('endTime', $event)"
+                >
+              </div>
+              <div>
+                <label class="mb-1 block text-sm font-medium text-gray-700">活动时长（小时）</label>
+                <input
+                  v-model.number="editForm.duration"
+                  type="number"
+                  min="1"
+                  class="input"
+                >
+              </div>
+              <div>
+                <label class="mb-1 block text-sm font-medium text-gray-700">人数上限</label>
+                <input
+                  v-model.number="editForm.maxPeople"
+                  type="number"
+                  min="1"
+                  class="input"
+                >
+              </div>
+            </div>
+          </section>
+
+          <div class="grid gap-6 xl:grid-cols-[1fr_1fr]">
+            <section class="rounded-2xl border border-slate-200 bg-white p-5 space-y-4">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-semibold text-slate-900">
+                    签到码管理
+                  </p>
+                  <p class="text-xs text-slate-500">
+                    控制签到码有效期并查看当前版本。
+                  </p>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  :loading="attendanceLoading"
+                  @click="loadAttendanceCodes"
+                >
+                  刷新
+                </Button>
+              </div>
+
+              <div class="grid gap-3 md:grid-cols-2">
+                <div>
+                  <label class="mb-1 block text-sm font-medium text-gray-700">签到码有效期（分钟）</label>
+                  <input
+                    v-model.number="attendanceForm.checkInValidMinutes"
+                    type="number"
+                    min="1"
+                    class="input"
+                  >
+                </div>
+                <div>
+                  <label class="mb-1 block text-sm font-medium text-gray-700">签退码有效期（分钟）</label>
+                  <input
+                    v-model.number="attendanceForm.checkOutValidMinutes"
+                    type="number"
+                    min="1"
+                    class="input"
+                  >
+                </div>
+              </div>
+
+              <div class="flex flex-wrap gap-3">
+                <Button
+                  variant="primary"
+                  :loading="attendanceLoading"
+                  @click="generateAttendanceCodes"
+                >
+                  生成签到码
+                </Button>
+                <Button
+                  variant="outline"
+                  :loading="attendanceLoading"
+                  @click="resetAttendanceCode(AttendanceCodeType.CHECK_IN)"
+                >
+                  重置签到码
+                </Button>
+                <Button
+                  variant="outline"
+                  :loading="attendanceLoading"
+                  @click="resetAttendanceCode(AttendanceCodeType.CHECK_OUT)"
+                >
+                  重置签退码
+                </Button>
+              </div>
+
+              <div class="rounded-xl bg-slate-50 p-4 text-sm text-slate-600 space-y-2">
+                <p>签到码：<span class="font-semibold text-slate-900">{{ attendanceCodeInfo.checkInCode || '未生成' }}</span></p>
+                <p>签退码：<span class="font-semibold text-slate-900">{{ attendanceCodeInfo.checkOutCode || '未生成' }}</span></p>
+                <p>版本号：<span class="font-semibold text-slate-900">{{ attendanceCodeInfo.attendanceCodeVersion || '-' }}</span></p>
+              </div>
+            </section>
+
+            <section class="rounded-2xl border border-slate-200 bg-white p-5 space-y-4">
+              <div>
+                <p class="text-sm font-semibold text-slate-900">
+                  补录考勤
+                </p>
+                <p class="text-xs text-slate-500">
+                  在抽屉中补齐单个志愿者的签到签退记录。
+                </p>
+              </div>
+
+              <div>
+                <label class="mb-1 block text-sm font-medium text-gray-700">志愿者 ID</label>
+                <input
+                  v-model.number="supplementForm.volunteerId"
+                  type="number"
+                  min="1"
+                  class="input"
+                  placeholder="请输入志愿者 ID"
+                >
+              </div>
+              <div>
+                <label class="mb-1 block text-sm font-medium text-gray-700">签到时间</label>
+                <input
+                  :value="toDateTimeLocal(supplementForm.checkInTime)"
+                  type="datetime-local"
+                  class="input"
+                  @input="updateSupplementDateTime('checkInTime', $event)"
+                >
+              </div>
+              <div>
+                <label class="mb-1 block text-sm font-medium text-gray-700">签退时间</label>
+                <input
+                  :value="toDateTimeLocal(supplementForm.checkOutTime)"
+                  type="datetime-local"
+                  class="input"
+                  @input="updateSupplementDateTime('checkOutTime', $event)"
+                >
+              </div>
+              <div>
+                <label class="mb-1 block text-sm font-medium text-gray-700">补录原因</label>
+                <textarea
+                  v-model="supplementForm.reason"
+                  rows="3"
+                  class="textarea"
+                  placeholder="请输入补录原因"
+                />
+              </div>
+              <div class="flex justify-end">
+                <Button
+                  variant="primary"
+                  :loading="supplementing"
+                  @click="submitSupplementAttendance"
+                >
+                  提交补录
+                </Button>
+              </div>
+            </section>
+          </div>
+
+          <section class="rounded-2xl border border-slate-200 bg-white p-5 space-y-4">
+            <div>
+              <p class="text-sm font-semibold text-slate-900">
+                状态变更与风险操作
+              </p>
+              <p class="text-xs text-slate-500">
+                保存编辑、完结、取消和删除均会直接影响当前活动。
+              </p>
+            </div>
+
+            <div class="rounded-xl border border-slate-200 bg-slate-50/70 p-4 space-y-3">
+              <div>
+                <label class="mb-1 block text-sm font-medium text-gray-700">取消原因</label>
+                <textarea
+                  v-model="cancelReason"
+                  rows="3"
+                  class="textarea"
+                  placeholder="请输入取消活动的原因"
+                />
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div
+          v-else
+          class="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500"
+        >
+          点击活动行打开右侧执行面板。
+        </div>
+
+        <template #footer>
+          <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:justify-end">
+            <Button
+              v-if="selectedActivity"
+              variant="primary"
+              :loading="updating"
               @click="saveActivity"
             >
-              {{ updating ? '保存中...' : '保存活动信息' }}
-            </button>
-            <button
-              class="btn btn-outline"
-              :disabled="finishing"
+              保存活动信息
+            </Button>
+            <Button
+              v-if="selectedActivity"
+              variant="outline"
+              :loading="finishing"
               @click="finishActivity"
             >
-              {{ finishing ? '处理中...' : '标记已完结' }}
-            </button>
-            <button
-              class="btn btn-outline"
-              :disabled="deleting"
+              标记已完结
+            </Button>
+            <Button
+              v-if="selectedActivity"
+              variant="outline"
+              :loading="cancelling"
+              @click="cancelActivity"
+            >
+              取消活动
+            </Button>
+            <Button
+              v-if="selectedActivity"
+              variant="danger"
+              :loading="deleting"
               @click="deleteActivity"
             >
-              {{ deleting ? '删除中...' : '删除活动' }}
-            </button>
+              删除活动
+            </Button>
           </div>
-
-          <div class="rounded-xl border border-gray-200 bg-white p-4 space-y-3">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">取消原因</label>
-              <textarea
-                v-model="cancelReason"
-                rows="3"
-                class="textarea"
-                placeholder="请输入取消活动的原因"
-              />
-            </div>
-            <div class="flex justify-end">
-              <button
-                class="btn btn-outline"
-                :disabled="cancelling"
-                @click="cancelActivity"
-              >
-                {{ cancelling ? '提交中...' : '取消活动' }}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div class="space-y-6">
-          <div class="rounded-xl border border-gray-200 bg-white p-4 space-y-4">
-            <div class="flex items-center justify-between">
-              <h3 class="text-base font-semibold text-gray-900">
-                签到码管理
-              </h3>
-              <button
-                class="btn btn-sm btn-outline"
-                :disabled="attendanceLoading"
-                @click="loadAttendanceCodes"
-              >
-                刷新
-              </button>
-            </div>
-
-            <div class="grid gap-3 md:grid-cols-2">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">签到码有效期（分钟）</label>
-                <input
-                  v-model.number="attendanceForm.checkInValidMinutes"
-                  type="number"
-                  min="1"
-                  class="input"
-                >
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">签退码有效期（分钟）</label>
-                <input
-                  v-model.number="attendanceForm.checkOutValidMinutes"
-                  type="number"
-                  min="1"
-                  class="input"
-                >
-              </div>
-            </div>
-
-            <div class="flex flex-wrap gap-3">
-              <button
-                class="btn btn-primary"
-                :disabled="attendanceLoading"
-                @click="generateAttendanceCodes"
-              >
-                生成签到码
-              </button>
-              <button
-                class="btn btn-outline"
-                :disabled="attendanceLoading"
-                @click="resetAttendanceCode(AttendanceCodeType.CHECK_IN)"
-              >
-                重置签到码
-              </button>
-              <button
-                class="btn btn-outline"
-                :disabled="attendanceLoading"
-                @click="resetAttendanceCode(AttendanceCodeType.CHECK_OUT)"
-              >
-                重置签退码
-              </button>
-            </div>
-
-            <div class="rounded-lg bg-gray-50 p-4 text-sm text-gray-600 space-y-2">
-              <p>签到码：<span class="font-semibold text-gray-900">{{ attendanceCodeInfo.checkInCode || '未生成' }}</span></p>
-              <p>签退码：<span class="font-semibold text-gray-900">{{ attendanceCodeInfo.checkOutCode || '未生成' }}</span></p>
-              <p>版本号：<span class="font-semibold text-gray-900">{{ attendanceCodeInfo.attendanceCodeVersion || '-' }}</span></p>
-            </div>
-          </div>
-
-          <div class="rounded-xl border border-gray-200 bg-white p-4 space-y-4">
-            <h3 class="text-base font-semibold text-gray-900">
-              补录考勤
-            </h3>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">志愿者 ID</label>
-              <input
-                v-model.number="supplementForm.volunteerId"
-                type="number"
-                min="1"
-                class="input"
-                placeholder="请输入志愿者 ID"
-              >
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">签到时间</label>
-              <input
-                :value="toDateTimeLocal(supplementForm.checkInTime)"
-                type="datetime-local"
-                class="input"
-                @input="updateSupplementDateTime('checkInTime', $event)"
-              >
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">签退时间</label>
-              <input
-                :value="toDateTimeLocal(supplementForm.checkOutTime)"
-                type="datetime-local"
-                class="input"
-                @input="updateSupplementDateTime('checkOutTime', $event)"
-              >
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">补录原因</label>
-              <textarea
-                v-model="supplementForm.reason"
-                rows="3"
-                class="textarea"
-                placeholder="请输入补录原因"
-              />
-            </div>
-            <div class="flex justify-end">
-              <button
-                class="btn btn-primary"
-                :disabled="supplementing"
-                @click="submitSupplementAttendance"
-              >
-                {{ supplementing ? '提交中...' : '提交补录' }}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div
-        v-else
-        class="rounded-xl border border-dashed border-gray-200 bg-gray-50 px-4 py-10 text-center text-sm text-gray-500"
-      >
-        请先从上方真实活动列表选择一个活动，再进行执行操作。
-      </div>
-    </OrganizationSectionCard>
-  </div>
+        </template>
+      </DetailDrawer>
+    </template>
+  </DataListPage>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
+import Button from '@/components/ui/Button.vue'
+import DataListPage from '@/components/data-list/DataListPage.vue'
+import DataToolbar from '@/components/data-list/DataToolbar.vue'
+import DataTable, { type DataTableColumn } from '@/components/data-list/DataTable.vue'
+import DetailDrawer from '@/components/data-list/DetailDrawer.vue'
+import StatusBadge from '@/components/data-list/StatusBadge.vue'
 import OrganizationPageHeader from '@/components/organization/OrganizationPageHeader.vue'
 import OrganizationSectionCard from '@/components/organization/OrganizationSectionCard.vue'
 import { activitiesApi, ATTENDANCE_CODE_TYPE, mapActivityItemToOrganizationManagementView } from '@/api/activities'
@@ -432,6 +541,39 @@ const deleting = ref(false)
 const cancelling = ref(false)
 const attendanceLoading = ref(false)
 const supplementing = ref(false)
+const drawerOpen = ref(false)
+
+const columns: DataTableColumn[] = [
+  {
+    key: 'identity',
+    label: '活动',
+    width: '360px',
+    cellClass: 'align-top'
+  },
+  {
+    key: 'status',
+    label: '状态',
+    width: '120px',
+    align: 'center',
+    cellClass: 'whitespace-nowrap'
+  },
+  {
+    key: 'schedule',
+    label: '排期',
+    width: '150px'
+  },
+  {
+    key: 'location',
+    label: '地点',
+    width: '180px'
+  },
+  {
+    key: 'capacity',
+    label: '人数',
+    width: '110px',
+    align: 'center'
+  }
+]
 
 const activities = ref<OrganizationManagementActivityItem[]>([])
 const selectedActivityId = ref<number | null>(null)
@@ -471,6 +613,13 @@ const headerMeta = computed(() => [
   { label: '当前筛选', value: filter.value === 'all' ? '全部状态' : filter.value === 'open' ? '进行中' : filter.value === 'ended' ? '已结束' : '已取消', detail: '可按状态切换' }
 ])
 
+const statusTone = (statusClass: string) => {
+  if (statusClass.includes('red')) return 'rose'
+  if (statusClass.includes('amber') || statusClass.includes('yellow')) return 'amber'
+  if (statusClass.includes('green') || statusClass.includes('emerald')) return 'green'
+  return 'slate'
+}
+
 const toApiDateTime = (value: string) => {
   if (!value) return ''
   return new Date(value).toISOString().slice(0, 19).replace('T', ' ')
@@ -496,8 +645,7 @@ const mapFilterToStatus = () => {
   return undefined
 }
 
-const selectActivity = (activity: OrganizationManagementActivityItem) => {
-  selectedActivityId.value = activity.id
+const hydrateEditForm = (activity: OrganizationManagementActivityItem) => {
   editForm.value = {
     title: activity.title,
     description: activity.description,
@@ -508,6 +656,30 @@ const selectActivity = (activity: OrganizationManagementActivityItem) => {
     duration: activity.duration,
     maxPeople: activity.maxPeople
   }
+}
+
+const resetSupplementForm = () => {
+  supplementForm.value = {
+    volunteerId: 0,
+    checkInTime: '',
+    checkOutTime: '',
+    reason: ''
+  }
+}
+
+const selectActivity = (activity: OrganizationManagementActivityItem) => {
+  selectedActivityId.value = activity.id
+  hydrateEditForm(activity)
+}
+
+const openActivityDrawer = async (activity: Record<string, any>) => {
+  selectActivity(activity as OrganizationManagementActivityItem)
+  drawerOpen.value = true
+  await loadAttendanceCodes()
+}
+
+const closeActivityDrawer = () => {
+  drawerOpen.value = false
 }
 
 const loadActivities = async () => {
@@ -535,6 +707,7 @@ const loadActivities = async () => {
         selectActivity(current)
       } else {
         selectedActivityId.value = null
+        drawerOpen.value = false
       }
     }
   } catch (error: any) {
@@ -542,6 +715,7 @@ const loadActivities = async () => {
     messageStore.error(error.message || '加载活动列表失败，请稍后重试')
     activities.value = []
     selectedActivityId.value = null
+    drawerOpen.value = false
   } finally {
     loading.value = false
   }
@@ -723,6 +897,8 @@ const deleteActivity = async () => {
     selectedActivityId.value = activities.value[0]?.id ?? null
     if (activities.value[0]) {
       selectActivity(activities.value[0])
+    } else {
+      drawerOpen.value = false
     }
     messageStore.success(response.data.message || '活动已删除')
   } catch (error: any) {
@@ -825,6 +1001,7 @@ const submitSupplementAttendance = async () => {
       throw new Error(response.msg || '补录考勤失败')
     }
     messageStore.success('补录考勤已提交')
+    resetSupplementForm()
   } catch (error: any) {
     console.error('补录考勤失败:', error)
     messageStore.error(error.message || '补录考勤失败，请稍后重试')

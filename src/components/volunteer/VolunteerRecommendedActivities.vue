@@ -1,57 +1,52 @@
 <template>
-  <div class="grid gap-4 lg:grid-cols-3">
-    <article
-      v-for="activity in recommendedActivities"
-      :key="activity.id"
-      class="rounded-[1.5rem] border border-slate-200 bg-white p-5 shadow-[0_18px_44px_-36px_rgba(15,23,42,0.38)] transition hover:-translate-y-1 hover:shadow-[0_20px_50px_-34px_rgba(16,185,129,0.35)]"
-    >
-      <div class="flex items-start justify-between gap-4">
-        <VolunteerStatusBadge
-          :label="activity.tag || '推荐'"
-          tone="green"
-        />
-        <span class="text-sm font-semibold text-emerald-700">+{{ activity.points }} 积分</span>
+  <DataList
+    :items="recommendedActivities"
+    row-key="id"
+    open-text="查看详情"
+    empty-title="当前没有推荐活动"
+    empty-description="系统会根据你的近期参与偏好继续推荐合适任务。"
+  >
+    <template #default="{ item }">
+      <div class="space-y-3">
+        <div class="flex flex-wrap items-center gap-3">
+          <VolunteerStatusBadge
+            :label="item.tag || '推荐'"
+            tone="green"
+          />
+          <span class="text-sm font-semibold text-emerald-700">+{{ item.points }} 积分</span>
+        </div>
+
+        <div>
+          <h3 class="text-lg font-bold tracking-tight text-slate-900">
+            {{ item.title }}
+          </h3>
+          <p class="mt-2 text-sm leading-6 text-slate-600">
+            {{ item.description }}
+          </p>
+        </div>
+
+        <div class="flex flex-wrap gap-4 text-sm text-slate-500">
+          <span>{{ item.date }}</span>
+          <span>{{ item.location }}</span>
+          <span>{{ item.participants }}/{{ item.capacity }} 名额</span>
+        </div>
       </div>
-      <div class="mt-5 space-y-3">
-        <h3 class="text-xl font-bold text-slate-900">
-          {{ activity.title }}
-        </h3>
-        <p class="text-sm leading-6 text-slate-600">
-          {{ activity.description }}
-        </p>
-      </div>
-      <dl class="mt-5 space-y-2 text-sm text-slate-500">
-        <div class="flex items-center justify-between">
-          <dt>时间</dt>
-          <dd class="font-medium text-slate-700">
-            {{ activity.date }}
-          </dd>
-        </div>
-        <div class="flex items-center justify-between">
-          <dt>地点</dt>
-          <dd class="font-medium text-slate-700">
-            {{ activity.location }}
-          </dd>
-        </div>
-        <div class="flex items-center justify-between">
-          <dt>名额</dt>
-          <dd class="font-medium text-slate-700">
-            {{ activity.participants }}/{{ activity.capacity }}
-          </dd>
-        </div>
-      </dl>
+    </template>
+
+    <template #actions="{ item }">
       <RouterLink
-        to="/volunteer/activities"
-        class="mt-5 inline-flex items-center text-sm font-semibold text-emerald-700 transition hover:text-emerald-800"
+        :to="`/volunteer/activities?id=${item.id}`"
+        class="volunteer-toolbar-button volunteer-toolbar-button--soft"
       >
         去查看详情
       </RouterLink>
-    </article>
-  </div>
+    </template>
+  </DataList>
 </template>
 
 <script setup lang="ts">
 import { RouterLink } from 'vue-router'
+import DataList from '@/components/data-list/DataList.vue'
 import VolunteerStatusBadge from './VolunteerStatusBadge.vue'
 import { recommendedActivities } from '@/data/volunteerCenter'
 </script>

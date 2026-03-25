@@ -1,173 +1,343 @@
 <template>
-  <div class="space-y-6">
-    <OrganizationPageHeader
-      eyebrow="Work Hours"
-      title="工时流水"
-      description="查看工时日志，并对指定报名执行作废或重算。"
-      :meta-items="headerMeta"
-    />
+  <DataListPage>
+    <template #header>
+      <OrganizationPageHeader
+        eyebrow="工时管理"
+        title="工时流水"
+        description="查看工时日志，并对指定报名执行作废或重算。"
+        :meta-items="headerMeta"
+      />
+    </template>
 
-    <OrganizationSectionCard
-      title="筛选"
-      description="按活动、报名或操作类型检索工时流水。"
-      tone="soft"
-    >
-      <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <input
-          v-model.number="activityId"
-          type="number"
-          min="1"
-          class="input"
-          placeholder="活动 ID"
+    <template #toolbar>
+      <DataToolbar>
+        <template #filters>
+          <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <input
+              v-model.number="activityId"
+              type="number"
+              min="1"
+              class="input"
+              placeholder="活动 ID"
+            >
+            <input
+              v-model.number="signupId"
+              type="number"
+              min="1"
+              class="input"
+              placeholder="报名 ID"
+            >
+            <select
+              v-model="operationType"
+              class="select"
+            >
+              <option :value="undefined">
+                全部操作
+              </option>
+              <option :value="WorkHourOperationType.GRANT">
+                发放
+              </option>
+              <option :value="WorkHourOperationType.VOID">
+                作废
+              </option>
+              <option :value="WorkHourOperationType.RECALCULATE">
+                重算
+              </option>
+            </select>
+            <Button
+              variant="outline"
+              :loading="loading"
+              @click="loadLogs"
+            >
+              刷新流水
+            </Button>
+          </div>
+        </template>
+      </DataToolbar>
+    </template>
+
+    <template #body>
+      <div class="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
+        <OrganizationSectionCard
+          title="流水列表"
+          description="流水数据来自真实工时接口，点击一行在右侧查看详情，也可直接在右侧快速处理指定报名。"
         >
-        <input
-          v-model.number="signupId"
-          type="number"
-          min="1"
-          class="input"
-          placeholder="报名 ID"
+          <DataTable
+            :columns="columns"
+            :items="logs"
+            :loading="loading"
+            row-key="id"
+            :selected-key="selectedLogId"
+            interactive
+            open-text="处理"
+            open-style="text"
+            density="compact"
+            empty-title="当前没有可展示的工时流水"
+            empty-description="调整活动、报名或操作类型筛选后再试。"
+            @row-click="openLogDrawer"
+          >
+            <template #cell-operation="{ item }">
+              <div class="flex flex-wrap items-center gap-2">
+                <StatusBadge
+                  :label="operationText(item.operationType)"
+                  :tone="operationTone(item.operationType)"
+                />
+                <span class="text-sm font-semibold text-slate-900">
+                  报名 {{ item.signupId }} / 活动 {{ item.activityId }}
+                </span>
+              </div>
+            </template>
+
+            <template #cell-hours="{ item }">
+              变更 {{ item.hoursDelta }}h
+            </template>
+
+            <template #cell-total="{ item }">
+              前 {{ item.beforeTotalHours }}h / 后 {{ item.afterTotalHours }}h
+            </template>
+
+            <template #cell-createdAt="{ item }">
+              {{ item.createdAt }}
+            </template>
+          </DataTable>
+        </OrganizationSectionCard>
+
+        <OrganizationSectionCard
+          title="快速处理"
+          description="即使没有选中任何流水，也可以按报名 ID 直接作废或重算工时。"
+          tone="soft"
         >
-        <select
-          v-model="operationType"
-          class="select"
-        >
-          <option :value="undefined">
-            全部操作
-          </option>
-          <option :value="WorkHourOperationType.GRANT">
-            发放
-          </option>
-          <option :value="WorkHourOperationType.VOID">
-            作废
-          </option>
-          <option :value="WorkHourOperationType.RECALCULATE">
-            重算
-          </option>
-        </select>
-        <button
-          class="org-toolbar-button"
-          :disabled="loading"
-          @click="loadLogs"
-        >
-          {{ loading ? '加载中...' : '刷新流水' }}
-        </button>
+          <div class="space-y-4">
+            <div>
+              <label class="mb-1 block text-sm font-medium text-gray-700">报名 ID</label>
+              <input
+                v-model.number="actionForm.signupId"
+                type="number"
+                min="1"
+                class="input"
+                placeholder="请输入报名 ID"
+              >
+            </div>
+            <div>
+              <label class="mb-1 block text-sm font-medium text-gray-700">重算工时</label>
+              <input
+                v-model.number="actionForm.hours"
+                type="number"
+                min="0"
+                step="0.5"
+                class="input"
+                placeholder="仅重算时填写"
+              >
+            </div>
+            <div>
+              <label class="mb-1 block text-sm font-medium text-gray-700">原因</label>
+              <textarea
+                v-model.trim="actionForm.reason"
+                rows="3"
+                class="textarea"
+                placeholder="请输入处理原因"
+              />
+            </div>
+
+            <div
+              v-if="selectedLog"
+              class="rounded-2xl border border-white/70 bg-white/90 px-4 py-4 text-sm text-slate-600"
+            >
+              <p class="font-semibold text-slate-900">
+                当前引用流水 #{{ selectedLog.id }}
+              </p>
+              <p class="mt-2">
+                原因：{{ selectedLog.reason || '无' }}
+              </p>
+            </div>
+
+            <div class="flex flex-col gap-3 sm:flex-row sm:justify-end">
+              <Button
+                variant="danger"
+                :loading="acting"
+                @click="voidWorkHour"
+              >
+                作废工时
+              </Button>
+              <Button
+                variant="success"
+                :loading="acting"
+                @click="recalculateWorkHour"
+              >
+                重算工时
+              </Button>
+            </div>
+          </div>
+        </OrganizationSectionCard>
       </div>
-    </OrganizationSectionCard>
+    </template>
 
-    <div class="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
-      <OrganizationSectionCard
-        title="流水列表"
-        description="列表数据来自工时流水接口。"
+    <template #drawer>
+      <DetailDrawer
+        v-model="drawerOpen"
+        width="620px"
+        :aria-label="selectedLog ? `工时流水 ${selectedLog.id} 的处理详情` : '工时处理详情'"
+        @close="closeLogDrawer"
       >
-        <div
-          v-if="loading"
-          class="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500"
-        >
-          正在加载工时流水...
-        </div>
+        <template #header>
+          <div
+            v-if="selectedLog"
+            class="space-y-3"
+          >
+            <div class="space-y-1">
+              <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                工时处理
+              </p>
+              <h2 class="text-lg font-bold tracking-tight text-slate-900">
+                流水 #{{ selectedLog.id }}
+              </h2>
+              <p class="text-sm text-slate-500">
+                报名 {{ selectedLog.signupId }} / 活动 {{ selectedLog.activityId }}
+              </p>
+            </div>
+
+            <StatusBadge
+              :label="operationText(selectedLog.operationType)"
+              :tone="operationTone(selectedLog.operationType)"
+            />
+          </div>
+        </template>
 
         <div
-          v-else-if="!logs.length"
-          class="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500"
+          v-if="selectedLog"
+          class="space-y-5"
         >
-          当前没有可展示的工时流水。
+          <section class="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+            <div class="grid gap-4 sm:grid-cols-2">
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                  变更工时
+                </p>
+                <p class="mt-1 text-sm font-semibold text-slate-900">
+                  {{ selectedLog.hoursDelta }}h
+                </p>
+              </div>
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                  总工时变化
+                </p>
+                <p class="mt-1 text-sm font-semibold text-slate-900">
+                  {{ selectedLog.beforeTotalHours }}h -> {{ selectedLog.afterTotalHours }}h
+                </p>
+              </div>
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                  操作时间
+                </p>
+                <p class="mt-1 text-sm font-semibold text-slate-900">
+                  {{ selectedLog.createdAt }}
+                </p>
+              </div>
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                  幂等键
+                </p>
+                <p class="mt-1 break-all text-sm font-semibold text-slate-900">
+                  {{ selectedLog.idempotencyKey || '-' }}
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section>
+            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+              当前流水原因
+            </p>
+            <p class="mt-1 text-sm leading-6 text-slate-700">
+              {{ selectedLog.reason || '无' }}
+            </p>
+          </section>
+
+          <section class="rounded-2xl border border-slate-200 bg-white p-4 space-y-4">
+            <div>
+              <p class="text-sm font-semibold text-slate-900">
+                执行作废 / 重算
+              </p>
+              <p class="text-xs text-slate-500">
+                可直接基于当前记录处理对应报名的工时。
+              </p>
+            </div>
+
+            <div class="grid gap-4 md:grid-cols-2">
+              <div>
+                <label class="mb-1 block text-sm font-medium text-gray-700">报名 ID</label>
+                <input
+                  v-model.number="actionForm.signupId"
+                  type="number"
+                  min="1"
+                  class="input"
+                  placeholder="报名 ID"
+                >
+              </div>
+              <div>
+                <label class="mb-1 block text-sm font-medium text-gray-700">重算工时</label>
+                <input
+                  v-model.number="actionForm.hours"
+                  type="number"
+                  min="0"
+                  step="0.5"
+                  class="input"
+                  placeholder="仅重算使用"
+                >
+              </div>
+              <div class="md:col-span-2">
+                <label class="mb-1 block text-sm font-medium text-gray-700">原因</label>
+                <textarea
+                  v-model.trim="actionForm.reason"
+                  rows="3"
+                  class="textarea"
+                  placeholder="请输入原因"
+                />
+              </div>
+            </div>
+          </section>
         </div>
 
         <div
           v-else
-          class="space-y-4"
+          class="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500"
         >
-          <article
-            v-for="log in logs"
-            :key="log.id"
-            class="organization-surface-lift cursor-pointer rounded-[1.3rem] border px-5 py-4 transition"
-            :class="selectedLogId === log.id ? 'border-[#ec5b13] bg-[#fff8f3]' : 'border-slate-200 bg-white'"
-            @click="selectedLogId = log.id"
-          >
-            <div class="flex flex-col gap-2">
-              <div class="flex flex-wrap items-center gap-2">
-                <span class="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-600">
-                  {{ operationText(log.operationType) }}
-                </span>
-                <span class="text-sm font-semibold text-slate-900">
-                  报名 {{ log.signupId }} / 活动 {{ log.activityId }}
-                </span>
-              </div>
-              <p class="text-sm text-slate-500">
-                变更工时 {{ log.hoursDelta }}h · 前 {{ log.beforeTotalHours }}h / 后 {{ log.afterTotalHours }}h
-              </p>
-              <p class="text-xs text-slate-400">
-                {{ log.createdAt }} · 幂等键 {{ log.idempotencyKey || '-' }}
-              </p>
-            </div>
-          </article>
+          点击流水记录查看详情并执行处理。
         </div>
-      </OrganizationSectionCard>
 
-      <OrganizationSectionCard
-        title="工时处理"
-        description="对指定报名执行作废或重算。"
-        tone="soft"
-      >
-        <div class="space-y-4">
-          <input
-            v-model.number="actionForm.signupId"
-            type="number"
-            min="1"
-            class="input"
-            placeholder="报名 ID"
-          >
-          <input
-            v-model.number="actionForm.hours"
-            type="number"
-            min="0"
-            step="0.5"
-            class="input"
-            placeholder="重算工时（仅重算使用）"
-          >
-          <textarea
-            v-model.trim="actionForm.reason"
-            rows="3"
-            class="textarea"
-            placeholder="请输入原因"
-          />
-
-          <div class="flex flex-wrap gap-3">
-            <button
-              class="rounded-full border border-rose-200 bg-white px-4 py-2 text-sm font-semibold text-rose-600 transition hover:border-rose-300 disabled:opacity-60"
-              :disabled="acting"
+        <template #footer>
+          <div class="flex flex-col gap-3 sm:flex-row sm:justify-end">
+            <Button
+              v-if="selectedLog"
+              variant="danger"
+              :loading="acting"
               @click="voidWorkHour"
             >
-              {{ acting ? '处理中...' : '作废工时' }}
-            </button>
-            <button
-              class="rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-60"
-              :disabled="acting"
+              作废工时
+            </Button>
+            <Button
+              v-if="selectedLog"
+              variant="success"
+              :loading="acting"
               @click="recalculateWorkHour"
             >
-              {{ acting ? '处理中...' : '重算工时' }}
-            </button>
+              重算工时
+            </Button>
           </div>
-
-          <div
-            v-if="selectedLog"
-            class="rounded-2xl border border-white/70 bg-white/90 px-4 py-4 text-sm text-slate-600"
-          >
-            <p class="font-semibold text-slate-900">
-              当前选中流水 #{{ selectedLog.id }}
-            </p>
-            <p class="mt-2">
-              原因：{{ selectedLog.reason || '无' }}
-            </p>
-          </div>
-        </div>
-      </OrganizationSectionCard>
-    </div>
-  </div>
+        </template>
+      </DetailDrawer>
+    </template>
+  </DataListPage>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import Button from '@/components/ui/Button.vue'
+import DataListPage from '@/components/data-list/DataListPage.vue'
+import DataToolbar from '@/components/data-list/DataToolbar.vue'
+import DataTable, { type DataTableColumn } from '@/components/data-list/DataTable.vue'
+import DetailDrawer from '@/components/data-list/DetailDrawer.vue'
+import StatusBadge from '@/components/data-list/StatusBadge.vue'
 import OrganizationPageHeader from '@/components/organization/OrganizationPageHeader.vue'
 import OrganizationSectionCard from '@/components/organization/OrganizationSectionCard.vue'
 import { workHoursApi } from '@/api/work-hours'
@@ -184,6 +354,15 @@ const total = ref(0)
 const loading = ref(false)
 const acting = ref(false)
 const selectedLogId = ref<number | null>(null)
+const drawerOpen = ref(false)
+
+const columns: DataTableColumn[] = [
+  { key: 'operation', label: '流水项', width: '320px', cellClass: 'align-top' },
+  { key: 'hours', label: '工时变化', width: '120px' },
+  { key: 'total', label: '总工时', width: '170px' },
+  { key: 'createdAt', label: '时间', width: '180px' }
+]
+
 const actionForm = ref({
   signupId: 0,
   hours: 0,
@@ -195,6 +374,20 @@ const headerMeta = computed(() => [
   { label: '流水总数', value: `${total.value}`, detail: '来自真实工时接口' },
   { label: '当前筛选', value: operationType.value ? operationText(operationType.value) : '全部操作', detail: '支持发放 / 作废 / 重算' }
 ])
+
+const openLogDrawer = (item: Record<string, any>) => {
+  selectedLogId.value = item.id
+  actionForm.value = {
+    signupId: item.signupId,
+    hours: Math.max(item.afterTotalHours - item.beforeTotalHours, 0),
+    reason: item.reason || ''
+  }
+  drawerOpen.value = true
+}
+
+const closeLogDrawer = () => {
+  drawerOpen.value = false
+}
 
 const loadLogs = async () => {
   loading.value = true
@@ -278,6 +471,12 @@ const operationText = (type: WorkHourOperationType) => ({
   [WorkHourOperationType.VOID]: '作废',
   [WorkHourOperationType.RECALCULATE]: '重算'
 }[type] || '未知')
+
+const operationTone = (type: WorkHourOperationType) => ({
+  [WorkHourOperationType.GRANT]: 'green',
+  [WorkHourOperationType.VOID]: 'rose',
+  [WorkHourOperationType.RECALCULATE]: 'amber'
+}[type] || 'slate') as 'green' | 'rose' | 'amber' | 'slate'
 
 onMounted(() => {
   void loadLogs()

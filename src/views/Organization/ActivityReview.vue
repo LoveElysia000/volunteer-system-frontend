@@ -1,146 +1,237 @@
 <template>
-  <div class="space-y-6">
-    <OrganizationPageHeader
-      eyebrow="Audit Queue"
-      title="活动审核"
-      description="审核列表与详情均来自文档中的审核中心接口。"
-      :meta-items="headerMeta"
-    />
+  <DataListPage>
+    <template #header>
+      <OrganizationPageHeader
+        eyebrow="审核队列"
+        title="活动审核"
+        description="审核列表与详情均来自审核中心真实接口。"
+        :meta-items="headerMeta"
+      />
+    </template>
 
-    <div class="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-      <OrganizationSectionCard
-        title="待审核队列"
-        description="当前仅展示活动报名相关审核。"
-      >
-        <div
-          v-if="loading"
-          class="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500"
-        >
-          正在加载审核列表...
-        </div>
+    <template #toolbar>
+      <DataToolbar>
+        <template #filters>
+          <div class="grid gap-3 lg:grid-cols-[minmax(220px,320px)_180px]">
+            <input
+              v-model.trim="searchQuery"
+              type="text"
+              class="input"
+              placeholder="搜索标题、说明或审核单号"
+            >
+            <select
+              v-model="queueFilter"
+              class="select"
+            >
+              <option value="all">
+                全部队列
+              </option>
+              <option value="overdue">
+                已超时
+              </option>
+              <option value="pending">
+                正常待处理
+              </option>
+            </select>
+          </div>
+        </template>
 
-        <div
-          v-else-if="!items.length"
-          class="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500"
-        >
-          当前没有待审核记录。
-        </div>
-
-        <div
-          v-else
-          class="space-y-4"
-        >
-          <article
-            v-for="item in items"
-            :key="item.id"
-            class="organization-surface-lift cursor-pointer rounded-[1.3rem] border px-5 py-4 transition"
-            :class="selectedAuditId === item.id ? 'border-[#ec5b13] bg-[#fff8f3]' : 'border-slate-200 bg-white'"
-            @click="selectAudit(item.id)"
+        <template #actions>
+          <Button
+            variant="outline"
+            :loading="loading"
+            @click="loadAudits"
           >
-            <div class="flex items-start justify-between gap-3">
-              <div>
-                <h2 class="text-base font-bold text-slate-900">
-                  {{ item.title }}
-                </h2>
-                <p class="mt-1 text-sm text-slate-500">
-                  {{ item.subTitle || '无补充说明' }}
-                </p>
-              </div>
-              <span
-                class="rounded-full px-2.5 py-1 text-[11px] font-semibold"
-                :class="item.isOverdue ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700'"
-              >
-                {{ item.isOverdue ? '已超时' : '待处理' }}
-              </span>
-            </div>
-            <p class="mt-3 text-xs text-slate-400">
-              审核单号 #{{ item.id }} · 创建于 {{ item.createdAt }}
-            </p>
-          </article>
-        </div>
-      </OrganizationSectionCard>
+            刷新审核队列
+          </Button>
+        </template>
+      </DataToolbar>
+    </template>
 
+    <template #body>
       <OrganizationSectionCard
-        title="审核详情"
-        description="详情来自审核记录接口。"
-        tone="soft"
+        title="待审核列表"
+        description="按行浏览待处理审核，点击任意记录在右侧完成查看和审批。"
       >
+        <DataTable
+          :columns="columns"
+          :items="filteredItems"
+          :loading="loading"
+          row-key="id"
+          :selected-key="selectedAuditId"
+          interactive
+          open-text="查看"
+          open-style="text"
+          density="compact"
+          empty-title="当前没有待审核记录"
+          empty-description="切换筛选条件后再试，或刷新审核队列。"
+          @row-click="openAuditDrawer"
+        >
+          <template #cell-identity="{ item }">
+            <div class="min-w-0 space-y-1">
+              <p class="truncate text-sm font-semibold text-slate-900">
+                {{ item.title }}
+              </p>
+              <p class="truncate text-xs text-slate-500">
+                {{ item.subTitle || '无补充说明' }}
+              </p>
+            </div>
+          </template>
+
+          <template #cell-createdAt="{ item }">
+            {{ item.createdAt }}
+          </template>
+
+          <template #cell-queue="{ item }">
+            <StatusBadge
+              :label="item.isOverdue ? '已超时' : '待处理'"
+              :tone="item.isOverdue ? 'rose' : 'amber'"
+            />
+          </template>
+
+          <template #cell-target="{ item }">
+            {{ targetTypeText(item.targetType) }}
+          </template>
+        </DataTable>
+      </OrganizationSectionCard>
+    </template>
+
+    <template #drawer>
+      <DetailDrawer
+        v-model="drawerOpen"
+        width="560px"
+        :aria-label="selectedAudit ? `${selectedAudit.title} 的审核详情` : '审核详情'"
+        @close="closeAuditDrawer"
+      >
+        <template #header>
+          <div
+            v-if="selectedAudit"
+            class="space-y-3"
+          >
+            <div class="space-y-1">
+              <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                审核详情
+              </p>
+              <h2 class="text-lg font-bold tracking-tight text-slate-900">
+                {{ selectedAudit.title }}
+              </h2>
+              <p class="text-sm text-slate-500">
+                审核单号 #{{ selectedAudit.id }} · {{ selectedAudit.createdAt }}
+              </p>
+            </div>
+
+            <StatusBadge
+              :label="selectedAudit.isOverdue ? '已超时' : '待处理'"
+              :tone="selectedAudit.isOverdue ? 'rose' : 'amber'"
+            />
+          </div>
+        </template>
+
         <div
           v-if="detailLoading"
-          class="rounded-2xl border border-dashed border-slate-200 bg-white px-4 py-8 text-center text-sm text-slate-500"
+          class="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500"
         >
           正在加载审核详情...
         </div>
 
         <div
           v-else-if="detail"
-          class="space-y-4"
+          class="space-y-5"
         >
-          <div class="rounded-2xl border border-white/70 bg-white/90 px-4 py-4">
-            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
-              审核对象
-            </p>
-            <p class="mt-2 text-sm font-semibold text-slate-900">
-              {{ targetTypeText(detail.targetType) }} / ID {{ detail.targetId }}
-            </p>
-          </div>
+          <section class="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+            <div class="grid gap-4 sm:grid-cols-2">
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                  审核对象
+                </p>
+                <p class="mt-1 text-sm font-semibold text-slate-900">
+                  {{ targetTypeText(detail.targetType) }}
+                </p>
+              </div>
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                  对象 ID
+                </p>
+                <p class="mt-1 text-sm font-semibold text-slate-900">
+                  {{ detail.targetId }}
+                </p>
+              </div>
+            </div>
+          </section>
 
-          <div class="rounded-2xl border border-white/70 bg-white/90 px-4 py-4">
-            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
-              变更前
-            </p>
-            <p class="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-600">
-              {{ detail.oldContent || '无' }}
-            </p>
-          </div>
+          <section class="space-y-3">
+            <div class="rounded-2xl border border-slate-200 bg-white p-4">
+              <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                变更前
+              </p>
+              <p class="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-600">
+                {{ detail.oldContent || '无' }}
+              </p>
+            </div>
 
-          <div class="rounded-2xl border border-white/70 bg-white/90 px-4 py-4">
-            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
-              变更后
-            </p>
-            <p class="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-600">
-              {{ detail.newContent || '无' }}
-            </p>
-          </div>
+            <div class="rounded-2xl border border-slate-200 bg-white p-4">
+              <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                变更后
+              </p>
+              <p class="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-600">
+                {{ detail.newContent || '无' }}
+              </p>
+            </div>
+          </section>
 
-          <textarea
-            v-model.trim="auditReason"
-            rows="3"
-            class="textarea"
-            placeholder="选填：填写审核说明"
-          />
-
-          <div class="flex flex-wrap gap-3">
-            <button
-              class="rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-60"
-              :disabled="actionLoading"
-              @click="approveCurrentAudit"
-            >
-              {{ actionLoading ? '处理中...' : '审核通过' }}
-            </button>
-            <button
-              class="rounded-full border border-rose-200 bg-white px-4 py-2 text-sm font-semibold text-rose-600 transition hover:border-rose-300 disabled:opacity-60"
-              :disabled="actionLoading"
-              @click="rejectCurrentAudit"
-            >
-              {{ actionLoading ? '处理中...' : '审核驳回' }}
-            </button>
-          </div>
+          <section>
+            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+              审核说明
+            </p>
+            <textarea
+              v-model.trim="auditReason"
+              rows="3"
+              class="textarea mt-2"
+              placeholder="选填：填写审核说明"
+            />
+          </section>
         </div>
 
         <div
           v-else
-          class="rounded-2xl border border-dashed border-slate-200 bg-white px-4 py-8 text-center text-sm text-slate-500"
+          class="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500"
         >
-          请先从左侧选择一条审核记录。
+          点击审核记录查看变更内容并完成审批。
         </div>
-      </OrganizationSectionCard>
-    </div>
-  </div>
+
+        <template #footer>
+          <div class="flex flex-col gap-3 sm:flex-row sm:justify-end">
+            <Button
+              v-if="selectedAuditId"
+              variant="success"
+              :loading="actionLoading"
+              @click="approveCurrentAudit"
+            >
+              审核通过
+            </Button>
+            <Button
+              v-if="selectedAuditId"
+              variant="danger"
+              :loading="actionLoading"
+              @click="rejectCurrentAudit"
+            >
+              审核驳回
+            </Button>
+          </div>
+        </template>
+      </DetailDrawer>
+    </template>
+  </DataListPage>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import Button from '@/components/ui/Button.vue'
+import DataListPage from '@/components/data-list/DataListPage.vue'
+import DataToolbar from '@/components/data-list/DataToolbar.vue'
+import DataTable, { type DataTableColumn } from '@/components/data-list/DataTable.vue'
+import DetailDrawer from '@/components/data-list/DetailDrawer.vue'
+import StatusBadge from '@/components/data-list/StatusBadge.vue'
 import OrganizationPageHeader from '@/components/organization/OrganizationPageHeader.vue'
 import OrganizationSectionCard from '@/components/organization/OrganizationSectionCard.vue'
 import { useAuditsStore } from '@/store/modules/audits'
@@ -154,10 +245,64 @@ const selectedAuditId = ref<number | null>(null)
 const auditReason = ref('')
 const detailLoading = ref(false)
 const actionLoading = ref(false)
+const drawerOpen = ref(false)
+const searchQuery = ref('')
+const queueFilter = ref<'all' | 'overdue' | 'pending'>('all')
+
+const columns: DataTableColumn[] = [
+  {
+    key: 'identity',
+    label: '审核项',
+    width: '360px',
+    cellClass: 'align-top'
+  },
+  {
+    key: 'target',
+    label: '对象类型',
+    width: '150px'
+  },
+  {
+    key: 'createdAt',
+    label: '创建时间',
+    width: '170px'
+  },
+  {
+    key: 'queue',
+    label: '队列状态',
+    width: '130px',
+    align: 'center',
+    cellClass: 'whitespace-nowrap'
+  }
+]
 
 const items = computed(() => auditsStore.items)
 const detail = computed(() => auditsStore.currentRecord)
 const loading = computed(() => auditsStore.loading)
+const selectedAudit = computed(() => (
+  items.value.find((item) => item.id === selectedAuditId.value) || null
+))
+
+const filteredItems = computed(() => {
+  const keyword = searchQuery.value.trim().toLowerCase()
+
+  return items.value.filter((item) => {
+    const queueMatched = queueFilter.value === 'all'
+      || (queueFilter.value === 'overdue' && item.isOverdue)
+      || (queueFilter.value === 'pending' && !item.isOverdue)
+
+    if (!queueMatched) {
+      return false
+    }
+
+    if (!keyword) {
+      return true
+    }
+
+    return [item.title, item.subTitle || '', String(item.id)]
+      .some((field) => field.toLowerCase().includes(keyword))
+  })
+})
+
 const headerMeta = computed(() => [
   { label: '待审核总数', value: `${auditsStore.total}`, detail: '来源于审核中心接口' },
   { label: '当前模块', value: '活动报名审核', detail: '筛选 targetType=4' }
@@ -172,7 +317,7 @@ const loadAudits = async () => {
     })
 
     if (!selectedAuditId.value && data.list.length) {
-      await selectAudit(data.list[0].id)
+      await openAuditById(data.list[0].id)
     }
   } catch (error: any) {
     console.error('加载审核列表失败:', error)
@@ -180,8 +325,9 @@ const loadAudits = async () => {
   }
 }
 
-const selectAudit = async (id: number) => {
+const openAuditById = async (id: number) => {
   selectedAuditId.value = id
+  drawerOpen.value = true
   detailLoading.value = true
   try {
     await auditsStore.fetchDetail(id)
@@ -193,6 +339,14 @@ const selectAudit = async (id: number) => {
   }
 }
 
+const openAuditDrawer = async (item: Record<string, any>) => {
+  await openAuditById(item.id)
+}
+
+const closeAuditDrawer = () => {
+  drawerOpen.value = false
+}
+
 const approveCurrentAudit = async () => {
   if (!selectedAuditId.value) return
   actionLoading.value = true
@@ -201,6 +355,7 @@ const approveCurrentAudit = async () => {
     messageStore.success('审核已通过')
     selectedAuditId.value = null
     auditReason.value = ''
+    drawerOpen.value = false
     await loadAudits()
   } catch (error: any) {
     console.error('审核通过失败:', error)
@@ -218,6 +373,7 @@ const rejectCurrentAudit = async () => {
     messageStore.success('审核已驳回')
     selectedAuditId.value = null
     auditReason.value = ''
+    drawerOpen.value = false
     await loadAudits()
   } catch (error: any) {
     console.error('审核驳回失败:', error)

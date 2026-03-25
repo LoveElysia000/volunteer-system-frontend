@@ -40,6 +40,10 @@
     @apply text-gray-600 hover:text-primary-600 hover:bg-gray-50 focus:ring-primary-500;
   }
 
+  .table-text-action {
+    @apply text-sm font-semibold text-[#2563eb] transition hover:text-[#1d4ed8] hover:underline focus:outline-none;
+  }
+
   /* 危险按钮 */
   .btn-danger {
     @apply bg-red-500 text-white shadow-sm hover:bg-red-600 hover:shadow-md focus:ring-red-500;
@@ -1527,6 +1531,89 @@
   .organization-list-rise-enter-active,
   .organization-list-rise-leave-active,
   .organization-list-rise-move {
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@layer components {
+  .data-list-page {
+    @apply min-w-0;
+  }
+
+  .data-list-toolbar {
+    @apply flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between;
+  }
+
+  .data-list-toolbar-group {
+    @apply flex min-w-0 flex-1 flex-col gap-3;
+  }
+
+  .data-list-toolbar-actions {
+    @apply flex min-w-0 flex-col gap-3 lg:items-end;
+  }
+
+  .data-list-row {
+    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  }
+
+  .data-list-clickable-row {
+    cursor: pointer;
+  }
+
+  .data-list-clickable-row:hover {
+    transform: translateY(-1px);
+    border-color: rgba(203, 213, 225, 1);
+    box-shadow: 0 18px 42px -34px rgba(15, 23, 42, 0.24);
+    background: rgba(248, 250, 252, 0.96);
+  }
+
+  .data-list-clickable-row:focus-within {
+    transform: translateY(-1px);
+    border-color: rgba(203, 213, 225, 1);
+    box-shadow: 0 18px 42px -34px rgba(15, 23, 42, 0.24);
+    background: rgba(248, 250, 252, 0.96);
+  }
+
+  .data-list-row-selected {
+    border-color: rgba(16, 185, 129, 0.3);
+    background: rgba(236, 253, 245, 0.8);
+    box-shadow: inset 0 0 0 1px rgba(16, 185, 129, 0.12);
+  }
+
+  .data-table-density-compact .data-table-header-cell,
+  .data-table-density-compact .data-table-cell {
+    @apply px-3 py-2.5 text-sm;
+  }
+
+  .data-table-density-comfortable .data-table-header-cell,
+  .data-table-density-comfortable .data-table-cell {
+    @apply px-4 py-3.5 text-sm;
+  }
+
+  .data-list-density-compact .data-list-row {
+    @apply px-3 py-3;
+  }
+
+  .data-list-density-comfortable .data-list-row {
+    @apply px-4 py-4;
+  }
+
+  .data-drawer-surface {
+    @apply overflow-hidden border border-slate-200 bg-white shadow-[0_28px_70px_-40px_rgba(15,23,42,0.38)];
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .data-list-row,
+  .data-list-clickable-row,
+  .data-drawer-surface,
+  .data-list-toolbar,
+  .data-table-density-compact .data-table-cell,
+  .data-table-density-compact .data-table-header-cell,
+  .data-table-density-comfortable .data-table-cell,
+  .data-table-density-comfortable .data-table-header-cell,
+  .data-list-density-compact .data-list-row,
+  .data-list-density-comfortable .data-list-row {
     transition-duration: 0.01ms !important;
   }
 }

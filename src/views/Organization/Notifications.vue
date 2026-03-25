@@ -1,107 +1,223 @@
 <template>
-  <div class="space-y-6">
-    <OrganizationPageHeader
-      eyebrow="Inbox"
-      title="通知管理"
-      description="集中查看系统消息、审核提醒和活动相关通知。"
-      :meta-items="headerMeta"
-      mode="compact"
-    >
-      <template #actions>
-        <button
-          class="org-toolbar-button disabled:cursor-not-allowed disabled:opacity-60"
-          :disabled="markingRead || !unreadIds.length"
-          @click="markAllAsRead"
-        >
-          {{ markingRead ? '处理中...' : '全部标记已读' }}
-        </button>
-      </template>
-    </OrganizationPageHeader>
-
-    <OrganizationSectionCard
-      title="消息列表"
-      description="以下内容来自真实通知接口，保留当前组织端页面风格。"
-    >
-      <template #header>
-        <label class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-600">
-          <input
-            v-model="unreadOnly"
-            type="checkbox"
-            class="h-4 w-4 rounded border-slate-300 text-[#ec5b13] focus:ring-[#ec5b13]"
+  <DataListPage>
+    <template #header>
+      <OrganizationPageHeader
+        eyebrow="通知中心"
+        title="通知管理"
+        description="集中查看系统消息、审核提醒和活动相关通知。"
+        :meta-items="headerMeta"
+        mode="compact"
+      >
+        <template #actions>
+          <button
+            class="org-toolbar-button disabled:cursor-not-allowed disabled:opacity-60"
+            :disabled="markingRead || !unreadIds.length"
+            @click="markAllAsRead"
           >
-          仅看未读
-        </label>
-      </template>
+            {{ markingRead ? '处理中...' : '全部标记已读' }}
+          </button>
+        </template>
+      </OrganizationPageHeader>
+    </template>
 
-      <div
-        v-if="loading"
-        class="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500"
-      >
-        正在加载通知...
-      </div>
+    <template #toolbar>
+      <DataToolbar>
+        <template #filters>
+          <div class="flex flex-wrap items-center gap-3">
+            <label class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-600">
+              <input
+                v-model="unreadOnly"
+                type="checkbox"
+                class="h-4 w-4 rounded border-slate-300 text-[#ec5b13] focus:ring-[#ec5b13]"
+              >
+              仅看未读
+            </label>
 
-      <div
-        v-else-if="!notifications.length"
-        class="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500"
-      >
-        当前没有可展示的通知。
-      </div>
+            <input
+              v-model.trim="searchQuery"
+              type="text"
+              class="input min-w-[240px]"
+              placeholder="搜索通知标题、内容或业务类型"
+            >
+          </div>
+        </template>
 
-      <div
-        v-else
-        class="space-y-4"
+        <template #actions>
+          <Button
+            variant="outline"
+            :loading="loading"
+            @click="loadNotifications"
+          >
+            刷新通知
+          </Button>
+        </template>
+      </DataToolbar>
+    </template>
+
+    <template #body>
+      <OrganizationSectionCard
+        title="消息列表"
+        description="所有通知按统一列表展示，点击行在右侧查看详情并处理已读状态。"
       >
-        <article
-          v-for="item in notifications"
-          :key="item.inboxId"
-          class="organization-surface-lift rounded-[1.3rem] border px-5 py-4"
-          :class="item.readStatus === NotificationReadStatus.READ ? 'border-slate-200 bg-white' : 'border-[#ffd8c2] bg-[#fff8f3]'"
+        <DataTable
+          :columns="columns"
+          :items="filteredNotifications"
+          :loading="loading"
+          row-key="inboxId"
+          :selected-key="selectedNotificationId"
+          interactive
+          open-text="查看"
+          open-style="text"
+          density="compact"
+          empty-title="当前没有可展示的通知"
+          empty-description="切换未读筛选或清空搜索后再试。"
+          @row-click="openNotificationDrawer"
         >
-          <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <div class="min-w-0">
-              <div class="flex flex-wrap items-center gap-2">
-                <span
-                  class="rounded-full px-2.5 py-1 text-[11px] font-semibold"
-                  :class="item.readStatus === NotificationReadStatus.READ ? 'bg-slate-100 text-slate-500' : 'bg-[#ffe1d0] text-[#ec5b13]'"
-                >
-                  {{ NOTIFICATION_READ_STATUS_LABELS[item.readStatus] }}
-                </span>
-                <span
-                  v-if="item.bizType"
-                  class="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-500"
-                >
-                  {{ item.bizType }}
-                </span>
-              </div>
-
-              <h2 class="mt-3 text-base font-bold text-slate-900">
+          <template #cell-title="{ item }">
+            <div class="min-w-0 space-y-1">
+              <p class="truncate text-sm font-semibold text-slate-900">
                 {{ item.title }}
-              </h2>
-              <p class="mt-2 text-sm leading-6 text-slate-500">
+              </p>
+              <p class="line-clamp-2 text-xs leading-5 text-slate-500">
                 {{ item.content }}
               </p>
-              <p class="mt-3 text-xs text-slate-400">
-                {{ formatDate(item.createdAt) }}
-              </p>
             </div>
+          </template>
 
+          <template #cell-type="{ item }">
+            {{ item.bizType || item.eventType || '-' }}
+          </template>
+
+          <template #cell-status="{ item }">
+            <StatusBadge
+              :label="NOTIFICATION_READ_STATUS_LABELS[item.readStatus]"
+              :tone="item.readStatus === NotificationReadStatus.READ ? 'slate' : 'amber'"
+            />
+          </template>
+
+          <template #cell-createdAt="{ item }">
+            {{ formatDate(item.createdAt) }}
+          </template>
+
+          <template #row-actions="{ item }">
             <button
               v-if="item.readStatus !== NotificationReadStatus.READ"
-              class="rounded-full border border-[#ffd3be] bg-white px-4 py-2 text-sm font-semibold text-[#ec5b13] transition hover:border-[#ec5b13] disabled:cursor-not-allowed disabled:opacity-60"
-              :disabled="markingRead"
-              @click="markSingleAsRead(item.inboxId)"
+              type="button"
+              class="table-text-action"
+              @click.stop="markSingleAsRead(item.inboxId)"
             >
               标记已读
             </button>
+          </template>
+        </DataTable>
+      </OrganizationSectionCard>
+    </template>
+
+    <template #drawer>
+      <DetailDrawer
+        v-model="drawerOpen"
+        width="560px"
+        :aria-label="selectedNotification ? `${selectedNotification.title} 的通知详情` : '通知详情'"
+        @close="closeNotificationDrawer"
+      >
+        <template #header>
+          <div
+            v-if="selectedNotification"
+            class="space-y-3"
+          >
+            <div class="space-y-1">
+              <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                通知详情
+              </p>
+              <h2 class="text-lg font-bold tracking-tight text-slate-900">
+                {{ selectedNotification.title }}
+              </h2>
+              <p class="text-sm text-slate-500">
+                {{ formatDate(selectedNotification.createdAt) }}
+              </p>
+            </div>
+
+            <div class="flex flex-wrap gap-2">
+              <StatusBadge
+                :label="NOTIFICATION_READ_STATUS_LABELS[selectedNotification.readStatus]"
+                :tone="selectedNotification.readStatus === NotificationReadStatus.READ ? 'slate' : 'amber'"
+              />
+              <StatusBadge
+                v-if="selectedNotification.bizType"
+                :label="selectedNotification.bizType"
+                tone="blue"
+              />
+            </div>
           </div>
-        </article>
-      </div>
-    </OrganizationSectionCard>
-  </div>
+        </template>
+
+        <div
+          v-if="selectedNotification"
+          class="space-y-5"
+        >
+          <section class="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+            <div class="grid gap-4 sm:grid-cols-2">
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                  业务类型
+                </p>
+                <p class="mt-1 text-sm font-semibold text-slate-900">
+                  {{ selectedNotification.bizType || '未标记' }}
+                </p>
+              </div>
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                  业务 ID
+                </p>
+                <p class="mt-1 text-sm font-semibold text-slate-900">
+                  {{ selectedNotification.bizId || '-' }}
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section>
+            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+              通知内容
+            </p>
+            <p class="mt-1 whitespace-pre-wrap text-sm leading-6 text-slate-700">
+              {{ selectedNotification.content }}
+            </p>
+          </section>
+        </div>
+
+        <div
+          v-else
+          class="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500"
+        >
+          点击通知查看详情和已读状态。
+        </div>
+
+        <template #footer>
+          <div class="flex flex-col gap-3 sm:flex-row sm:justify-end">
+            <Button
+              v-if="selectedNotification && selectedNotification.readStatus !== NotificationReadStatus.READ"
+              variant="primary"
+              :loading="markingRead"
+              @click="markSingleAsRead(selectedNotification.inboxId)"
+            >
+              标记已读
+            </Button>
+          </div>
+        </template>
+      </DetailDrawer>
+    </template>
+  </DataListPage>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
+import Button from '@/components/ui/Button.vue'
+import DataListPage from '@/components/data-list/DataListPage.vue'
+import DataToolbar from '@/components/data-list/DataToolbar.vue'
+import DataTable, { type DataTableColumn } from '@/components/data-list/DataTable.vue'
+import DetailDrawer from '@/components/data-list/DetailDrawer.vue'
+import StatusBadge from '@/components/data-list/StatusBadge.vue'
 import { NOTIFICATION_READ_STATUS_LABELS } from '@/constants/status'
 import { useNotificationsStore } from '@/store/modules/notifications'
 import { useMessageStore } from '@/store/modules/messages'
@@ -113,6 +229,16 @@ const notificationsStore = useNotificationsStore()
 const messageStore = useMessageStore()
 const unreadOnly = ref(false)
 const markingRead = ref(false)
+const searchQuery = ref('')
+const selectedNotificationId = ref<number | null>(null)
+const drawerOpen = ref(false)
+
+const columns: DataTableColumn[] = [
+  { key: 'title', label: '通知', width: '420px', cellClass: 'align-top' },
+  { key: 'type', label: '类型', width: '160px' },
+  { key: 'status', label: '状态', width: '120px', align: 'center', cellClass: 'whitespace-nowrap' },
+  { key: 'createdAt', label: '时间', width: '180px' }
+]
 
 const notifications = computed(() => notificationsStore.items)
 const loading = computed(() => notificationsStore.loading)
@@ -120,6 +246,21 @@ const unreadIds = computed(() => notifications.value
   .filter(item => item.readStatus !== NotificationReadStatus.READ)
   .map(item => item.inboxId))
 const unreadCount = computed(() => unreadIds.value.length)
+
+const filteredNotifications = computed(() => {
+  const keyword = searchQuery.value.trim().toLowerCase()
+  return notifications.value.filter((item) => {
+    if (!keyword) return true
+    return [item.title, item.content, item.bizType || '', item.eventType || '']
+      .some((field) => field.toLowerCase().includes(keyword))
+  })
+})
+
+const selectedNotification = computed(() => (
+  filteredNotifications.value.find((item) => item.inboxId === selectedNotificationId.value)
+  || notifications.value.find((item) => item.inboxId === selectedNotificationId.value)
+  || null
+))
 
 const headerMeta = computed(() => [
   { label: '消息总数', value: `${notificationsStore.total}`, detail: '来自通知中心接口' },
@@ -137,6 +278,15 @@ const loadNotifications = async () => {
     console.error('加载通知失败:', error)
     messageStore.error(error.message || '加载通知失败，请稍后重试')
   }
+}
+
+const openNotificationDrawer = (item: Record<string, any>) => {
+  selectedNotificationId.value = item.inboxId
+  drawerOpen.value = true
+}
+
+const closeNotificationDrawer = () => {
+  drawerOpen.value = false
 }
 
 const markSingleAsRead = async (id: number) => {
@@ -166,13 +316,9 @@ const markAllAsRead = async () => {
 }
 
 const formatDate = (value?: string) => {
-  if (!value) {
-    return '时间待更新'
-  }
+  if (!value) return '时间待更新'
   const date = new Date(value)
-  if (Number.isNaN(date.getTime())) {
-    return value
-  }
+  if (Number.isNaN(date.getTime())) return value
   return date.toLocaleString('zh-CN', {
     year: 'numeric',
     month: '2-digit',
@@ -183,10 +329,10 @@ const formatDate = (value?: string) => {
 }
 
 watch(unreadOnly, () => {
-  loadNotifications()
+  void loadNotifications()
 })
 
 onMounted(() => {
-  loadNotifications()
+  void loadNotifications()
 })
 </script>
