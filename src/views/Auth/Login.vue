@@ -198,39 +198,53 @@
                   </div>
 
                   <div class="space-y-5">
-                    <div class="floating-field relative">
-                      <input
-                        v-if="loginState.form.loginType === LoginType.EMAIL"
-                        id="identifier"
-                        v-model="loginState.form.identifier"
-                        type="email"
-                        placeholder=" "
-                        class="peer login-input"
-                        :class="{ 'login-input-error': loginState.errors.identifier }"
-                        autocomplete="email"
-                        @blur="() => handleBlur('identifier')"
-                      >
-                      <input
-                        v-else
-                        id="identifier"
-                        v-model="loginState.form.identifier"
-                        type="tel"
-                        placeholder=" "
-                        class="peer login-input"
-                        :class="{ 'login-input-error': loginState.errors.identifier }"
-                        autocomplete="tel"
-                        @blur="() => handleBlur('identifier')"
-                      >
-                      <label
-                        for="identifier"
-                        class="login-label"
-                      >
-                        {{ loginState.form.loginType === LoginType.EMAIL ? '邮箱地址' : '手机号码' }}
-                      </label>
-                      <component
-                        :is="loginState.form.loginType === LoginType.EMAIL ? MailIcon : PhoneIcon"
-                        class="field-leading-icon pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-300 transition peer-focus:text-primary-500"
-                      />
+                    <div class="floating-field">
+                      <div class="relative">
+                        <input
+                          v-if="loginState.form.loginType === LoginType.EMAIL"
+                          id="identifier"
+                          v-model="loginState.form.identifier"
+                          type="email"
+                          placeholder=" "
+                          class="peer login-input"
+                          :class="{
+                            'login-input-error': loginState.errors.identifier,
+                            'login-input-raised': identifierFieldRaised
+                          }"
+                          autocomplete="email"
+                          @focus="handleFocus('identifier')"
+                          @blur="() => handleBlur('identifier')"
+                        >
+                        <input
+                          v-else
+                          id="identifier"
+                          v-model="loginState.form.identifier"
+                          type="tel"
+                          placeholder=" "
+                          class="peer login-input"
+                          :class="{
+                            'login-input-error': loginState.errors.identifier,
+                            'login-input-raised': identifierFieldRaised
+                          }"
+                          autocomplete="tel"
+                          @focus="handleFocus('identifier')"
+                          @blur="() => handleBlur('identifier')"
+                        >
+                        <label
+                          for="identifier"
+                          class="login-label"
+                          :class="{ 'login-label-raised': identifierFieldRaised }"
+                        >
+                          {{ loginState.form.loginType === LoginType.EMAIL ? '邮箱地址' : '手机号码' }}
+                        </label>
+                        <component
+                          :is="loginState.form.loginType === LoginType.EMAIL ? MailIcon : PhoneIcon"
+                          class="field-leading-icon pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-300 transition"
+                          :class="{
+                            'field-leading-icon-raised text-primary-500': identifierFieldRaised
+                          }"
+                        />
+                      </div>
                       <p
                         v-if="currentIdentifierError"
                         class="mt-2 text-sm font-medium text-rose-500"
@@ -239,32 +253,42 @@
                       </p>
                     </div>
 
-                    <div class="floating-field relative">
-                      <input
-                        id="password"
-                        v-model="loginState.form.password"
-                        :type="passwordVisible ? 'text' : 'password'"
-                        placeholder=" "
-                        class="peer login-input pr-12"
-                        :class="{ 'login-input-error': loginState.errors.password }"
-                        autocomplete="current-password"
-                        @blur="() => handleBlur('password')"
-                      >
-                      <label
-                        for="password"
-                        class="login-label"
-                      >密码</label>
-                      <button
-                        type="button"
-                        class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-primary-700"
-                        @click="passwordVisible = !passwordVisible"
-                      >
-                        <component
-                          :is="passwordVisible ? EyeOffIcon : EyeIcon"
-                          class="h-5 w-5"
+                    <div class="floating-field">
+                      <div class="relative">
+                        <input
+                          id="password"
+                          v-model="loginState.form.password"
+                          :type="passwordVisible ? 'text' : 'password'"
+                          placeholder=" "
+                          class="peer login-input pr-12"
+                          :class="{
+                            'login-input-error': loginState.errors.password,
+                            'login-input-raised': passwordFieldRaised
+                          }"
+                          autocomplete="current-password"
+                          @focus="handleFocus('password')"
+                          @blur="() => handleBlur('password')"
+                        >
+                        <label
+                          for="password"
+                          class="login-label"
+                          :class="{ 'login-label-raised': passwordFieldRaised }"
+                        >密码</label>
+                        <button
+                          type="button"
+                          class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-primary-700"
+                          @click="passwordVisible = !passwordVisible"
+                        >
+                          <component
+                            :is="passwordVisible ? EyeOffIcon : EyeIcon"
+                            class="h-5 w-5"
+                          />
+                        </button>
+                        <LockIcon
+                          class="field-leading-icon pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-300 transition"
+                          :class="{ 'field-leading-icon-raised text-primary-400': passwordFieldRaised }"
                         />
-                      </button>
-                      <LockIcon class="field-leading-icon pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-300 peer-focus:text-primary-400" />
+                      </div>
                       <p
                         v-if="loginState.errors.password"
                         class="mt-2 text-sm font-medium text-rose-500"
@@ -439,9 +463,18 @@ const loginState = reactive<{
 
 const loading = ref(false)
 const passwordVisible = ref(false)
+const focusedField = ref<LoginFormField | null>(null)
 
 const currentIdentifierError = computed(() => {
   return loginState.errors.identifier
+})
+
+const identifierFieldRaised = computed(() => {
+  return focusedField.value === 'identifier' || Boolean(loginState.form.identifier)
+})
+
+const passwordFieldRaised = computed(() => {
+  return focusedField.value === 'password' || Boolean(loginState.form.password)
 })
 
 const validateField = (field: LoginFormField, value: LoginFormFieldValue) => {
@@ -480,7 +513,14 @@ const validateForm = () => {
   })
 }
 
+const handleFocus = (field: LoginFormField) => {
+  focusedField.value = field
+}
+
 const handleBlur = (field: LoginFormField) => {
+  if (focusedField.value === field) {
+    focusedField.value = null
+  }
   loginState.touched[field] = true
   loginState.errors[field] = validateField(field, loginState.form[field])
 }
@@ -566,13 +606,16 @@ const handleLogin = async () => {
 
 .login-input {
   width: 100%;
+  min-height: 3.75rem;
   border-radius: 1rem;
   border: 1px solid #e2e8f0;
   background: #f8fafc;
   padding: 1rem 1rem 1rem 2.8rem;
+  line-height: 1.5rem;
   color: #0f172a;
   outline: none;
   transition: all 0.2s ease;
+  appearance: none;
 }
 
 .login-input:focus {
@@ -596,20 +639,17 @@ const handleLogin = async () => {
   pointer-events: none;
 }
 
-.floating-field .peer:focus ~ .login-label,
-.floating-field .peer:not(:placeholder-shown) ~ .login-label {
+.floating-field .login-label-raised {
   transform: translateY(-0.72rem) scale(0.84);
   color: #11d4ad;
 }
 
-.floating-field .peer:focus,
-.floating-field .peer:not(:placeholder-shown) {
+.floating-field .login-input-raised {
   padding-top: 1.5rem;
   padding-bottom: 0.75rem;
 }
 
-.floating-field .peer:focus ~ .field-leading-icon,
-.floating-field .peer:not(:placeholder-shown) ~ .field-leading-icon {
+.floating-field .field-leading-icon-raised {
   top: calc(50% + 0.3rem);
 }
 
