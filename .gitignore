@@ -118,3 +118,6 @@ vite.config.d.ts
 
 # macOS Finder metadata
 .DS_Store
+
+# Local brainstorming previews
+.superpowers/
