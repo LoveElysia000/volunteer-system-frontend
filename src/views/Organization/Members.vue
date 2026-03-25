@@ -4,7 +4,7 @@
       <OrganizationPageHeader
         eyebrow="成员"
         title="成员管理"
-        description="查看组织成员结构、审批状态和角色分布，所有数据均来自真实成员接口。"
+        description="查看组织成员结构、审批状态和角色分布。"
         :meta-items="headerMeta"
       >
         <template #actions>

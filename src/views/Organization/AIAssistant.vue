@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-6">
     <OrganizationPageHeader
-      eyebrow="AI Assistant"
+      eyebrow="智能助手"
       title="AI 助手"
       description="帮助组织生成活动草案、整理运营文案和回答工作台内业务问题。"
       :meta-items="headerMeta"
@@ -27,7 +27,7 @@
     <div class="grid gap-6 xl:grid-cols-[280px_minmax(0,1fr)]">
       <OrganizationSectionCard
         title="会话列表"
-        description="第一版会话列表先由前端本地维护，消息内容仍然来自真实接口。"
+        description="查看最近会话，快速切换上下文。"
         tone="soft"
       >
         <div
@@ -60,7 +60,7 @@
 
       <OrganizationSectionCard
         title="聊天工作区"
-        description="支持普通聊天与活动草案生成。"
+        description="可以直接提问，也可以生成活动草案。"
       >
         <div class="flex h-[560px] flex-col">
           <div class="flex-1 space-y-4 overflow-y-auto pr-1">
@@ -189,7 +189,7 @@ const sessions = computed(() => assistantStore.sessions)
 const messages = computed(() => assistantStore.messages)
 const headerMeta = computed(() => [
   { label: '当前会话', value: assistantStore.currentSession?.title || '未开始', detail: '聊天与草案共享同一会话' },
-  { label: '消息数量', value: `${messages.value.length}`, detail: '来自真实会话消息接口' }
+  { label: '消息数量', value: `${messages.value.length}`, detail: '当前会话内容' }
 ])
 
 const createNewSession = async () => {

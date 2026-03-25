@@ -1,9 +1,10 @@
 <template>
   <div class="space-y-6">
     <OrganizationPageHeader
-      eyebrow="Management Cockpit"
-      title="System Overview"
-      description="Good morning. Track organization momentum, critical approvals, and high-performing projects from one place."
+      eyebrow="运营驾驶台"
+      title="组织管理总览"
+      caption="Organization Overview"
+      description="集中查看组织运行节奏、关键审批与重点活动进展，把核心运营信息放在一个视图里。"
       :meta-items="headerMeta"
     >
       <template #actions>
@@ -13,7 +14,7 @@
             v-model.trim="searchKeyword"
             type="text"
             class="w-56 border-none bg-transparent p-0 text-sm text-slate-700 outline-none"
-            placeholder="Search project, volunteer..."
+            placeholder="搜索活动名称、志愿者姓名..."
           >
         </label>
 
@@ -23,7 +24,7 @@
           @click="handleExport"
         >
           <DownloadIcon class="h-4 w-4" />
-          {{ isExporting ? 'Exporting...' : 'Export' }}
+          {{ isExporting ? '导出中...' : '导出报表' }}
         </button>
 
         <RouterLink
@@ -31,7 +32,7 @@
           class="org-toolbar-button org-toolbar-button--soft"
         >
           <PlusIcon class="h-4 w-4" />
-          New Project
+          新建活动
         </RouterLink>
       </template>
     </OrganizationPageHeader>
@@ -41,6 +42,7 @@
         v-for="metric in organizationKpiMetrics"
         :key="metric.key"
         :label="metric.label"
+        :caption="metricCaptionMap[metric.key] || ''"
         :value="metric.value"
         :detail="metric.detail"
         :tone="metric.tone"
@@ -64,7 +66,7 @@
             v-else
             class="mr-1 h-3.5 w-3.5"
           />
-          {{ metric.trend }} vs last period
+          {{ metric.trend }} 较上一周期
         </div>
       </OrganizationMetricCard>
     </div>
@@ -72,8 +74,9 @@
     <div class="grid gap-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(320px,1fr)]">
       <OrganizationSectionCard
         class="organization-impact-trend"
-        title="Environmental Impact Trends"
-        description="Measured across all active projects"
+        title="环保成效趋势"
+        caption="Impact Trends"
+        description="基于当前活跃活动的综合表现，观察阶段性变化。"
       >
         <template #header>
           <label class="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-600">
@@ -83,13 +86,13 @@
               class="border-none bg-transparent p-0 pr-5 text-xs font-semibold text-slate-600 focus:ring-0"
             >
               <option value="12m">
-                Last 12 months
+                近 12 个月
               </option>
               <option value="qtr">
-                Last Quarter
+                近一季度
               </option>
               <option value="ytd">
-                Year to Date
+                年初至今
               </option>
             </select>
           </label>
@@ -117,18 +120,19 @@
 
         <div class="mt-4 flex items-center gap-4 text-xs font-medium text-slate-500">
           <div class="flex items-center gap-2">
-            <span class="h-3 w-3 rounded-full bg-[#ec5b13]" /> Current Period
+            <span class="h-3 w-3 rounded-full bg-[#ec5b13]" /> 当前周期
           </div>
           <div class="flex items-center gap-2">
-            <span class="h-3 w-3 rounded-full bg-slate-300" /> Last Period
+            <span class="h-3 w-3 rounded-full bg-slate-300" /> 上一周期
           </div>
         </div>
       </OrganizationSectionCard>
 
       <OrganizationSectionCard
         class="organization-critical-tasks"
-        title="Critical Tasks"
-        description="Prioritize approvals and execution blockers"
+        title="关键任务"
+        caption="Critical Tasks"
+        description="优先处理审批事项与执行阻塞问题"
         tone="soft"
       >
         <template #header>
@@ -136,7 +140,7 @@
             to="/organization/activities/review"
             class="text-xs font-bold text-[#ec5b13] hover:underline"
           >
-            View all
+            查看全部
           </RouterLink>
         </template>
 
@@ -179,14 +183,14 @@
           v-if="!filteredCriticalTaskRows.length"
           class="rounded-2xl border border-dashed border-slate-200 bg-white/70 px-4 py-6 text-center text-sm text-slate-500"
         >
-          No critical tasks matched your search.
+          当前搜索条件下没有匹配的关键任务。
         </p>
 
         <RouterLink
           to="/organization/activities"
           class="mt-5 flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-[#ffd2ba] hover:text-[#ec5b13]"
         >
-          Manage all tasks
+          进入任务管理
           <ArrowRightIcon class="h-4 w-4" />
         </RouterLink>
       </OrganizationSectionCard>
@@ -194,8 +198,9 @@
 
     <OrganizationSectionCard
       class="organization-top-projects"
-      title="Top Performing Projects"
-      description="Highlights from ongoing programs with the strongest execution rhythm"
+      title="重点活动"
+      caption="Top Projects"
+      description="优先查看当前执行节奏稳定、反馈较好的重点活动。"
     >
       <transition-group
         name="organization-list-rise"
@@ -232,7 +237,7 @@
             <div class="grid grid-cols-2 gap-3 text-sm">
               <div>
                 <p class="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400">
-                  Volunteers
+                  参与志愿者
                 </p>
                 <p class="font-bold text-slate-800">
                   {{ project.volunteers.toLocaleString('en-US') }}
@@ -240,7 +245,7 @@
               </div>
               <div>
                 <p class="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400">
-                  Completion
+                  完成进度
                 </p>
                 <p class="font-bold text-slate-800">
                   {{ project.completion }}%
@@ -252,7 +257,7 @@
               to="/organization/activities"
               class="inline-flex items-center gap-1 text-sm font-bold text-[#ec5b13] hover:underline"
             >
-              Details
+              查看详情
               <ArrowRightIcon class="h-4 w-4" />
             </RouterLink>
           </div>
@@ -262,7 +267,7 @@
         v-if="!filteredTopProjectRows.length"
         class="rounded-2xl border border-dashed border-slate-200 bg-white/75 px-4 py-7 text-center text-sm text-slate-500"
       >
-        No top project matched your current search.
+        当前搜索条件下没有匹配的重点活动。
       </p>
     </OrganizationSectionCard>
   </div>
@@ -340,8 +345,8 @@ const filteredTopProjectRows = computed(() => {
 })
 
 const headerMeta = computed(() => [
-  { label: 'Admin', value: user.value?.realName || 'Organization Admin', detail: 'Online' },
-  { label: 'Date', value: currentDateLabel.value, detail: 'Local workspace time' }
+  { label: '当前管理员', value: user.value?.realName || '组织管理员', detail: '当前在线' },
+  { label: '当前日期', value: currentDateLabel.value, detail: '本地工作区时间' }
 ])
 
 const metricIconMap: Record<string, any> = {
@@ -349,6 +354,13 @@ const metricIconMap: Record<string, any> = {
   volunteers: UsersIcon,
   'co2-offset': LeafIcon,
   'funds-raised': CircleDollarSignIcon
+}
+
+const metricCaptionMap: Record<string, string> = {
+  'active-projects': 'Total Signups',
+  volunteers: 'Member Conversion',
+  'co2-offset': 'Check-in Count',
+  'funds-raised': 'Granted Hours'
 }
 
 const metricTrendClass = (trend: string) => {

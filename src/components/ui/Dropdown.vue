@@ -43,7 +43,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick, onMounted, onUnmounted } from 'vue'
+import { ref, nextTick, onUnmounted } from 'vue'
 import DropdownItem from './DropdownItem.vue'
 
 interface DropdownItemData {
@@ -185,37 +185,41 @@ onUnmounted(() => {
 
 .dropdown-trigger {
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
 }
 
 .dropdown-menu {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.2);
-  border: 1px solid #e5e7eb;
-  min-width: 160px;
-  padding: 4px 0;
+  min-width: 196px;
+  padding: 8px;
+  border-radius: 18px;
+  border: 1px solid rgba(226, 232, 240, 0.92);
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 28px 60px -36px rgba(15, 23, 42, 0.34), 0 14px 34px -28px rgba(15, 23, 42, 0.26);
 }
 
 .dropdown-menu-dark {
-  background: #1f2937;
-  border-color: #374151;
+  background: rgba(15, 23, 42, 0.94);
+  border-color: rgba(51, 65, 85, 0.9);
   color: white;
+  box-shadow: 0 28px 60px -36px rgba(2, 6, 23, 0.72);
 }
 
 .dropdown-content {
-  max-height: 300px;
+  max-height: 320px;
   overflow-y: auto;
 }
 
 /* Animation */
 .dropdown-enter-active,
 .dropdown-leave-active {
-  transition: all 0.2s ease;
+  transition: opacity 0.18s ease, transform 0.18s ease;
 }
 
 .dropdown-enter-from,
 .dropdown-leave-to {
   opacity: 0;
-  transform: scale(0.95) translateY(-10px);
+  transform: scale(0.97) translateY(-6px);
 }
 </style>

@@ -52,39 +52,41 @@ const handleClick = () => {
 .dropdown-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  margin: 0 4px;
-  border-radius: 6px;
+  gap: 10px;
+  padding: 10px 12px;
+  margin: 0;
+  border-radius: 12px;
   cursor: pointer;
   font-size: 14px;
-  color: #374151;
-  transition: all 0.2s ease;
+  font-weight: 600;
+  color: #334155;
+  transition: background-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
 }
 
 .dropdown-item:hover:not(.dropdown-item-disabled) {
-  background: #f3f4f6;
-  color: #111827;
+  background: #f8fafc;
+  color: #0f172a;
+  transform: translateX(2px);
 }
 
 .dropdown-item-disabled {
-  opacity: 0.5;
+  opacity: 0.48;
   cursor: not-allowed;
 }
 
 .dropdown-item-danger {
-  color: #ef4444;
+  color: #dc2626;
 }
 
 .dropdown-item-danger:hover:not(.dropdown-item-disabled) {
-  background: #fef2f2;
+  background: #fff1f2;
   color: #dc2626;
 }
 
 .dropdown-item-divided {
-  border-top: 1px solid #e5e7eb;
-  margin-top: 4px;
-  padding-top: 4px;
+  border-top: 1px solid #e2e8f0;
+  margin-top: 6px;
+  padding-top: 10px;
 }
 
 .dropdown-item-icon {
@@ -92,7 +94,7 @@ const handleClick = () => {
   height: 16px;
   flex-shrink: 0;
   color: currentColor;
-  opacity: 0.7;
+  opacity: 0.8;
 }
 
 .dropdown-item-label {

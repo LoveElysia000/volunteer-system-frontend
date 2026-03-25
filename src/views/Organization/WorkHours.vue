@@ -4,7 +4,7 @@
       <OrganizationPageHeader
         eyebrow="工时管理"
         title="工时流水"
-        description="查看工时日志，并对指定报名执行作废或重算。"
+        description="查看工时变动，并对指定报名执行作废或重算。"
         :meta-items="headerMeta"
       />
     </template>
@@ -60,7 +60,7 @@
       <div class="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
         <OrganizationSectionCard
           title="流水列表"
-          description="流水数据来自真实工时接口，点击一行在右侧查看详情，也可直接在右侧快速处理指定报名。"
+          description="点击一行查看详情，也可在右侧直接处理指定报名。"
         >
           <DataTable
             :columns="columns"
@@ -104,7 +104,7 @@
 
         <OrganizationSectionCard
           title="快速处理"
-          description="即使没有选中任何流水，也可以按报名 ID 直接作废或重算工时。"
+          description="无需选中流水，也可以按报名 ID 直接处理。"
           tone="soft"
         >
           <div class="space-y-4">
@@ -371,7 +371,7 @@ const actionForm = ref({
 
 const selectedLog = computed(() => logs.value.find((log) => log.id === selectedLogId.value) || null)
 const headerMeta = computed(() => [
-  { label: '流水总数', value: `${total.value}`, detail: '来自真实工时接口' },
+  { label: '流水总数', value: `${total.value}`, detail: '当前记录数量' },
   { label: '当前筛选', value: operationType.value ? operationText(operationType.value) : '全部操作', detail: '支持发放 / 作废 / 重算' }
 ])
 

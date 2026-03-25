@@ -15,7 +15,7 @@
                 <p class="text-lg font-black tracking-tight text-slate-900">
                   组织管理中心
                 </p>
-                <p class="text-xs font-medium uppercase tracking-[0.24em] text-[#ec5b13]">
+                <p class="mt-1 text-[11px] font-medium tracking-[0.24em] text-[#ec5b13]">
                   Organization Hub
                 </p>
               </div>
@@ -32,6 +32,9 @@
                   {{ user?.realName || '组织管理者' }}
                 </p>
                 <p class="text-sm text-slate-500">
+                  组织管理员
+                </p>
+                <p class="mt-0.5 text-[11px] font-medium tracking-[0.18em] text-slate-400">
                   Organization Admin
                 </p>
                 <div class="mt-3 flex items-center gap-3">
@@ -106,9 +109,14 @@
                   组织工作台
                 </p>
                 <div class="mt-2 flex flex-wrap items-center gap-3">
-                  <h2 class="text-xl font-black tracking-tight text-slate-900">
-                    {{ currentPage.title }}
-                  </h2>
+                  <div class="space-y-1">
+                    <h2 class="text-xl font-black tracking-tight text-slate-900">
+                      {{ currentPage.title }}
+                    </h2>
+                    <p class="text-[11px] font-medium tracking-[0.18em] text-slate-400">
+                      {{ currentPage.caption }}
+                    </p>
+                  </div>
                   <span class="hidden h-1.5 w-1.5 rounded-full bg-[#ec5b13]/60 sm:block" />
                   <p class="max-w-2xl text-sm text-slate-500">
                     {{ currentPage.description }}
@@ -176,8 +184,8 @@
                 <p class="text-base font-black text-slate-900">
                   组织管理中心
                 </p>
-                <p class="text-xs uppercase tracking-[0.2em] text-[#ec5b13]">
-                  Workbench
+                <p class="mt-1 text-[11px] tracking-[0.2em] text-[#ec5b13]">
+                  Mobile Workbench
                 </p>
               </div>
             </div>
@@ -199,6 +207,9 @@
                   {{ user?.realName || '组织管理者' }}
                 </p>
                 <p class="text-sm text-slate-500">
+                  组织管理员
+                </p>
+                <p class="mt-0.5 text-[11px] font-medium tracking-[0.18em] text-slate-400">
                   Organization Admin
                 </p>
               </div>
@@ -350,10 +361,32 @@ const pageDescriptions: Record<string, string> = {
   'organization-settings-permissions': '配置组织角色权限与访问策略。'
 }
 
+const pageCaptions: Record<string, string> = {
+  'organization-dashboard': 'Organization Overview',
+  'organization-info': 'Organization Profile',
+  'organization-activities': 'Activity Operations',
+  'organization-volunteers': 'Volunteer Operations',
+  'organization-statistics': 'Data Reports',
+  'organization-notifications': 'Notification Center',
+  'organization-settings': 'System Settings',
+  'organization-members': 'Member Management',
+  'organization-activities-create': 'Create Activity',
+  'organization-activities-review': 'Activity Review',
+  'organization-volunteers-statistics': 'Volunteer Analytics',
+  'organization-volunteers-evaluations': 'Evaluation Management',
+  'organization-statistics-activities': 'Activity Analytics',
+  'organization-statistics-volunteers': 'Volunteer Reports',
+  'organization-statistics-financial': 'Work Hour Logs',
+  'organization-assistant': 'AI Assistant',
+  'organization-notifications-announcements': 'Announcements',
+  'organization-settings-permissions': 'Permission Control'
+}
+
 const currentPage = computed(() => {
   const routeName = String(route.name || 'organization-dashboard')
   return {
     title: String(route.meta.title || '组织管理中心'),
+    caption: pageCaptions[routeName] || 'Organization Center',
     description: pageDescriptions[routeName] || '统一管理组织运营、成员协作和关键决策信息。'
   }
 })
@@ -361,7 +394,7 @@ const currentPage = computed(() => {
 const userInitials = computed(() => (user.value?.realName || '组织管理者').charAt(0))
 
 const headerMeta = computed(() => [
-  { label: '当前身份', value: 'Organization Admin' },
+  { label: '当前身份', value: '组织管理员' },
   {
     label: '今日日期',
     value: new Date().toLocaleDateString('zh-CN', {

@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-6">
     <OrganizationPageHeader
-      eyebrow="Activity Stats"
+      eyebrow="活动统计"
       title="活动统计"
       description="聚焦报名、通过、到场和工时发放四个活动执行指标。"
       :meta-items="headerMeta"
@@ -10,7 +10,6 @@
 
     <OrganizationSectionCard
       title="活动执行指标"
-      description="保留当前组织端视觉风格，但数据来自真实统计接口。"
     >
       <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <article
@@ -48,7 +47,7 @@ const { ensureOrganizationId } = useOrganizationContext()
 const dashboard = computed(() => analyticsStore.dashboard)
 const headerMeta = computed(() => [
   { label: '报名总数', value: `${dashboard.value?.signupCount ?? 0}`, detail: '活动执行起点' },
-  { label: '到场率', value: `${Math.round(dashboard.value?.attendanceRate ?? 0)}%`, detail: '真实接口结果' }
+  { label: '到场率', value: `${Math.round(dashboard.value?.attendanceRate ?? 0)}%`, detail: '当前统计区间' }
 ])
 
 const activityMetrics = computed(() => [

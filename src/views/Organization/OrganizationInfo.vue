@@ -1,9 +1,9 @@
 <template>
   <div class="space-y-6">
     <OrganizationPageHeader
-      eyebrow="Organization Profile"
+      eyebrow="组织资料"
       title="组织信息管理"
-      description="浏览组织主体数据，点击右侧详情抽屉查看完整信息，并在需要时进入编辑模式。"
+      description="查看组织主体信息，并在需要时进入编辑模式。"
       :meta-items="headerMeta"
       mode="compact"
     >
@@ -20,7 +20,7 @@
 
     <OrganizationSectionCard
       title="组织列表"
-      description="主体区域仅用于展示组织数据，点击行尾操作后在右侧抽屉查看详情。"
+      description="点击一条组织记录，在右侧查看完整信息。"
       tone="soft"
     >
       <div class="space-y-4">
@@ -146,7 +146,7 @@
                 <div class="flex items-start justify-between gap-4">
                   <div class="min-w-0">
                     <p class="text-xs font-semibold uppercase tracking-[0.22em] text-[#ec5b13]">
-                      Organization Detail
+                      组织详情
                     </p>
                     <h2 class="mt-2 truncate text-2xl font-black tracking-tight text-slate-900">
                       {{ drawerOrganizationName }}

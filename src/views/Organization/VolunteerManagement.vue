@@ -4,7 +4,7 @@
       <OrganizationPageHeader
         eyebrow="志愿者"
         title="志愿者管理"
-        description="志愿者列表来自真实接口，导入导出通过按钮直接调用后端文件接口。"
+        description="集中管理志愿者档案、服务表现和导入导出。"
         :meta-items="headerMeta"
       >
         <template #actions>
@@ -59,7 +59,6 @@
     <template #body>
       <OrganizationSectionCard
         title="志愿者列表"
-        description="服务时长、场次和状态基于真实志愿者列表接口。"
       >
         <DataTable
           :columns="columns"
@@ -257,8 +256,8 @@ const headerMeta = computed(() => {
   const activeCount = volunteers.value.filter((item) => item.status === VolunteerStatus.ACTIVE).length
   const totalHours = volunteers.value.reduce((sum, item) => sum + item.totalHours, 0)
   return [
-    { label: '总志愿者', value: `${total.value}`, detail: '来自真实列表接口' },
-    { label: '活跃志愿者', value: `${activeCount}`, detail: '状态=活跃' },
+    { label: '总志愿者', value: `${total.value}`, detail: '当前列表规模' },
+    { label: '活跃志愿者', value: `${activeCount}`, detail: '当前状态为活跃' },
     { label: '总服务时长', value: `${totalHours}h`, detail: '当前页统计' }
   ]
 })

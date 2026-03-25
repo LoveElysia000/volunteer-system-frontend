@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-6">
     <OrganizationPageHeader
-      eyebrow="Volunteer Stats"
+      eyebrow="志愿者统计"
       title="志愿者统计"
       description="通过漏斗接口查看注册、成员、报名和到场的转化关系。"
       :meta-items="headerMeta"
@@ -10,7 +10,6 @@
 
     <OrganizationSectionCard
       title="志愿者转化指标"
-      description="该页聚焦成员沉淀和报名转化。"
     >
       <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <article

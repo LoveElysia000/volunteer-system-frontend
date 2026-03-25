@@ -42,12 +42,12 @@
 
           <DataToolbar>
             <template #filters>
-              <div class="flex flex-wrap gap-2">
+              <div class="data-list-filter-stack">
                 <button
                   v-for="tab in tagFilters"
                   :key="tab"
-                  class="rounded-full px-4 py-2 text-sm font-semibold transition"
-                  :class="tab === activeTag ? 'bg-slate-900 text-white shadow-[0_10px_24px_-16px_rgba(15,23,42,0.9)]' : 'bg-white text-slate-600 hover:bg-slate-100'"
+                  class="data-list-chip"
+                  :class="tab === activeTag ? 'data-list-chip-active-green' : 'data-list-chip-neutral'"
                   @click="activeTag = tab"
                 >
                   {{ tab === 'all' ? '全部类型' : tab }}
@@ -56,13 +56,13 @@
             </template>
 
             <template #actions>
-              <div class="relative w-full lg:min-w-[280px]">
+              <div class="data-list-search lg:min-w-[280px]">
                 <SearchIcon class="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                 <input
                   v-model="searchQuery"
                   type="text"
                   placeholder="搜索活动名称、地点或复盘关键词"
-                  class="input has-icon w-full rounded-full border-slate-200 bg-white pl-11 shadow-none"
+                  class="data-list-search-input"
                 >
               </div>
             </template>

@@ -15,6 +15,12 @@
           {{ title }}
         </h2>
         <p
+          v-if="caption"
+          class="mt-1 text-[11px] font-medium tracking-[0.18em] text-slate-400"
+        >
+          {{ caption }}
+        </p>
+        <p
           v-if="description"
           class="mt-1 text-sm leading-6 text-slate-500"
         >
@@ -33,10 +39,12 @@ import { computed } from 'vue'
 
 const props = withDefaults(defineProps<{
   title?: string
+  caption?: string
   description?: string
   tone?: 'default' | 'soft' | 'accent'
 }>(), {
   title: '',
+  caption: '',
   description: '',
   tone: 'default'
 })

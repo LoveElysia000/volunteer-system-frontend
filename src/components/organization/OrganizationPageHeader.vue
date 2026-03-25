@@ -23,6 +23,12 @@
             {{ title }}
           </h1>
           <p
+            v-if="caption"
+            class="text-xs font-medium tracking-[0.22em] text-slate-400"
+          >
+            {{ caption }}
+          </p>
+          <p
             v-if="description"
             class="max-w-2xl text-sm leading-6 text-slate-600"
           >
@@ -82,11 +88,13 @@ interface MetaItem {
 const props = withDefaults(defineProps<{
   eyebrow?: string
   title: string
+  caption?: string
   description?: string
   metaItems?: MetaItem[]
   mode?: 'hero' | 'compact'
 }>(), {
   eyebrow: '',
+  caption: '',
   description: '',
   metaItems: () => [],
   mode: 'hero'

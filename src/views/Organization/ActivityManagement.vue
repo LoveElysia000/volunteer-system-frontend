@@ -4,7 +4,7 @@
       <OrganizationPageHeader
         eyebrow="活动"
         title="活动管理"
-        description="活动列表、状态筛选和执行操作均已接入真实接口，不再依赖模拟数据。"
+        description="统一管理活动状态、执行安排和关键操作。"
         :meta-items="headerMeta"
       >
         <template #actions>
@@ -85,7 +85,7 @@
     <template #body>
       <OrganizationSectionCard
         title="活动列表"
-        description="按关键字和状态过滤当前组织可访问的活动，点击一行在右侧打开详情与执行抽屉。"
+        description="按关键字和状态筛选活动，点击一行查看详情与执行操作。"
       >
         <DataTable
           :columns="columns"
@@ -221,9 +221,6 @@
               <div>
                 <p class="text-sm font-semibold text-slate-900">
                   活动信息编辑
-                </p>
-                <p class="text-xs text-slate-500">
-                  直接在抽屉中维护活动信息并同步到真实接口。
                 </p>
               </div>
             </div>

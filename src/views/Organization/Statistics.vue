@@ -1,9 +1,9 @@
 <template>
   <div class="space-y-6">
     <OrganizationPageHeader
-      eyebrow="Analytics"
+      eyebrow="数据统计"
       title="数据统计"
-      description="组织总览统计直接来自文档中的组织分析接口。"
+      description="查看组织近期报名、到场和工时等核心指标。"
       :meta-items="headerMeta"
     >
       <template #actions>
@@ -36,7 +36,7 @@
 
     <OrganizationSectionCard
       title="转化漏斗"
-      description="注册、成员、报名、到场、工时五个环节的真实统计值。"
+      description="查看从注册到工时的关键转化环节。"
     >
       <div class="grid gap-4 md:grid-cols-5">
         <article

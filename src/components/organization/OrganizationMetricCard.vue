@@ -8,6 +8,12 @@
         >
           {{ label }}
         </p>
+        <p
+          v-if="caption"
+          class="mt-1 text-[11px] font-medium tracking-[0.18em] text-slate-400"
+        >
+          {{ caption }}
+        </p>
         <p class="mt-2 text-3xl font-black tracking-tight text-slate-900">
           {{ value }}
         </p>
@@ -35,10 +41,12 @@ import { computed } from 'vue'
 
 const props = withDefaults(defineProps<{
   label: string
+  caption?: string
   value: string
   detail?: string
   tone?: 'orange' | 'blue' | 'green' | 'slate'
 }>(), {
+  caption: '',
   detail: '',
   tone: 'orange'
 })

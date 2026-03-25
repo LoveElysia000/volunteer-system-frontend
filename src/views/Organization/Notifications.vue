@@ -4,7 +4,7 @@
       <OrganizationPageHeader
         eyebrow="通知中心"
         title="通知管理"
-        description="集中查看系统消息、审核提醒和活动相关通知。"
+        description="集中处理系统消息、审核提醒和活动通知。"
         :meta-items="headerMeta"
         mode="compact"
       >
@@ -23,8 +23,8 @@
     <template #toolbar>
       <DataToolbar>
         <template #filters>
-          <div class="flex flex-wrap items-center gap-3">
-            <label class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-600">
+          <div class="data-list-filter-stack">
+            <label class="data-list-checkbox-filter">
               <input
                 v-model="unreadOnly"
                 type="checkbox"
@@ -57,7 +57,7 @@
     <template #body>
       <OrganizationSectionCard
         title="消息列表"
-        description="所有通知按统一列表展示，点击行在右侧查看详情并处理已读状态。"
+        description="点击一条通知，在右侧查看详情并处理已读状态。"
       >
         <DataTable
           :columns="columns"

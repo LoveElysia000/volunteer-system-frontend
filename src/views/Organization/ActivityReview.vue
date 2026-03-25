@@ -4,7 +4,7 @@
       <OrganizationPageHeader
         eyebrow="审核队列"
         title="活动审核"
-        description="审核列表与详情均来自审核中心真实接口。"
+        description="集中处理活动申请与待办审批。"
         :meta-items="headerMeta"
       />
     </template>
@@ -51,7 +51,7 @@
     <template #body>
       <OrganizationSectionCard
         title="待审核列表"
-        description="按行浏览待处理审核，点击任意记录在右侧完成查看和审批。"
+        description="点击任意记录，在右侧完成查看和审批。"
       >
         <DataTable
           :columns="columns"
