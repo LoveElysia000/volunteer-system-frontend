@@ -173,8 +173,10 @@ export const useAssistantStore = defineStore('assistant', () => {
       let buffer = ''
 
       if (reader) {
-        while (true) {
+        let isDone = false
+        while (!isDone) {
           const { value, done } = await reader.read()
+          isDone = done
           if (done) break
           buffer += decoder.decode(value, { stream: true })
           const chunks = buffer.split('\n\n')

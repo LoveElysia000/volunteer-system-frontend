@@ -493,35 +493,67 @@
       <div class="grid gap-4 md:grid-cols-2">
         <label class="drawer-edit-label">
           组织名称
-          <input v-model="createForm.name" type="text" class="input mt-2">
+          <input
+            v-model="createForm.name"
+            type="text"
+            class="input mt-2"
+          >
         </label>
         <label class="drawer-edit-label">
           组织编码
-          <input v-model="createForm.organizationCode" type="text" class="input mt-2">
+          <input
+            v-model="createForm.organizationCode"
+            type="text"
+            class="input mt-2"
+          >
         </label>
         <label class="drawer-edit-label">
           联系人
-          <input v-model="createForm.contactPerson" type="text" class="input mt-2">
+          <input
+            v-model="createForm.contactPerson"
+            type="text"
+            class="input mt-2"
+          >
         </label>
         <label class="drawer-edit-label">
           联系电话
-          <input v-model="createForm.contactPhone" type="text" class="input mt-2">
+          <input
+            v-model="createForm.contactPhone"
+            type="text"
+            class="input mt-2"
+          >
         </label>
         <label class="drawer-edit-label">
           邮箱
-          <input v-model="createForm.email" type="email" class="input mt-2">
+          <input
+            v-model="createForm.email"
+            type="email"
+            class="input mt-2"
+          >
         </label>
         <label class="drawer-edit-label">
           组织类型
-          <input v-model="createForm.organizationType" type="text" class="input mt-2">
+          <input
+            v-model="createForm.organizationType"
+            type="text"
+            class="input mt-2"
+          >
         </label>
         <label class="drawer-edit-label">
           区域
-          <input v-model="createForm.region" type="text" class="input mt-2">
+          <input
+            v-model="createForm.region"
+            type="text"
+            class="input mt-2"
+          >
         </label>
         <label class="drawer-edit-label md:col-span-2">
           地址
-          <input v-model="createForm.address" type="text" class="input mt-2">
+          <input
+            v-model="createForm.address"
+            type="text"
+            class="input mt-2"
+          >
         </label>
         <label class="drawer-edit-label md:col-span-2">
           描述
@@ -560,7 +592,7 @@ import OrganizationPageHeader from '@/components/organization/OrganizationPageHe
 import OrganizationSectionCard from '@/components/organization/OrganizationSectionCard.vue'
 import { useMessageStore } from '@/store/modules/messages'
 import { useOrganizationStore } from '@/store/modules/organization'
-import type { CreateOrganizationRequest, OrganizationInfo, UpdateOrganizationAccountRequest, UpdateOrganizationRequest } from '@/types/organization'
+import type { CreateOrganizationRequest, UpdateOrganizationAccountRequest, UpdateOrganizationRequest } from '@/types/organization'
 import { useAuthStore } from '@/store/modules/auth'
 import {
   Building2Icon,
