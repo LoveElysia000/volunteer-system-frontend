@@ -518,7 +518,8 @@ const saveAccountChanges = async () => {
 
 const saveProfileChanges = async () => {
   try {
-    if (!user.value?.id) {
+    const volunteerId = Number(user.value?.id)
+    if (!Number.isInteger(volunteerId) || volunteerId <= 0) {
       messageStore.error('当前账号缺少志愿者标识，暂时无法保存')
       return
     }
@@ -530,7 +531,7 @@ const saveProfileChanges = async () => {
       avatarUrl: avatarPreview.value || undefined,
       introduction: profileForm.introduction.trim() || undefined
     }
-    await volunteerStore.updateMyProfile(user.value.id, payload)
+    await volunteerStore.updateMyProfile(volunteerId, payload)
     await authStore.updateProfile({
       avatarUrl: avatarPreview.value || user.value?.avatarUrl
     })
@@ -631,9 +632,10 @@ const leaveOrganization = async (membershipId: number) => {
 }
 
 onMounted(async () => {
-  if (user.value?.id && !profile.value) {
+  const volunteerId = Number(user.value?.id)
+  if (Number.isInteger(volunteerId) && volunteerId > 0 && !profile.value) {
     try {
-      await volunteerStore.fetchMyProfile(user.value.id)
+      await volunteerStore.fetchMyProfile(volunteerId)
     } catch (error) {
       console.error('加载志愿者资料失败:', error)
     }

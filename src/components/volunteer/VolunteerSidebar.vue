@@ -27,7 +27,8 @@ import {
   ClockIcon,
   StarIcon,
   UsersIcon,
-  TrophyIcon
+  TrophyIcon,
+  Building2Icon
 } from 'lucide-vue-next'
 import MenuItem from './MenuItem.vue'
 import { hasChildActive } from '@/utils/pathMatcher'
@@ -87,6 +88,19 @@ const menuItems = computed<SidebarMenuItem[]>(() => [
         label: '历史活动',
         icon: ClockIcon,
         to: '/volunteer/activities/history'
+      }
+    ]
+  },
+  {
+    key: 'organizations',
+    label: '组织管理',
+    icon: Building2Icon,
+    children: [
+      {
+        key: 'organizations-list',
+        label: '我的组织',
+        icon: Building2Icon,
+        to: '/volunteer/organizations'
       }
     ]
   },

@@ -84,6 +84,12 @@ export const routes = [
         meta: { title: '历史活动' }
       },
       {
+        path: 'organizations',
+        name: 'volunteer-organizations',
+        component: () => import('@/views/Volunteer/Organizations.vue'),
+        meta: { title: '组织管理' }
+      },
+      {
         path: 'records',
         name: 'volunteer-records',
         component: () => import('@/views/Volunteer/Records.vue'),
