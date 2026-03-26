@@ -255,6 +255,78 @@
             </div>
           </div>
         </VolunteerSectionCard>
+
+        <VolunteerSectionCard
+          title="我的组织"
+          description="现在可以直接查询已加入组织，并通过组织 ID 申请加入或退出。"
+          tone="soft"
+        >
+          <div class="space-y-4">
+            <div class="grid gap-4 md:grid-cols-[1fr_auto]">
+              <label class="text-sm font-medium text-slate-600">
+                申请加入组织 ID
+                <input
+                  v-model="joinOrganizationId"
+                  class="input mt-2 rounded-2xl border-slate-200 bg-slate-50 shadow-none"
+                  placeholder="请输入组织 ID"
+                >
+              </label>
+              <div class="flex items-end justify-end">
+                <button
+                  class="rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-300"
+                  :disabled="organizationActionLoading"
+                  @click="joinOrganization"
+                >
+                  {{ organizationActionLoading ? '提交中...' : '申请加入' }}
+                </button>
+              </div>
+            </div>
+
+            <div
+              v-if="membershipsStore.myOrganizationsLoading"
+              class="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center text-sm text-slate-500"
+            >
+              正在加载组织关系...
+            </div>
+
+            <div
+              v-else-if="!membershipsStore.myOrganizations.length"
+              class="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center text-sm text-slate-500"
+            >
+              你还没有加入任何组织。
+            </div>
+
+            <div
+              v-else
+              class="space-y-3"
+            >
+              <div
+                v-for="item in membershipsStore.myOrganizations"
+                :key="item.membershipId"
+                class="flex flex-col gap-3 rounded-[1.1rem] border border-white/80 bg-white/90 px-4 py-4 md:flex-row md:items-center md:justify-between"
+              >
+                <div>
+                  <p class="text-sm font-semibold text-slate-900">
+                    {{ item.organizationName }}
+                  </p>
+                  <p class="mt-1 text-xs text-slate-500">
+                    组织编码：{{ item.organizationCode || '待补充' }} · 角色：{{ membershipRoleText(item.role) }}
+                  </p>
+                  <p class="mt-1 text-xs text-slate-500">
+                    状态：{{ membershipStatusText(item.status) }}
+                  </p>
+                </div>
+                <button
+                  class="rounded-full border border-rose-200 px-4 py-2 text-sm font-semibold text-rose-600 transition hover:border-rose-300 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
+                  :disabled="organizationActionLoading || item.status !== 2"
+                  @click="leaveOrganization(item.membershipId)"
+                >
+                  退出组织
+                </button>
+              </div>
+            </div>
+          </div>
+        </VolunteerSectionCard>
       </div>
     </div>
   </div>
@@ -267,6 +339,7 @@ import FilterSelect from '@/components/ui/FilterSelect.vue'
 import Textarea from '@/components/ui/Textarea.vue'
 import { VOLUNTEER_AUDIT_STATUS_LABELS } from '@/constants/status'
 import { useAuthStore } from '@/store/modules/auth'
+import { useMembershipsStore } from '@/store/modules/memberships'
 import { useVolunteerStore } from '@/store/modules/volunteer'
 import { useMessageStore } from '@/store/modules/messages'
 import {
@@ -278,8 +351,15 @@ import {
 import { CameraIcon, UsersIcon } from 'lucide-vue-next'
 import VolunteerPageHeader from '@/components/volunteer/VolunteerPageHeader.vue'
 import VolunteerSectionCard from '@/components/volunteer/VolunteerSectionCard.vue'
+import {
+  MembershipRole,
+  MembershipStatus,
+  type MembershipRole as MembershipRoleType,
+  type MembershipStatus as MembershipStatusType
+} from '@/types/membership'
 
 const authStore = useAuthStore()
+const membershipsStore = useMembershipsStore()
 const volunteerStore = useVolunteerStore()
 const messageStore = useMessageStore()
 const user = computed(() => authStore.user)
@@ -290,6 +370,8 @@ const avatarPreview = ref('')
 const accountSaving = ref(false)
 const profileSaving = ref(false)
 const realNameSubmitting = ref(false)
+const organizationActionLoading = ref(false)
+const joinOrganizationId = ref('')
 const genderOptions = [
   { key: 'gender-unknown', value: 0, label: '未知', description: '暂不设置性别信息' },
   { key: 'gender-male', value: 1, label: '男', description: '选择男性' },
@@ -485,6 +567,69 @@ const submitRealName = async () => {
   }
 }
 
+const membershipStatusText = (status: MembershipStatusType) => ({
+  [MembershipStatus.PENDING]: '待审核',
+  [MembershipStatus.ACTIVE]: '已加入',
+  [MembershipStatus.REJECTED]: '已驳回',
+  [MembershipStatus.LEFT]: '已退出'
+}[status] || '未知')
+
+const membershipRoleText = (role: MembershipRoleType) => ({
+  [MembershipRole.MEMBER]: '普通成员',
+  [MembershipRole.ADMIN]: '管理员',
+  [MembershipRole.OWNER]: '负责人'
+}[role] || '未分配')
+
+const refreshOrganizations = async () => {
+  const volunteerId = profile.value?.id
+  if (!volunteerId) return
+  await membershipsStore.fetchMyOrganizations(volunteerId)
+}
+
+const joinOrganization = async () => {
+  const volunteerId = profile.value?.id
+  const organizationId = Number(joinOrganizationId.value.trim())
+  if (!volunteerId) {
+    messageStore.error('当前账号缺少志愿者标识')
+    return
+  }
+  if (!Number.isInteger(organizationId) || organizationId <= 0) {
+    messageStore.error('请输入有效的组织 ID')
+    return
+  }
+
+  organizationActionLoading.value = true
+  try {
+    const response = await membershipsStore.joinOrganization(volunteerId, organizationId)
+    joinOrganizationId.value = ''
+    messageStore.success(response.message || '加入申请已提交')
+  } catch (error: any) {
+    console.error('申请加入组织失败:', error)
+    messageStore.error(error.message || '申请加入组织失败，请稍后重试')
+  } finally {
+    organizationActionLoading.value = false
+  }
+}
+
+const leaveOrganization = async (membershipId: number) => {
+  const volunteerId = profile.value?.id
+  if (!volunteerId) {
+    messageStore.error('当前账号缺少志愿者标识')
+    return
+  }
+
+  organizationActionLoading.value = true
+  try {
+    const response = await membershipsStore.leaveOrganization(volunteerId, membershipId, '志愿者主动退出')
+    messageStore.success(response.message || '已退出组织')
+  } catch (error: any) {
+    console.error('退出组织失败:', error)
+    messageStore.error(error.message || '退出组织失败，请稍后重试')
+  } finally {
+    organizationActionLoading.value = false
+  }
+}
+
 onMounted(async () => {
   if (user.value?.id && !profile.value) {
     try {
@@ -492,6 +637,11 @@ onMounted(async () => {
     } catch (error) {
       console.error('加载志愿者资料失败:', error)
     }
+  }
+  try {
+    await refreshOrganizations()
+  } catch (error) {
+    console.error('加载组织关系失败:', error)
   }
   syncForm()
 })

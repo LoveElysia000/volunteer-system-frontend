@@ -4,14 +4,13 @@
       权限管理
     </h1>
 
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+    <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
       <p class="text-gray-600">
-        权限管理功能正在开发中...
+        权限管理暂未接入真实后端接口，当前不展示本地默认数据。
       </p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-// 权限管理页面
 </script>

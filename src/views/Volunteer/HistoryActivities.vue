@@ -20,14 +20,14 @@
             <VolunteerSummaryCard
               label="已完成场次"
               :value="`${historyActivities.length} 场`"
-              detail="形成长期记录"
+              detail="等待接口同步"
               tone="blue"
               class="volunteer-surface-lift"
             />
             <VolunteerSummaryCard
               label="累计时长"
               :value="`${totalHistoryHours}h`"
-              detail="持续沉淀服务经验"
+              detail="后端返回后自动更新"
               tone="green"
               class="volunteer-surface-lift"
             />
@@ -93,8 +93,8 @@
             interactive
             open-text="查看复盘"
             open-style="text"
-            empty-title="当前没有匹配历史活动"
-            empty-description="试试切换活动类型，或清空搜索关键词重新查看。"
+            empty-title="当前没有历史活动数据"
+            empty-description="待后端返回历史活动后，这里会自动展示。"
             @row-click="openActivityDrawer"
           >
             <template #default="{ item }">
@@ -160,9 +160,9 @@
             description="基于近期记录给出的下一步建议。"
           >
             <ul class="space-y-3 text-sm leading-6 text-slate-600">
-              <li>优先延续你熟悉的服务类型，保持稳定节奏再扩展新主题。</li>
-              <li>高积分活动可与高时长活动搭配，兼顾成长速度与可持续参与。</li>
-              <li>若连续两周无记录，可提前锁定下周时段防止断档。</li>
+              <li>历史活动数据接入后，这里会生成更贴近实际参与轨迹的建议。</li>
+              <li>完成记录、积分分布和高频主题将按后端返回结果自动更新。</li>
+              <li>当前不再展示本地模拟内容，避免误导后续判断。</li>
             </ul>
           </VolunteerSectionCard>
         </div>
@@ -292,8 +292,8 @@ const totalHistoryHours = computed(() => historyActivities.reduce((sum, item) =>
 const totalHistoryPoints = computed(() => historyActivities.reduce((sum, item) => sum + item.points, 0))
 
 const headerMeta = computed(() => [
-  { label: '已完成', value: `${historyActivities.length} 场`, detail: '形成长期记录' },
-  { label: '累计时长', value: `${totalHistoryHours.value}h`, detail: '持续沉淀服务经验' }
+  { label: '已完成', value: `${historyActivities.length} 场`, detail: '等待接口同步' },
+  { label: '累计时长', value: `${totalHistoryHours.value}h`, detail: '后端返回后自动更新' }
 ])
 
 const tagFilters = computed(() => ['all', ...new Set(historyActivities.map((item) => item.tag).filter(Boolean) as string[])])
@@ -319,8 +319,8 @@ const selectedActivity = computed(() => {
 
 const historyHighlights = computed(() => [
   { label: '累计积分', value: `${totalHistoryPoints.value}`, detail: '由已完成活动自动累积' },
-  { label: '最近完成', value: filteredHistoryActivities.value[0]?.title || '暂无', detail: filteredHistoryActivities.value[0]?.location || '待记录' },
-  { label: '平均单场时长', value: historyActivities.length ? `${(totalHistoryHours.value / historyActivities.length).toFixed(1)}h` : '0h', detail: '可用于规划可承受投入强度' }
+  { label: '最近完成', value: filteredHistoryActivities.value[0]?.title || '暂无', detail: filteredHistoryActivities.value[0]?.location || '等待后端数据' },
+  { label: '平均单场时长', value: historyActivities.length ? `${(totalHistoryHours.value / historyActivities.length).toFixed(1)}h` : '0h', detail: '接口接入后展示实际统计' }
 ])
 
 const openActivityDrawer = (activity: Record<string, any>) => {

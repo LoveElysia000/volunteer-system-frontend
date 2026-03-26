@@ -2,16 +2,6 @@ import { computed } from 'vue'
 import { useAuthStore } from '@/store/modules/auth'
 import { useVolunteerStore } from '@/store/modules/volunteer'
 
-const fallbackMetrics = {
-  points: 1240,
-  totalHours: 41,
-  monthHoursGrowth: 12,
-  monthPointsGrowth: 92,
-  totalActivities: 8,
-  completedActivities: 4,
-  upcomingActivities: 2
-}
-
 export const useVolunteerMetrics = () => {
   const authStore = useAuthStore()
   const volunteerStore = useVolunteerStore()
@@ -23,23 +13,23 @@ export const useVolunteerMetrics = () => {
   const points = computed(() =>
     summaryStats.value?.points ??
     user.value?.points ??
-    fallbackMetrics.points
+    0
   )
   const totalHours = computed(() =>
     summaryStats.value?.hours ??
     profile.value?.totalHours ??
     user.value?.totalHours ??
-    fallbackMetrics.totalHours
+    0
   )
   const volunteerLevel = computed(() => summary.value?.level ?? (Math.floor(totalHours.value / 10) + 1))
   const currentLevelHours = computed(() => totalHours.value % 10)
   const levelProgressPercentage = computed(() => currentLevelHours.value * 10)
   const hoursToNextLevel = computed(() => summary.value?.needHoursToNextLevel ?? Math.max(10 - currentLevelHours.value, 0))
-  const monthlyHoursGrowth = computed(() => summary.value?.monthlyGrowth ?? fallbackMetrics.monthHoursGrowth)
-  const monthlyPointsGrowth = computed(() => fallbackMetrics.monthPointsGrowth)
-  const totalActivities = computed(() => summaryStats.value?.activityCount ?? fallbackMetrics.totalActivities)
-  const completedActivities = computed(() => fallbackMetrics.completedActivities)
-  const upcomingActivities = computed(() => fallbackMetrics.upcomingActivities)
+  const monthlyHoursGrowth = computed(() => summary.value?.monthlyGrowth ?? 0)
+  const monthlyPointsGrowth = computed(() => 0)
+  const totalActivities = computed(() => summaryStats.value?.activityCount ?? 0)
+  const completedActivities = computed(() => 0)
+  const upcomingActivities = computed(() => 0)
 
   return {
     user,
@@ -55,7 +45,6 @@ export const useVolunteerMetrics = () => {
     monthlyPointsGrowth,
     totalActivities,
     completedActivities,
-    upcomingActivities,
-    fallbackMetrics
+    upcomingActivities
   }
 }

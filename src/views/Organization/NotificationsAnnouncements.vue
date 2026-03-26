@@ -4,14 +4,13 @@
       公告管理
     </h1>
 
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+    <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
       <p class="text-gray-600">
-        公告管理功能正在开发中...
+        公告管理暂未接入真实后端接口，当前不展示本地默认数据。
       </p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-// 公告管理页面
 </script>

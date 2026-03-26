@@ -48,7 +48,7 @@
 
         <div class="space-y-3">
           <article
-            v-for="item in milestoneRoadmap"
+            v-for="item in displayMilestoneRoadmap"
             :key="item.id"
             class="volunteer-surface-lift rounded-[1.25rem] border border-white/75 bg-white/92 px-4 py-4 shadow-[0_16px_38px_-30px_rgba(15,23,42,0.4)]"
           >
@@ -91,7 +91,7 @@
         class="grid gap-4 md:grid-cols-2 xl:grid-cols-3"
       >
         <article
-          v-for="badge in filteredBadges"
+          v-for="badge in displayBadges"
           :key="badge.id"
           class="volunteer-surface-lift rounded-[1.5rem] border p-5"
           :class="badge.earned ? 'border-emerald-200 bg-emerald-50/70' : 'border-slate-200 bg-white'"
@@ -113,13 +113,6 @@
           </p>
         </article>
       </transition-group>
-
-      <div
-        v-if="filteredBadges.length === 0"
-        class="mt-4 rounded-[1.5rem] border border-dashed border-emerald-200 bg-emerald-50/60 p-6 text-center text-sm text-slate-500"
-      >
-        当前筛选下暂无徽章，切换筛选可查看其他状态。
-      </div>
     </VolunteerSectionCard>
   </div>
 </template>
@@ -147,8 +140,8 @@ const totalBadges = computed(() => volunteerBadges.length)
 const completionRate = computed(() => Math.round((earnedCount.value / Math.max(totalBadges.value, 1)) * 100))
 
 const achievementMeta = computed(() => [
-  { label: '已点亮', value: `${earnedCount.value} 枚`, detail: '持续累积中' },
-  { label: '完成率', value: `${completionRate.value}%`, detail: '向更高等级推进' }
+  { label: '已点亮', value: `${earnedCount.value} 枚`, detail: '等待接口同步' },
+  { label: '完成率', value: `${completionRate.value}%`, detail: '后端返回后自动更新' }
 ])
 
 const filteredBadges = computed(() => {
@@ -165,5 +158,23 @@ const milestoneRoadmap = computed(() => {
   const pending = volunteerBadges.filter(item => !item.earned).slice(0, 3)
   if (pending.length > 0) return pending
   return volunteerBadges.slice(0, 3)
+})
+
+const displayMilestoneRoadmap = computed(() => {
+  if (milestoneRoadmap.value.length > 0) return milestoneRoadmap.value
+  return [
+    { id: -1, name: '成长里程碑待同步', earned: false, progress: '接口接入后显示真实进度' },
+    { id: -2, name: '阶段目标待同步', earned: false, progress: '不再展示本地模拟成就' },
+    { id: -3, name: '徽章解锁待同步', earned: false, progress: '保留现有卡片布局' }
+  ]
+})
+
+const displayBadges = computed(() => {
+  if (filteredBadges.value.length > 0) return filteredBadges.value
+  return [
+    { id: -1, name: '徽章数据待同步', description: '当前页面结构保留，等待后端返回真实徽章数据。', earned: false, progress: '待接入' },
+    { id: -2, name: '成长进度待同步', description: '不再展示前端伪造的徽章状态与进度。', earned: false, progress: '待接入' },
+    { id: -3, name: '荣誉记录待同步', description: '接口接入后将按现有样式自动更新。', earned: false, progress: '待接入' }
+  ]
 })
 </script>

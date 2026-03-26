@@ -4,7 +4,7 @@
       eyebrow="时长统计"
       title="观察你的服务投入趋势"
       description="从月份、服务类型和阶段进度看出你在哪些方向投入更多。"
-      :meta-items="[{ label: '近三个月', value: '26h', detail: '本月提升最明显' }]"
+      :meta-items="[{ label: '近三个月', value: '0h', detail: '等待接口返回' }]"
     />
 
     <div class="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(300px,0.85fr)]">
@@ -16,22 +16,22 @@
         <div class="mb-5 grid gap-4 md:grid-cols-3">
           <VolunteerSummaryCard
             label="本月时长"
-            value="12h"
-            detail="比上月多 4 小时"
+            value="0h"
+            detail="等待后端同步"
             tone="green"
             class="volunteer-surface-lift"
           />
           <VolunteerSummaryCard
             label="季度累计"
-            value="26h"
-            detail="保持稳定节奏"
+            value="0h"
+            detail="后端返回后自动更新"
             tone="blue"
             class="volunteer-surface-lift"
           />
           <VolunteerSummaryCard
             label="高频类型"
-            value="社区服务"
-            detail="占总时长 46%"
+            value="暂无"
+            detail="接口接入后展示"
             tone="amber"
             class="volunteer-surface-lift"
           />
@@ -95,14 +95,14 @@ import VolunteerSectionCard from '@/components/volunteer/VolunteerSectionCard.vu
 import VolunteerSummaryCard from '@/components/volunteer/VolunteerSummaryCard.vue'
 
 const stageDistribution = [
-  { label: '社区服务', value: '46%', barTone: 'bg-emerald-500' },
-  { label: '环保宣传', value: '31%', barTone: 'bg-sky-500' },
-  { label: '生态修复', value: '23%', barTone: 'bg-amber-500' }
+  { label: '社区服务', value: '0%', barTone: 'bg-emerald-500' },
+  { label: '环保宣传', value: '0%', barTone: 'bg-sky-500' },
+  { label: '生态修复', value: '0%', barTone: 'bg-amber-500' }
 ]
 
 const monthlyInsightRows = [
-  { month: '2026-01', hours: 6, note: '保持基础投入，重点在社区引导。' },
-  { month: '2026-02', hours: 8, note: '参加两次高时长活动，节奏上升。' },
-  { month: '2026-03', hours: 12, note: '本月投入明显增加，建议维持可持续频率。' }
+  { month: '最近一月', hours: 0, note: '等待后端返回统计结果。' },
+  { month: '最近两月', hours: 0, note: '当前不再展示本地模拟趋势。' },
+  { month: '最近三月', hours: 0, note: '接口接入后将自动更新。' }
 ]
 </script>

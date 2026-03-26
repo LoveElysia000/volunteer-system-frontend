@@ -46,6 +46,53 @@ export interface OrganizationMembersData {
   list: MemberInfo[]
 }
 
+export interface OrganizationMemberInfo {
+  membershipId: number
+  organizationId: number
+  organizationName: string
+  organizationCode: string
+  status: MembershipStatus
+  role: MembershipRole
+  position: string
+  joinDate: string
+  reviewDate: string
+  reviewComment: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface VolunteerJoinRequest {
+  volunteerId: number
+  organizationId: number
+}
+
+export interface VolunteerJoinData {
+  membershipId: number
+  status: MembershipStatus
+  message: string
+}
+
+export interface VolunteerLeaveRequest {
+  membershipId: number
+  reason?: string
+}
+
+export interface VolunteerLeaveData {
+  message: string
+}
+
+export interface VolunteerOrganizationsParams {
+  volunteerId: number
+  status?: MembershipStatus
+  page: number
+  pageSize: number
+}
+
+export interface VolunteerOrganizationsData {
+  total: number
+  list: OrganizationMemberInfo[]
+}
+
 export interface MembershipStatsData {
   pendingCount: number
   activeCount: number

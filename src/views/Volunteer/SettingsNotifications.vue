@@ -78,14 +78,17 @@
 import { computed, reactive } from 'vue'
 import VolunteerPageHeader from '@/components/volunteer/VolunteerPageHeader.vue'
 import VolunteerSectionCard from '@/components/volunteer/VolunteerSectionCard.vue'
-import { notificationChannels } from '@/data/volunteerCenter'
-
-const channels = reactive(notificationChannels.map((item) => ({ ...item })))
+const channels = reactive([
+  { key: 'system', label: '系统更新', description: '账户安全、策略变更和重要公告。', enabled: false },
+  { key: 'activity', label: '活动提醒', description: '报名成功、行前提醒和活动变更。', enabled: false },
+  { key: 'community', label: '社区动态', description: '团队成就、排行榜变动和互动消息。', enabled: false },
+  { key: 'sms', label: '短信通知', description: '仅发送临近活动和紧急调整。', enabled: false }
+])
 const enabledCount = computed(() => channels.filter(item => item.enabled).length)
 
 const headerMeta = computed(() => [
-  { label: '已开启渠道', value: `${enabledCount.value} 个`, detail: '建议保留活动提醒' },
-  { label: '通知覆盖', value: enabledCount.value >= 2 ? '充足' : '偏低', detail: '至少保留两个渠道更稳妥' }
+  { label: '已开启渠道', value: `${enabledCount.value} 个`, detail: '等待后端返回' },
+  { label: '通知覆盖', value: enabledCount.value >= 2 ? '充足' : '待配置', detail: '至少保留两个渠道更稳妥' }
 ])
 
 const notificationPriorityQueue = computed(() => {

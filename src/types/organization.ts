@@ -55,6 +55,30 @@ export interface OrganizationListData {
   list: OrganizationInfo[]
 }
 
+export interface OrganizationSearchRequest extends OrganizationListRequest {
+  startDate?: string
+  endDate?: string
+}
+
+export interface CreateOrganizationRequest {
+  name: string
+  organizationCode: string
+  contactPerson: string
+  contactPhone: string
+  email: string
+  address: string
+  organizationType: string
+  region: string
+  description?: string
+  websiteUrl?: string
+  logoUrl?: string
+}
+
+export interface CreateOrganizationData {
+  id: number
+  message: string
+}
+
 export interface OrganizationDetailData {
   organization: OrganizationInfo
   accountInfo: OrganizationAccountInfo
@@ -71,8 +95,11 @@ export interface UpdateOrganizationRequest {
   organizationCode?: string
   contactPerson?: string
   contactPhone?: string
+  organizationType?: string
+  region?: string
   address?: string
   description?: string
+  websiteUrl?: string
   logoUrl?: string
 }
 
@@ -80,4 +107,33 @@ export interface UpdateOrganizationAccountRequest {
   userName?: string
   email?: string
   phone?: string
+}
+
+export interface OrganizationActionRequest {
+  reason?: string
+}
+
+export interface OrganizationActionData {
+  message: string
+}
+
+export interface OrganizationBulkDeleteRequest {
+  ids: number[]
+}
+
+export interface OrganizationBulkDeleteData {
+  successCount: number
+  failedCount: number
+  message: string
+}
+
+export interface OrganizationBatchActionRequest {
+  ids: number[]
+  reason?: string
+}
+
+export interface OrganizationBatchActionData {
+  successCount: number
+  failedIds: number[]
+  message: string
 }

@@ -65,3 +65,14 @@ export interface AuditDecisionRequest {
   id: number
   reason?: string
 }
+
+export interface AuditBatchDecisionRequest {
+  ids: number[]
+  action: AuditDecisionAction
+  reason?: string
+}
+
+export interface AuditBatchDecisionData {
+  successCount: number
+  failedIds: number[]
+}

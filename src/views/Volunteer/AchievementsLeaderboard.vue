@@ -45,6 +45,13 @@
             </div>
           </article>
         </transition-group>
+
+        <div
+          v-if="leaderboard.length === 0"
+          class="rounded-[1.5rem] border border-dashed border-slate-200 bg-slate-50/70 p-8 text-center text-sm text-slate-500"
+        >
+          暂无排行数据，接入真实接口后这里会按现有样式展示。
+        </div>
       </VolunteerSectionCard>
 
       <VolunteerSectionCard
@@ -87,12 +94,12 @@ const myScore = computed(() => leaderboard.find(item => item.name === '你')?.sc
 const scoreGap = computed(() => Math.max(topScore.value - myScore.value, 0))
 
 const headerMeta = computed(() => [
-  { label: '当前排名', value: `#${myRank.value || '-'}`, detail: `与第一名差 ${scoreGap.value} 分` },
+  { label: '当前排名', value: `#${myRank.value || '-'}`, detail: leaderboard.length > 0 ? `与第一名差 ${scoreGap.value} 分` : '等待接口返回' },
   { label: '当前积分', value: `${myScore.value}`, detail: '保持稳定出勤可继续上升' }
 ])
 
 const leaderboardSpotlight = computed(() => [
-  { label: '冲刺目标', value: `缩小 ${scoreGap.value} 分差距`, detail: '优先参加高积分活动并保持连续服务。' },
+  { label: '冲刺目标', value: leaderboard.length > 0 ? `缩小 ${scoreGap.value} 分差距` : '等待数据', detail: '优先参加高积分活动并保持连续服务。' },
   { label: '稳定优势', value: `连续服务 ${leaderboard.find(item => item.name === '你')?.streak || '-'}`, detail: '连续周数是排名的重要加权项。' },
   { label: '建议节奏', value: '每周 2 场', detail: '一场高时长 + 一场高积分更均衡。' }
 ])

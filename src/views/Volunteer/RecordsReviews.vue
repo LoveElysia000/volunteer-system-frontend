@@ -20,14 +20,14 @@
             <VolunteerSummaryCard
               label="平均评分"
               :value="`${averageRating} / 5`"
-              detail="近两次评价稳定"
+              detail="等待接口返回"
               tone="amber"
               class="volunteer-surface-lift"
             />
             <VolunteerSummaryCard
               label="累计反馈"
               :value="`${volunteerReviews.length} 条`"
-              detail="可复盘协作表现"
+              detail="后端同步后展示"
               tone="green"
               class="volunteer-surface-lift"
             />
@@ -93,8 +93,8 @@
             interactive
             open-text="查看详情"
             open-style="text"
-            empty-title="当前没有匹配反馈"
-            empty-description="可以切换标签，或清空搜索关键词重新查看。"
+            empty-title="当前没有评价记录数据"
+            empty-description="待后端返回评价后，这里会自动展示。"
             @row-click="openReviewDrawer"
           >
             <template #default="{ item }">
@@ -128,7 +128,7 @@
           description="按反馈重点拆解你当前最稳定的协作优势。"
           tone="soft"
         >
-          <div class="space-y-3">
+        <div class="space-y-3">
             <article
               v-for="item in reviewRadar"
               :key="item.label"
@@ -261,7 +261,7 @@ const averageRating = computed(() => {
 })
 
 const reviewSummaryMeta = computed(() => [
-  { label: '平均评分', value: `${averageRating.value} / 5`, detail: '近两次评价稳定' },
+  { label: '平均评分', value: `${averageRating.value} / 5`, detail: '等待接口返回' },
   { label: '累计反馈', value: `${volunteerReviews.length} 条`, detail: '可复盘协作表现' }
 ])
 
@@ -292,9 +292,9 @@ const topTag = computed(() => {
 })
 
 const reviewRadar = [
-  { label: '沟通协作', score: '92%' },
-  { label: '执行稳定性', score: '88%' },
-  { label: '现场响应', score: '85%' }
+  { label: '沟通协作', score: '0%' },
+  { label: '执行稳定性', score: '0%' },
+  { label: '现场响应', score: '0%' }
 ]
 
 const openReviewDrawer = (review: Record<string, any>) => {

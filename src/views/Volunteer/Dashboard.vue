@@ -36,7 +36,7 @@
     >
       <div class="grid gap-4 md:grid-cols-3">
         <div
-          v-for="metric in monthlyMetrics"
+          v-for="metric in displayMonthlyMetrics"
           :key="metric.label"
           class="rounded-[1.4rem] border border-slate-100 bg-slate-50/80 px-4 py-4"
         >
@@ -61,6 +61,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import VolunteerHeroPanel from '@/components/volunteer/VolunteerHeroPanel.vue'
 import VolunteerSectionCard from '@/components/volunteer/VolunteerSectionCard.vue'
 import VolunteerRecommendedActivities from '@/components/volunteer/VolunteerRecommendedActivities.vue'
@@ -69,4 +70,13 @@ import VolunteerStatusBadge from '@/components/volunteer/VolunteerStatusBadge.vu
 import StatsOverview from '@/components/volunteer/StatsOverview.vue'
 import UpcomingActivities from '@/components/volunteer/UpcomingActivities.vue'
 import { monthlyMetrics } from '@/data/volunteerCenter'
+
+const displayMonthlyMetrics = computed(() => {
+  if (monthlyMetrics.length > 0) return monthlyMetrics
+  return [
+    { label: '本月服务时长', value: '0 小时', detail: '等待接口同步', tone: 'green' as const },
+    { label: '完成活动', value: '0 场', detail: '保留当前展示结构', tone: 'blue' as const },
+    { label: '积分增长', value: '0', detail: '真实数据接入后更新', tone: 'amber' as const }
+  ]
+})
 </script>

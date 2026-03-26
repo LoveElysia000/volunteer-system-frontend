@@ -1,6 +1,8 @@
 import { http } from './request'
 import type { ApiResponse } from './types'
 import type {
+  AuditBatchDecisionData,
+  AuditBatchDecisionRequest,
   AuditDecisionRequest,
   AuditRecordDetailData,
   PendingAuditsData,
@@ -18,6 +20,10 @@ export const auditsApi = {
 
   reject: (data: AuditDecisionRequest): Promise<ApiResponse<Record<string, never>>> => {
     return http.post<ApiResponse<Record<string, never>>>('/api/audits/rejection', data)
+  },
+
+  batchDecision: (data: AuditBatchDecisionRequest): Promise<ApiResponse<AuditBatchDecisionData>> => {
+    return http.post<ApiResponse<AuditBatchDecisionData>>('/api/audits/batch-decision', data)
   },
 
   getDetail: (id: number): Promise<ApiResponse<AuditRecordDetailData>> => {

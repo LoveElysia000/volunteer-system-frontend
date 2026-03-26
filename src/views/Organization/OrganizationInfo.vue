@@ -9,6 +9,33 @@
     >
       <template #actions>
         <button
+          class="rounded-full bg-[#ec5b13] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#d04f14]"
+          @click="createDialogOpen = true"
+        >
+          新建组织
+        </button>
+        <button
+          class="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300"
+          :disabled="organizationStore.loading || !organizationStore.organizations.length"
+          @click="batchUpdateOrganizations('enable')"
+        >
+          批量启用当前列表
+        </button>
+        <button
+          class="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300"
+          :disabled="organizationStore.loading || !organizationStore.organizations.length"
+          @click="batchUpdateOrganizations('disable')"
+        >
+          批量停用当前列表
+        </button>
+        <button
+          class="rounded-full border border-rose-200 bg-white px-4 py-2 text-sm font-semibold text-rose-600 transition hover:border-rose-300 hover:bg-rose-50"
+          :disabled="organizationStore.loading || !organizationStore.organizations.length"
+          @click="batchDeleteOrganizations"
+        >
+          批量删除当前列表
+        </button>
+        <button
           class="rounded-full border border-[#ffd7c2] bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#ffb78d] hover:text-[#ec5b13]"
           :disabled="organizationStore.loading"
           @click="loadOrganizations"
@@ -156,6 +183,9 @@
                         编码 {{ activeOrganizationCode }}
                       </span>
                       <span class="rounded-full bg-white/90 px-2.5 py-1">
+                        {{ currentOrganization?.status === 1 ? '已启用' : '已停用' }}
+                      </span>
+                      <span class="rounded-full bg-white/90 px-2.5 py-1">
                         {{ currentOrganization?.organizationType || '组织类型待补充' }}
                       </span>
                       <span class="rounded-full bg-white/90 px-2.5 py-1">
@@ -179,6 +209,20 @@
                       @click="cancelEdit"
                     >
                       取消
+                    </button>
+                    <button
+                      v-if="drawerMode === 'view' && currentOrganization"
+                      class="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300"
+                      @click="toggleOrganizationStatus"
+                    >
+                      {{ currentOrganization.status === 1 ? '停用' : '启用' }}
+                    </button>
+                    <button
+                      v-if="drawerMode === 'view' && currentOrganization"
+                      class="rounded-full border border-rose-200 bg-white px-4 py-2 text-sm font-semibold text-rose-600 transition hover:border-rose-300 hover:bg-rose-50"
+                      @click="deleteCurrentOrganization"
+                    >
+                      删除
                     </button>
                     <button
                       class="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:border-slate-300 hover:text-slate-900"
@@ -439,17 +483,84 @@
         </div>
       </Transition>
     </Teleport>
+
+    <Dialog
+      v-model="createDialogOpen"
+      title="新建组织"
+      width="640px"
+      :show-footer="false"
+    >
+      <div class="grid gap-4 md:grid-cols-2">
+        <label class="drawer-edit-label">
+          组织名称
+          <input v-model="createForm.name" type="text" class="input mt-2">
+        </label>
+        <label class="drawer-edit-label">
+          组织编码
+          <input v-model="createForm.organizationCode" type="text" class="input mt-2">
+        </label>
+        <label class="drawer-edit-label">
+          联系人
+          <input v-model="createForm.contactPerson" type="text" class="input mt-2">
+        </label>
+        <label class="drawer-edit-label">
+          联系电话
+          <input v-model="createForm.contactPhone" type="text" class="input mt-2">
+        </label>
+        <label class="drawer-edit-label">
+          邮箱
+          <input v-model="createForm.email" type="email" class="input mt-2">
+        </label>
+        <label class="drawer-edit-label">
+          组织类型
+          <input v-model="createForm.organizationType" type="text" class="input mt-2">
+        </label>
+        <label class="drawer-edit-label">
+          区域
+          <input v-model="createForm.region" type="text" class="input mt-2">
+        </label>
+        <label class="drawer-edit-label md:col-span-2">
+          地址
+          <input v-model="createForm.address" type="text" class="input mt-2">
+        </label>
+        <label class="drawer-edit-label md:col-span-2">
+          描述
+          <Textarea
+            v-model="createForm.description"
+            class="mt-2"
+            :min-rows="3"
+            :max-rows="5"
+          />
+        </label>
+      </div>
+      <div class="mt-4 flex justify-end gap-3">
+        <button
+          class="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700"
+          @click="createDialogOpen = false"
+        >
+          取消
+        </button>
+        <button
+          class="rounded-full bg-[#ec5b13] px-5 py-2 text-sm font-semibold text-white"
+          :disabled="createSaving"
+          @click="createOrganization"
+        >
+          {{ createSaving ? '创建中...' : '创建组织' }}
+        </button>
+      </div>
+    </Dialog>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
+import Dialog from '@/components/ui/Dialog.vue'
 import Textarea from '@/components/ui/Textarea.vue'
 import OrganizationPageHeader from '@/components/organization/OrganizationPageHeader.vue'
 import OrganizationSectionCard from '@/components/organization/OrganizationSectionCard.vue'
 import { useMessageStore } from '@/store/modules/messages'
 import { useOrganizationStore } from '@/store/modules/organization'
-import type { OrganizationInfo, UpdateOrganizationAccountRequest, UpdateOrganizationRequest } from '@/types/organization'
+import type { CreateOrganizationRequest, OrganizationInfo, UpdateOrganizationAccountRequest, UpdateOrganizationRequest } from '@/types/organization'
 import { useAuthStore } from '@/store/modules/auth'
 import {
   Building2Icon,
@@ -465,6 +576,8 @@ const authStore = useAuthStore()
 const messageStore = useMessageStore()
 const organizationStore = useOrganizationStore()
 const accountSaving = ref(false)
+const createDialogOpen = ref(false)
+const createSaving = ref(false)
 const organizationSaving = ref(false)
 const drawerOpen = ref(false)
 const drawerLoading = ref(false)
@@ -487,8 +600,25 @@ const organizationForm = reactive<Required<UpdateOrganizationRequest>>({
   organizationCode: '',
   contactPerson: '',
   contactPhone: '',
+  organizationType: '',
+  region: '',
   address: '',
   description: '',
+  websiteUrl: '',
+  logoUrl: ''
+})
+
+const createForm = reactive<CreateOrganizationRequest>({
+  name: '',
+  organizationCode: '',
+  contactPerson: '',
+  contactPhone: '',
+  email: '',
+  address: '',
+  organizationType: '',
+  region: '',
+  description: '',
+  websiteUrl: '',
   logoUrl: ''
 })
 
@@ -517,8 +647,11 @@ const syncOrganizationForm = () => {
   organizationForm.organizationCode = organizationStore.organizationCertification?.organizationCode || current?.organizationCode || ''
   organizationForm.contactPerson = current?.contactPerson || ''
   organizationForm.contactPhone = current?.contactPhone || ''
+  organizationForm.organizationType = current?.organizationType || ''
+  organizationForm.region = current?.region || ''
   organizationForm.address = current?.address || ''
   organizationForm.description = current?.description || ''
+  organizationForm.websiteUrl = current?.websiteUrl || ''
   organizationForm.logoUrl = current?.logoUrl || ''
 }
 
@@ -618,8 +751,11 @@ const saveOrganizationChanges = async () => {
       organizationCode: organizationForm.organizationCode.trim() || undefined,
       contactPerson: organizationForm.contactPerson.trim() || undefined,
       contactPhone: organizationForm.contactPhone.trim() || undefined,
+      organizationType: organizationForm.organizationType.trim() || undefined,
+      region: organizationForm.region.trim() || undefined,
       address: organizationForm.address.trim() || undefined,
       description: organizationForm.description.trim() || undefined,
+      websiteUrl: organizationForm.websiteUrl.trim() || undefined,
       logoUrl: organizationForm.logoUrl.trim() || undefined
     }
     await organizationStore.updateOrganization(targetId, payload)
@@ -630,6 +766,110 @@ const saveOrganizationChanges = async () => {
     messageStore.error(error.message || '保存组织信息失败，请稍后重试')
   } finally {
     organizationSaving.value = false
+  }
+}
+
+const resetCreateForm = () => {
+  createForm.name = ''
+  createForm.organizationCode = ''
+  createForm.contactPerson = ''
+  createForm.contactPhone = ''
+  createForm.email = ''
+  createForm.address = ''
+  createForm.organizationType = ''
+  createForm.region = ''
+  createForm.description = ''
+  createForm.websiteUrl = ''
+  createForm.logoUrl = ''
+}
+
+const createOrganization = async () => {
+  if (!createForm.name.trim() || !createForm.organizationCode.trim()) {
+    messageStore.error('请至少填写组织名称和组织编码')
+    return
+  }
+  createSaving.value = true
+  try {
+    await organizationStore.createOrganization({
+      ...createForm,
+      name: createForm.name.trim(),
+      organizationCode: createForm.organizationCode.trim(),
+      contactPerson: createForm.contactPerson.trim(),
+      contactPhone: createForm.contactPhone.trim(),
+      email: createForm.email.trim(),
+      address: createForm.address.trim(),
+      organizationType: createForm.organizationType.trim(),
+      region: createForm.region.trim(),
+      description: createForm.description.trim(),
+      websiteUrl: createForm.websiteUrl.trim(),
+      logoUrl: createForm.logoUrl.trim()
+    })
+    createDialogOpen.value = false
+    resetCreateForm()
+    messageStore.success('组织已创建')
+  } catch (error: any) {
+    console.error('创建组织失败:', error)
+    messageStore.error(error.message || '创建组织失败，请稍后重试')
+  } finally {
+    createSaving.value = false
+  }
+}
+
+const toggleOrganizationStatus = async () => {
+  if (!currentOrganization.value) return
+  try {
+    if (currentOrganization.value.status === 1) {
+      await organizationStore.disableOrganization(currentOrganization.value.id, { reason: '前端管理台停用' })
+      messageStore.success('组织已停用')
+    } else {
+      await organizationStore.enableOrganization(currentOrganization.value.id, { reason: '前端管理台启用' })
+      messageStore.success('组织已启用')
+    }
+  } catch (error: any) {
+    console.error('更新组织状态失败:', error)
+    messageStore.error(error.message || '更新组织状态失败，请稍后重试')
+  }
+}
+
+const deleteCurrentOrganization = async () => {
+  if (!currentOrganization.value) return
+  try {
+    await organizationStore.removeOrganization(currentOrganization.value.id)
+    closeDrawer()
+    messageStore.success('组织已删除')
+  } catch (error: any) {
+    console.error('删除组织失败:', error)
+    messageStore.error(error.message || '删除组织失败，请稍后重试')
+  }
+}
+
+const batchUpdateOrganizations = async (action: 'enable' | 'disable') => {
+  const ids = organizationStore.organizations.map((item) => item.id)
+  if (!ids.length) return
+  try {
+    if (action === 'enable') {
+      const response = await organizationStore.batchEnableOrganizations({ ids, reason: '批量启用当前筛选结果' })
+      messageStore.success(`批量启用完成，成功 ${response.successCount} 条`)
+    } else {
+      const response = await organizationStore.batchDisableOrganizations({ ids, reason: '批量停用当前筛选结果' })
+      messageStore.success(`批量停用完成，成功 ${response.successCount} 条`)
+    }
+  } catch (error: any) {
+    console.error('批量更新组织失败:', error)
+    messageStore.error(error.message || '批量更新组织失败，请稍后重试')
+  }
+}
+
+const batchDeleteOrganizations = async () => {
+  const ids = organizationStore.organizations.map((item) => item.id)
+  if (!ids.length) return
+  try {
+    const response = await organizationStore.bulkDeleteOrganizations({ ids })
+    messageStore.success(`批量删除完成，成功 ${response.successCount} 条`)
+    closeDrawer()
+  } catch (error: any) {
+    console.error('批量删除组织失败:', error)
+    messageStore.error(error.message || '批量删除组织失败，请稍后重试')
   }
 }
 

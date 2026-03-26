@@ -88,6 +88,10 @@ export interface VolunteerListData {
   list: VolunteerListItem[]
 }
 
+export interface VolunteerDetailData {
+  volunteer: VolunteerProfileInfo
+}
+
 export interface UpdateVolunteerProfileRequest {
   gender?: number
   birthday?: string

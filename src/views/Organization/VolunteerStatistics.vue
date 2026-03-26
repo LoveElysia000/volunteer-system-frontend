@@ -4,14 +4,13 @@
       志愿者统计
     </h1>
 
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+    <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
       <p class="text-gray-600">
-        志愿者统计功能正在开发中...
+        志愿者统计暂未接通真实后端接口，当前不再展示本地演示数据。
       </p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-// 志愿者统计页面
 </script>

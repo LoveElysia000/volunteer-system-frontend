@@ -26,14 +26,14 @@
             <VolunteerSummaryCard
               label="累计服务时长"
               :value="`${totalHours}h`"
-              detail="其中 4 小时待确认"
+              detail="等待后端同步"
               tone="green"
               class="volunteer-surface-lift"
             />
             <VolunteerSummaryCard
               label="累计积分"
               :value="String(totalPoints)"
-              detail="本月增长速度稳定"
+              detail="接口返回后更新"
               tone="amber"
               class="volunteer-surface-lift"
             />
@@ -99,8 +99,8 @@
             interactive
             open-text="查看详情"
             open-style="text"
-            empty-title="当前没有匹配记录"
-            empty-description="可以切换状态或清空关键词后重新查看。"
+            empty-title="当前没有服务记录数据"
+            empty-description="待后端返回记录后，这里会自动展示。"
             @row-click="openRecordDrawer"
           >
             <template #default="{ item }">
@@ -165,7 +165,7 @@
           >
             <div class="space-y-3">
               <article
-                v-for="badge in volunteerBadges.slice(0, 3)"
+                v-for="badge in displayRecentBadges"
                 :key="badge.id"
                 class="volunteer-surface-lift rounded-[1.25rem] border border-slate-200 bg-white px-4 py-4"
               >
@@ -302,7 +302,7 @@ const totalPoints = computed(() => volunteerRecords.reduce((sum, item) => sum + 
 
 const headerMeta = computed(() => [
   { label: '记录条数', value: `${volunteerRecords.length} 条`, detail: '可导出证明' },
-  { label: '活跃状态', value: '稳定参与', detail: '连续 4 周有记录' }
+  { label: '活跃状态', value: volunteerRecords.length > 0 ? '稳定参与' : '等待数据', detail: volunteerRecords.length > 0 ? '连续记录自动汇总' : '后端同步后更新' }
 ])
 
 const recordStatusBreakdown = computed(() => {
@@ -340,6 +340,16 @@ const selectedRecord = computed(() => {
   return filteredRecords.value.find((item) => item.id === selectedRecordId.value)
     || volunteerRecords.find((item) => item.id === selectedRecordId.value)
     || null
+})
+
+const displayRecentBadges = computed(() => {
+  const badges = volunteerBadges.slice(0, 3)
+  if (badges.length > 0) return badges
+  return [
+    { id: -1, name: '徽章待同步', description: '近期成长里程碑将在接口接入后展示。', progress: '待接入' },
+    { id: -2, name: '成就待同步', description: '当前保留卡片布局，不再展示假徽章数据。', progress: '待接入' },
+    { id: -3, name: '荣誉待同步', description: '后端返回后将自动替换为真实记录。', progress: '待接入' }
+  ]
 })
 
 const statusText = (status: VolunteerRecordItem['status']) => ({

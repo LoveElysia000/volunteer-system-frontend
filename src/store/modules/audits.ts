@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { auditsApi } from '@/api/audits'
 import type {
+  AuditBatchDecisionRequest,
   AuditDecisionRequest,
   AuditRecordDetail,
   PendingAuditItem,
@@ -58,6 +59,22 @@ export const useAuditsStore = defineStore('audits', () => {
     return response.data
   }
 
+  const batchDecision = async (data: AuditBatchDecisionRequest) => {
+    const response = await auditsApi.batchDecision(data)
+    if (response.code !== 200) {
+      throw new Error(response.msg || '批量审核失败')
+    }
+    const succeededIds = new Set(
+      data.ids.filter((id) => !(response.data.failedIds || []).includes(id))
+    )
+    items.value = items.value.filter((item) => !succeededIds.has(item.id))
+    total.value = Math.max(total.value - succeededIds.size, 0)
+    if (currentRecord.value && succeededIds.has(currentRecord.value.id)) {
+      currentRecord.value = null
+    }
+    return response.data
+  }
+
   return {
     items,
     total,
@@ -66,6 +83,7 @@ export const useAuditsStore = defineStore('audits', () => {
     fetchPending,
     fetchDetail,
     approve,
-    reject
+    reject,
+    batchDecision
   }
 })

@@ -339,10 +339,10 @@ import VolunteerSummaryCard from '@/components/volunteer/VolunteerSummaryCard.vu
 import { activitiesApi, mapActivityItemToVolunteerView, mapMyActivityItemToVolunteerView } from '@/api/activities'
 import { useMessageStore } from '@/store/modules/messages'
 import { usePageStateStore } from '@/store/modules/pageState'
-import type { VolunteerTone } from '@/data/volunteerCenter'
 import type { VolunteerActivityViewItem } from '@/types/activity'
 
 type ActivityTab = 'all' | VolunteerActivityViewItem['status']
+type VolunteerTone = 'green' | 'blue' | 'amber' | 'rose'
 
 interface FilterTab {
   id: ActivityTab

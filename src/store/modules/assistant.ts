@@ -10,6 +10,52 @@ import type {
 
 const nowIso = () => new Date().toISOString()
 
+const createLocalMessage = (partial: Partial<AssistantMessageItem> & Pick<AssistantMessageItem, 'role' | 'content'>): AssistantMessageItem => ({
+  id: partial.id ?? Date.now() + Math.floor(Math.random() * 1000),
+  session_id: partial.session_id ?? 0,
+  seq_no: partial.seq_no ?? 0,
+  role: partial.role,
+  content: partial.content,
+  model: partial.model ?? '',
+  finish_reason: partial.finish_reason ?? 0,
+  token_in: partial.token_in ?? 0,
+  token_out: partial.token_out ?? 0,
+  latency_ms: partial.latency_ms ?? 0,
+  request_id: partial.request_id ?? '',
+  created_at: partial.created_at ?? nowIso()
+})
+
+const extractStreamText = (payload: string) => {
+  const trimmed = payload.trim()
+  if (!trimmed) return ''
+
+  try {
+    const parsed = JSON.parse(trimmed)
+    if (typeof parsed === 'string') return parsed
+    return parsed.reply || parsed.content || parsed.delta || parsed.text || parsed.message || ''
+  } catch {
+    return trimmed
+  }
+}
+
+const appendStreamChunk = (chunk: string, assistantMessage: AssistantMessageItem) => {
+  const lines = chunk.split('\n')
+  const eventName = lines.find((line) => line.startsWith('event:'))?.slice(6).trim()
+  const data = lines
+    .filter((line) => line.startsWith('data:'))
+    .map((line) => line.slice(5).trim())
+    .join('\n')
+
+  if (!data || eventName === 'done' || eventName === 'start') {
+    return
+  }
+
+  const text = extractStreamText(data)
+  if (text) {
+    assistantMessage.content += text
+  }
+}
+
 export const useAssistantStore = defineStore('assistant', () => {
   const authStore = useAuthStore()
   const sessions = ref<LocalAssistantSession[]>([])
@@ -104,17 +150,49 @@ export const useAssistantStore = defineStore('assistant', () => {
     const session = await ensureSession()
     sending.value = true
     try {
-      const response = await assistantApi.chat({
+      const userMessage = createLocalMessage({
+        role: 2,
+        content: message,
+        session_id: session.id
+      })
+      const assistantMessage = createLocalMessage({
+        role: 1,
+        content: '',
+        session_id: session.id
+      })
+      messages.value = [...messages.value, userMessage, assistantMessage]
+
+      const response = await assistantApi.chatStream({
         session_id: session.id,
         message,
-        stream: false
+        stream: true
       })
-      if (response.code !== 200) {
-        throw new Error(response.msg || '发送消息失败')
+
+      const reader = response.body?.getReader()
+      const decoder = new TextDecoder()
+      let buffer = ''
+
+      if (reader) {
+        while (true) {
+          const { value, done } = await reader.read()
+          if (done) break
+          buffer += decoder.decode(value, { stream: true })
+          const chunks = buffer.split('\n\n')
+          buffer = chunks.pop() || ''
+
+          for (const chunk of chunks) {
+            appendStreamChunk(chunk, assistantMessage)
+          }
+        }
       }
+
+      if (buffer.trim()) {
+        appendStreamChunk(buffer, assistantMessage)
+      }
+
       await loadMessages(session.id)
       touchSession(session.id, session.title || message.slice(0, 20))
-      return response.data
+      return messages.value
     } finally {
       sending.value = false
     }

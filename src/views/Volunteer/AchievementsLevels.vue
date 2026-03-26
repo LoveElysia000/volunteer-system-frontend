@@ -17,7 +17,7 @@
           <VolunteerSummaryCard
             label="当前等级"
             :value="`Lv.${volunteerLevel}`"
-            detail="环保新星阶段"
+            detail="等待后端同步"
             tone="green"
             class="volunteer-surface-lift"
           />
@@ -97,7 +97,7 @@ const currentLevel = computed(() => volunteerLevel.value)
 
 const headerMeta = computed(() => [
   { label: '当前进度', value: `${totalHours.value % 10}/10h`, detail: '下一级解锁中' },
-  { label: '成长节奏', value: '稳定', detail: '连续 4 周有记录' }
+  { label: '成长节奏', value: totalHours.value > 0 ? '稳定' : '等待数据', detail: totalHours.value > 0 ? '按真实记录自动更新' : '暂无服务时长数据' }
 ])
 
 const levelProgressMatrix = computed(() => {

@@ -30,6 +30,11 @@ export interface AssistantChatRequest {
   stream?: boolean
 }
 
+export interface AssistantStreamEvent {
+  event: string
+  data: string
+}
+
 export interface AssistantChatData {
   reply: string
   tool_calls: AssistantToolCall[]

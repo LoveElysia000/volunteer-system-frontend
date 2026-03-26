@@ -5,7 +5,7 @@
       eyebrow="账户设置"
       title="管理账户与隐私偏好"
       description="把安全、隐私与平台使用习惯拆成独立分组，降低误操作成本。"
-      :meta-items="[{ label: '账户状态', value: '正常', detail: '建议完成安全检查清单' }]"
+      :meta-items="[{ label: '账户状态', value: '等待接口', detail: '当前不展示本地默认数据' }]"
     />
 
     <VolunteerSectionCard
@@ -76,6 +76,7 @@
               </div>
             </transition-group>
           </div>
+
         </VolunteerSectionCard>
       </div>
 
@@ -134,9 +135,9 @@
               </div>
               <span
                 class="shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold"
-                :class="item.done ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'"
+                :class="item.done ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'"
               >
-                {{ item.done ? '已完成' : '待处理' }}
+                {{ item.done ? '已接入' : '待接入' }}
               </span>
             </li>
           </ul>
@@ -151,57 +152,58 @@ import VolunteerPageHeader from '@/components/volunteer/VolunteerPageHeader.vue'
 import VolunteerSectionCard from '@/components/volunteer/VolunteerSectionCard.vue'
 
 const settingQuickActions = [
-  { title: '修改登录密码', detail: '提升账号安全强度，建议每月检查一次。', action: '立即修改' },
-  { title: '检查登录设备', detail: '查看近期设备登录，及时移除未知设备。', action: '查看设备' },
-  { title: '同步通知偏好', detail: '按渠道调整提醒密度，减少信息噪音。', action: '前往设置' }
+  { title: '修改登录密码', detail: '入口保留，具体配置依赖后端能力。', action: '待接入' },
+  { title: '检查登录设备', detail: '近期设备信息将由真实接口返回。', action: '待接入' },
+  { title: '同步通知偏好', detail: '通知设置将与后端配置保持一致。', action: '待接入' }
 ]
-
-const settingGroups = [
+const settingGroups: Array<{
+  title: string
+  description: string
+  items: Array<{ label: string, description: string, action: string, recommendation?: string, variant: 'ghost' | 'soft' }>
+}> = [
   {
     title: '账户安全',
     description: '优先处理会影响登录和敏感操作确认的选项。',
     items: [
-      { label: '登录密码', description: '定期更新密码，避免复用其他平台的旧密码。', action: '修改', recommendation: '推荐本月更新', variant: 'soft' },
-      { label: '登录设备', description: '查看最近登录记录，识别异常访问。', action: '查看', recommendation: '最近 2 台设备', variant: 'ghost' }
+      { label: '登录密码', description: '密码状态将由后端安全接口返回。', action: '待接入', recommendation: '接口接入后更新', variant: 'soft' },
+      { label: '登录设备', description: '设备列表和异常访问记录不再展示假数据。', action: '待接入', variant: 'ghost' }
     ]
   },
   {
     title: '隐私展示',
     description: '控制个人资料在团队、排行榜和公开活动中的可见范围。',
     items: [
-      { label: '资料可见范围', description: '决定你的头像、昵称和服务标签在哪些页面展示。', action: '调整', recommendation: '当前为团队可见', variant: 'soft' },
-      { label: '排行榜展示', description: '控制是否在成长排行榜中展示个人名称。', action: '设置', recommendation: '已开启', variant: 'ghost' }
+      { label: '资料可见范围', description: '展示策略将以真实配置为准。', action: '待接入', variant: 'soft' },
+      { label: '排行榜展示', description: '展示开关将在后端配置接入后同步。', action: '待接入', variant: 'ghost' }
     ]
   }
 ]
-
 const securityHighlights = [
   {
     label: '密码状态',
-    value: '上次更新于 18 天前',
-    tag: '状态稳定',
-    tone: 'bg-emerald-100 text-emerald-700',
-    detail: '还不需要立即修改，但建议在本月内完成一次更新。'
+    value: '待接入',
+    tag: '待同步',
+    tone: 'bg-slate-100 text-slate-600',
+    detail: '当前不再展示本地推断的密码状态。'
   },
   {
     label: '资料曝光',
-    value: '团队内可见',
-    tag: '可调整',
-    tone: 'bg-amber-100 text-amber-700',
-    detail: '如果你准备参与公开招募活动，可以单独放开展示信息。'
+    value: '待接入',
+    tag: '待同步',
+    tone: 'bg-slate-100 text-slate-600',
+    detail: '资料可见范围以真实配置返回结果为准。'
   },
   {
     label: '异常访问',
-    value: '最近 30 天未发现',
-    tag: '正常',
+    value: '待接入',
+    tag: '待同步',
     tone: 'bg-slate-100 text-slate-600',
-    detail: '当前没有可疑登录记录，维持现有设备管理策略即可。'
+    detail: '异常登录状态将在安全接口接入后展示。'
   }
 ]
-
 const securityChecklist = [
-  { label: '确认手机号可用', detail: '用于找回密码和异常登录验证。', done: true },
-  { label: '开启提醒渠道兜底', detail: '建议系统通知与短信至少保留一个。', done: true },
+  { label: '确认手机号可用', detail: '将根据账户资料接口返回状态判断。', done: false },
+  { label: '开启提醒渠道兜底', detail: '通知渠道接入后再展示真实状态。', done: false },
   { label: '检查排行榜公开状态', detail: '避免不必要的个人信息曝光。', done: false }
 ]
 </script>

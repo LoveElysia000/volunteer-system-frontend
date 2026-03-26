@@ -5,14 +5,18 @@ import type {
   MemberInfo,
   MembershipStatsData,
   OrganizationMembersParams,
+  OrganizationMemberInfo,
   UpdateMembershipStatusRequest
 } from '@/types/membership'
 
 export const useMembershipsStore = defineStore('memberships', () => {
   const items = ref<MemberInfo[]>([])
+  const myOrganizations = ref<OrganizationMemberInfo[]>([])
+  const myOrganizationsTotal = ref(0)
   const total = ref(0)
   const stats = ref<MembershipStatsData | null>(null)
   const loading = ref(false)
+  const myOrganizationsLoading = ref(false)
 
   const fetchMembers = async (params: OrganizationMembersParams) => {
     loading.value = true
@@ -51,12 +55,56 @@ export const useMembershipsStore = defineStore('memberships', () => {
     return response.data
   }
 
+  const fetchMyOrganizations = async (volunteerId: number) => {
+    myOrganizationsLoading.value = true
+    try {
+      const response = await membershipsApi.getVolunteerOrganizations({
+        volunteerId,
+        page: 1,
+        pageSize: 20
+      })
+      if (response.code !== 200) {
+        throw new Error(response.msg || '获取已加入组织失败')
+      }
+      myOrganizations.value = response.data.list || []
+      myOrganizationsTotal.value = response.data.total || 0
+      return response.data
+    } finally {
+      myOrganizationsLoading.value = false
+    }
+  }
+
+  const joinOrganization = async (volunteerId: number, organizationId: number) => {
+    const response = await membershipsApi.join({ volunteerId, organizationId })
+    if (response.code !== 200) {
+      throw new Error(response.msg || '申请加入组织失败')
+    }
+    await fetchMyOrganizations(volunteerId)
+    return response.data
+  }
+
+  const leaveOrganization = async (volunteerId: number, membershipId: number, reason?: string) => {
+    const response = await membershipsApi.leave({ membershipId, reason })
+    if (response.code !== 200) {
+      throw new Error(response.msg || '退出组织失败')
+    }
+    await fetchMyOrganizations(volunteerId)
+    return response.data
+  }
+
   return {
     items,
+    myOrganizations,
+    myOrganizationsTotal,
     total,
     stats,
     loading,
+    myOrganizationsLoading,
     fetchMembers,
     updateStatus
+,
+    fetchMyOrganizations,
+    joinOrganization,
+    leaveOrganization
   }
 })

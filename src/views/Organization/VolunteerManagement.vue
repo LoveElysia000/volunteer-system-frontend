@@ -170,6 +170,14 @@
             <div class="grid gap-4 sm:grid-cols-2">
               <div>
                 <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                  性别
+                </p>
+                <p class="mt-1 text-sm font-semibold text-slate-900">
+                  {{ genderText(selectedVolunteer.gender) }}
+                </p>
+              </div>
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
                   服务时长
                 </p>
                 <p class="mt-1 text-sm font-semibold text-slate-900">
@@ -202,6 +210,27 @@
               </div>
             </div>
           </section>
+
+          <section class="rounded-2xl border border-slate-200 bg-white p-4">
+            <div class="grid gap-4 sm:grid-cols-2">
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                  生日
+                </p>
+                <p class="mt-1 text-sm font-semibold text-slate-900">
+                  {{ selectedVolunteer.birthday || '待补充' }}
+                </p>
+              </div>
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                  个人简介
+                </p>
+                <p class="mt-1 text-sm leading-6 text-slate-700">
+                  {{ selectedVolunteer.introduction || '暂未填写个人简介' }}
+                </p>
+              </div>
+            </div>
+          </section>
         </div>
 
         <div
@@ -228,7 +257,7 @@ import OrganizationSectionCard from '@/components/organization/OrganizationSecti
 import { volunteerApi } from '@/api/volunteer'
 import { adminApi } from '@/api/admin'
 import { useMessageStore } from '@/store/modules/messages'
-import { VolunteerAuditStatus, VolunteerStatus, type VolunteerListItem } from '@/types/volunteer'
+import { VolunteerAuditStatus, VolunteerStatus, type VolunteerListItem, type VolunteerProfileInfo } from '@/types/volunteer'
 
 const messageStore = useMessageStore()
 
@@ -240,7 +269,7 @@ const loading = ref(false)
 const importing = ref(false)
 const exporting = ref(false)
 const selectedVolunteerId = ref<number | null>(null)
-const selectedVolunteerSnapshot = ref<VolunteerListItem | null>(null)
+const selectedVolunteerSnapshot = ref<(VolunteerListItem & Partial<VolunteerProfileInfo>) | null>(null)
 const drawerOpen = ref(false)
 
 const columns: DataTableColumn[] = [
@@ -307,10 +336,23 @@ const triggerImport = () => {
   importInputRef.value?.click()
 }
 
-const openVolunteerDrawer = (volunteer: VolunteerListItem) => {
+const openVolunteerDrawer = async (volunteer: VolunteerListItem) => {
   selectedVolunteerId.value = volunteer.id
   selectedVolunteerSnapshot.value = volunteer
   drawerOpen.value = true
+  try {
+    const response = await volunteerApi.getDetail(volunteer.id)
+    if (response.code !== 200) {
+      throw new Error(response.msg || '获取志愿者详情失败')
+    }
+    selectedVolunteerSnapshot.value = {
+      ...volunteer,
+      ...response.data.volunteer
+    }
+  } catch (error: any) {
+    console.error('加载志愿者详情失败:', error)
+    messageStore.error(error.message || '加载志愿者详情失败，请稍后重试')
+  }
 }
 
 const closeVolunteerDrawer = () => {
@@ -403,6 +445,12 @@ const auditTone = (status: VolunteerAuditStatus) => ({
   [VolunteerAuditStatus.APPROVED]: 'green',
   [VolunteerAuditStatus.REJECTED]: 'rose'
 }[status] || 'slate')
+
+const genderText = (gender?: number) => {
+  if (gender === 1) return '男'
+  if (gender === 2) return '女'
+  return '未知'
+}
 
 onMounted(() => {
   void loadVolunteers()

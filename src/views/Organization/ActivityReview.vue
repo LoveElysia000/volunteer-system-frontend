@@ -30,6 +30,22 @@
 
         <template #actions>
           <Button
+            variant="success"
+            :loading="actionLoading"
+            :disabled="!filteredItems.length"
+            @click="batchApproveFiltered"
+          >
+            批量通过当前列表
+          </Button>
+          <Button
+            variant="danger"
+            :loading="actionLoading"
+            :disabled="!filteredItems.length"
+            @click="batchRejectFiltered"
+          >
+            批量驳回当前列表
+          </Button>
+          <Button
             variant="outline"
             :loading="loading"
             @click="loadAudits"
@@ -234,7 +250,7 @@ import OrganizationPageHeader from '@/components/organization/OrganizationPageHe
 import OrganizationSectionCard from '@/components/organization/OrganizationSectionCard.vue'
 import { useAuditsStore } from '@/store/modules/audits'
 import { useMessageStore } from '@/store/modules/messages'
-import { AuditTargetType } from '@/types/audit'
+import { AuditDecisionAction, AuditTargetType } from '@/types/audit'
 import { TimerResetIcon } from 'lucide-vue-next'
 
 const auditsStore = useAuditsStore()
@@ -385,6 +401,36 @@ const rejectCurrentAudit = async () => {
   } finally {
     actionLoading.value = false
   }
+}
+
+const runBatchDecision = async (action: AuditDecisionAction, successMessage: string) => {
+  if (!filteredItems.value.length) return
+  actionLoading.value = true
+  try {
+    const response = await auditsStore.batchDecision({
+      ids: filteredItems.value.map((item) => item.id),
+      action,
+      reason: auditReason.value || undefined
+    })
+    messageStore.success(`${successMessage}，成功 ${response.successCount} 条`)
+    selectedAuditId.value = null
+    auditReason.value = ''
+    drawerOpen.value = false
+    await loadAudits()
+  } catch (error: any) {
+    console.error('批量审核失败:', error)
+    messageStore.error(error.message || '批量审核失败，请稍后重试')
+  } finally {
+    actionLoading.value = false
+  }
+}
+
+const batchApproveFiltered = async () => {
+  await runBatchDecision(AuditDecisionAction.APPROVE, '批量审核通过完成')
+}
+
+const batchRejectFiltered = async () => {
+  await runBatchDecision(AuditDecisionAction.REJECT, '批量审核驳回完成')
 }
 
 const targetTypeText = (targetType: AuditTargetType) => ({
