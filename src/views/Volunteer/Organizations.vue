@@ -197,7 +197,7 @@
                     <p>组织编码：{{ organization.organizationCode || '待补充' }}</p>
                     <p>组织类型：{{ organization.organizationType || '待补充' }}</p>
                     <p>所在地区：{{ organization.region || '待补充' }}</p>
-                    <p>联系人：{{ organization.contactPerson || organization.contactPhone || '待补充' }}</p>
+                    <p>联系人：{{ organization.contactPerson || '暂不公开' }}</p>
                   </div>
 
                   <p class="text-sm leading-6 text-slate-600">
@@ -354,18 +354,11 @@ const loadOrganizations = async () => {
   organizationsLoading.value = true
   try {
     const keyword = searchQuery.value.trim()
-    const response = keyword
-      ? await organizationsApi.search({
-        keyword,
-        status: [OrganizationStatus.ACTIVE],
-        page: 1,
-        pageSize: 24
-      })
-      : await organizationsApi.list({
-        status: [OrganizationStatus.ACTIVE],
-        page: 1,
-        pageSize: 24
-      })
+    const response = await organizationsApi.publicList({
+      keyword: keyword || undefined,
+      page: 1,
+      pageSize: 24
+    })
 
     if (!isApiSuccess(response.code)) {
       throw new Error(getApiMessage(response) || '加载组织列表失败')

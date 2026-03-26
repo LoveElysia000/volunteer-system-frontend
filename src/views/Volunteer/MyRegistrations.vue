@@ -238,7 +238,7 @@ import VolunteerPageHeader from '@/components/volunteer/VolunteerPageHeader.vue'
 import VolunteerSectionCard from '@/components/volunteer/VolunteerSectionCard.vue'
 import VolunteerStatusBadge from '@/components/volunteer/VolunteerStatusBadge.vue'
 import VolunteerSummaryCard from '@/components/volunteer/VolunteerSummaryCard.vue'
-import { activitiesApi, mapMyActivityItemToVolunteerView } from '@/api/activities'
+import { activitiesApi, mapRegisteredActivityItemToVolunteerView } from '@/api/activities'
 import { useMessageStore } from '@/store/modules/messages'
 import type { VolunteerActivityViewItem } from '@/types/activity'
 
@@ -254,7 +254,7 @@ const loadRegisteredActivities = async () => {
   loading.value = true
 
   try {
-    const response = await activitiesApi.myActivities({
+    const response = await activitiesApi.listRegisteredActivities({
       page: 1,
       pageSize: 100
     })
@@ -264,7 +264,7 @@ const loadRegisteredActivities = async () => {
     }
 
     registeredActivities.value = response.data.list
-      .map(mapMyActivityItemToVolunteerView)
+      .map(mapRegisteredActivityItemToVolunteerView)
       .filter(item => item.userRegistrationStatus === 'registered')
   } catch (error: any) {
     console.error('加载我的报名失败:', error)
@@ -320,9 +320,11 @@ const syncSelectedRegistration = () => {
   }
 }
 
-const openRegistrationDrawer = (activity: VolunteerActivityViewItem) => {
-  selectedRegistrationId.value = activity.id
-  selectedRegistrationSnapshot.value = activity
+const openRegistrationDrawer = (activity: Record<string, any>, _index: number) => {
+  const registration = activity as VolunteerActivityViewItem
+
+  selectedRegistrationId.value = registration.id
+  selectedRegistrationSnapshot.value = registration
   drawerOpen.value = true
 }
 

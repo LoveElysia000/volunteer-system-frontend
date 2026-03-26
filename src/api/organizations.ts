@@ -1,4 +1,5 @@
 import { http } from './request'
+import { createOrganizationsApi } from './organizations-client'
 import type { ApiResponse } from './types'
 import type {
   CreateOrganizationData,
@@ -18,52 +19,32 @@ import type {
   UpdateOrganizationRequest
 } from '@/types/organization'
 
+const organizationsClient = createOrganizationsApi(http)
+
 export const organizationsApi = {
-  list: (data: OrganizationListRequest): Promise<ApiResponse<OrganizationListData>> => {
-    return http.post<ApiResponse<OrganizationListData>>('/api/organizations/list', data)
-  },
+  list: (data: OrganizationListRequest): Promise<ApiResponse<OrganizationListData>> => organizationsClient.list<ApiResponse<OrganizationListData>>(data),
 
-  search: (data: OrganizationSearchRequest): Promise<ApiResponse<OrganizationListData>> => {
-    return http.post<ApiResponse<OrganizationListData>>('/api/organizations/search', data)
-  },
+  publicList: (data: OrganizationListRequest): Promise<ApiResponse<OrganizationListData>> => organizationsClient.publicList<ApiResponse<OrganizationListData>>(data),
 
-  detail: (id: number): Promise<ApiResponse<OrganizationDetailData>> => {
-    return http.get<ApiResponse<OrganizationDetailData>>(`/api/organizations/${id}`)
-  },
+  search: (data: OrganizationSearchRequest): Promise<ApiResponse<OrganizationListData>> => organizationsClient.search<ApiResponse<OrganizationListData>>(data),
 
-  create: (data: CreateOrganizationRequest): Promise<ApiResponse<CreateOrganizationData>> => {
-    return http.post<ApiResponse<CreateOrganizationData>>('/api/organizations/create', data)
-  },
+  detail: (id: number): Promise<ApiResponse<OrganizationDetailData>> => organizationsClient.detail<ApiResponse<OrganizationDetailData>>(id),
 
-  updateAccount: (data: UpdateOrganizationAccountRequest): Promise<ApiResponse<Record<string, never>>> => {
-    return http.put<ApiResponse<Record<string, never>>>('/api/organizations/account', data)
-  },
+  create: (data: CreateOrganizationRequest): Promise<ApiResponse<CreateOrganizationData>> => organizationsClient.create<ApiResponse<CreateOrganizationData>>(data),
 
-  update: (id: number, data: UpdateOrganizationRequest): Promise<ApiResponse<UpdateOrganizationData>> => {
-    return http.put<ApiResponse<UpdateOrganizationData>>(`/api/organizations/${id}`, data)
-  },
+  updateAccount: (data: UpdateOrganizationAccountRequest): Promise<ApiResponse<Record<string, never>>> => organizationsClient.updateAccount<ApiResponse<Record<string, never>>>(data),
 
-  remove: (id: number): Promise<ApiResponse<OrganizationActionData>> => {
-    return http.delete<ApiResponse<OrganizationActionData>>(`/api/organizations/${id}`)
-  },
+  update: (id: number, data: UpdateOrganizationRequest): Promise<ApiResponse<UpdateOrganizationData>> => organizationsClient.update<ApiResponse<UpdateOrganizationData>>(id, data),
 
-  disable: (id: number, data: OrganizationActionRequest): Promise<ApiResponse<OrganizationActionData>> => {
-    return http.post<ApiResponse<OrganizationActionData>>(`/api/organizations/${id}/disable`, data)
-  },
+  remove: (id: number): Promise<ApiResponse<OrganizationActionData>> => organizationsClient.remove<ApiResponse<OrganizationActionData>>(id),
 
-  enable: (id: number, data: OrganizationActionRequest): Promise<ApiResponse<OrganizationActionData>> => {
-    return http.post<ApiResponse<OrganizationActionData>>(`/api/organizations/${id}/enable`, data)
-  },
+  disable: (id: number, data: OrganizationActionRequest): Promise<ApiResponse<OrganizationActionData>> => organizationsClient.disable<ApiResponse<OrganizationActionData>>(id, data),
 
-  bulkDelete: (data: OrganizationBulkDeleteRequest): Promise<ApiResponse<OrganizationBulkDeleteData>> => {
-    return http.post<ApiResponse<OrganizationBulkDeleteData>>('/api/organizations/bulk-delete', data)
-  },
+  enable: (id: number, data: OrganizationActionRequest): Promise<ApiResponse<OrganizationActionData>> => organizationsClient.enable<ApiResponse<OrganizationActionData>>(id, data),
 
-  batchDisable: (data: OrganizationBatchActionRequest): Promise<ApiResponse<OrganizationBatchActionData>> => {
-    return http.post<ApiResponse<OrganizationBatchActionData>>('/api/organizations/batch-disable', data)
-  },
+  bulkDelete: (data: OrganizationBulkDeleteRequest): Promise<ApiResponse<OrganizationBulkDeleteData>> => organizationsClient.bulkDelete<ApiResponse<OrganizationBulkDeleteData>>(data),
 
-  batchEnable: (data: OrganizationBatchActionRequest): Promise<ApiResponse<OrganizationBatchActionData>> => {
-    return http.post<ApiResponse<OrganizationBatchActionData>>('/api/organizations/batch-enable', data)
-  }
+  batchDisable: (data: OrganizationBatchActionRequest): Promise<ApiResponse<OrganizationBatchActionData>> => organizationsClient.batchDisable<ApiResponse<OrganizationBatchActionData>>(data),
+
+  batchEnable: (data: OrganizationBatchActionRequest): Promise<ApiResponse<OrganizationBatchActionData>> => organizationsClient.batchEnable<ApiResponse<OrganizationBatchActionData>>(data)
 }

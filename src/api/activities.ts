@@ -1,10 +1,15 @@
 import { http } from './request'
+import { createActivitiesApi } from './activities-client'
+import {
+  mapActivityItemToVolunteerView,
+  mapRegisteredActivityItemToVolunteerView,
+  mergeVolunteerActivityRows
+} from './volunteer-activity-merge'
 import type { ApiResponse } from './types'
 import type {
   ActivityActionResult,
   ActivityCheckInRequest,
   ActivityCheckOutRequest,
-  ActivitySignupStatus,
   ActivityStatus,
   AttendanceCodeInfo,
   AttendanceCodeResetData,
@@ -21,11 +26,7 @@ import type {
   ActivityListData,
   ActivityListItem,
   ActivityListRequest,
-  MyActivitiesData,
-  MyActivitiesRequest,
-  MyActivityItem,
   UpdateOrganizationActivityRequest,
-  VolunteerActivityViewItem,
   OrganizationManagementActivityItem
 } from '@/types/activity'
 
@@ -35,111 +36,10 @@ const ACTIVITY_STATUS = {
   CANCELLED: 3 as ActivityStatus
 } as const
 
-const SIGNUP_STATUS = {
-  PENDING: 1 as ActivitySignupStatus,
-  SUCCESS: 2 as ActivitySignupStatus,
-  REJECTED: 3 as ActivitySignupStatus,
-  CANCELLED: 4 as ActivitySignupStatus
-} as const
-
 export const ATTENDANCE_CODE_TYPE = {
   CHECK_IN: 1 as AttendanceCodeType,
   CHECK_OUT: 2 as AttendanceCodeType
 } as const
-
-const formatMonthDayTime = (value: string) => {
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) {
-    return value
-  }
-
-  return `${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
-}
-
-const resolveVolunteerStatus = (
-  status: ActivityStatus,
-  isRegistered: boolean,
-  signupStatus?: ActivitySignupStatus
-): VolunteerActivityViewItem['status'] => {
-  if (status === ACTIVITY_STATUS.ENDED || status === ACTIVITY_STATUS.CANCELLED) {
-    return 'completed'
-  }
-
-  if (isRegistered || signupStatus === SIGNUP_STATUS.PENDING || signupStatus === SIGNUP_STATUS.SUCCESS) {
-    return 'registered'
-  }
-
-  return 'upcoming'
-}
-
-const resolveTag = (
-  status: ActivityStatus,
-  orgName?: string,
-  signupStatus?: ActivitySignupStatus
-) => {
-  if (status === ACTIVITY_STATUS.CANCELLED) {
-    return '已取消'
-  }
-
-  if (status === ACTIVITY_STATUS.ENDED) {
-    return '已结束'
-  }
-
-  if (signupStatus === SIGNUP_STATUS.PENDING) {
-    return '待审核'
-  }
-
-  if (signupStatus === SIGNUP_STATUS.REJECTED) {
-    return '已驳回'
-  }
-
-  return orgName || '活动任务'
-}
-
-export const mapActivityItemToVolunteerView = (
-  item: ActivityListItem,
-  myItem?: MyActivityItem
-): VolunteerActivityViewItem => {
-  const isRegistered = Boolean(myItem || item.isRegistered)
-
-  return {
-    id: item.id,
-    title: item.title,
-    description: item.description,
-    startAt: item.startTime,
-    date: formatMonthDayTime(item.startTime),
-    location: item.location,
-    participants: item.currentPeople,
-    capacity: item.maxPeople,
-    duration: item.duration,
-    status: resolveVolunteerStatus(item.status, isRegistered, myItem?.signupStatus),
-    userRegistrationStatus: isRegistered ? 'registered' : 'not_registered',
-    tag: resolveTag(item.status, myItem?.orgName, myItem?.signupStatus),
-    orgName: myItem?.orgName,
-    signupStatus: myItem?.signupStatus,
-    grantedHours: myItem?.grantedHours,
-    auditReason: myItem?.auditReason
-  }
-}
-
-export const mapMyActivityItemToVolunteerView = (item: MyActivityItem): VolunteerActivityViewItem => ({
-  id: item.id,
-  title: item.title,
-  description: item.description,
-  startAt: item.startTime,
-  date: formatMonthDayTime(item.startTime),
-  location: item.location,
-  participants: item.currentPeople,
-  capacity: item.maxPeople,
-  duration: item.duration,
-  status: resolveVolunteerStatus(item.status, true, item.signupStatus),
-  userRegistrationStatus: item.signupStatus === SIGNUP_STATUS.CANCELLED ? 'not_registered' : 'registered',
-  tag: resolveTag(item.status, item.orgName, item.signupStatus),
-  orgName: item.orgName,
-  signupStatus: item.signupStatus,
-  grantedHours: item.grantedHours,
-  auditReason: item.auditReason
-})
 
 export const mapActivityItemToOrganizationManagementView = (
   item: ActivityListItem
@@ -165,68 +65,44 @@ export const mapActivityItemToOrganizationManagementView = (
   duration: item.duration
 })
 
+const activitiesClient = createActivitiesApi(http)
+
 export const activitiesApi = {
-  list: (data: ActivityListRequest): Promise<ApiResponse<ActivityListData>> => {
-    return http.post<ApiResponse<ActivityListData>>('/api/activities', data)
-  },
+  list: (data: ActivityListRequest): Promise<ApiResponse<ActivityListData>> => activitiesClient.list<ApiResponse<ActivityListData>>(data),
 
-  detail: (id: number): Promise<ApiResponse<ActivityDetailData>> => {
-    return http.get<ApiResponse<ActivityDetailData>>(`/api/activities/${id}`)
-  },
+  detail: (id: number): Promise<ApiResponse<ActivityDetailData>> => activitiesClient.detail<ApiResponse<ActivityDetailData>>(id),
 
-  signup: (activityId: number): Promise<ApiResponse<ActivityActionResult>> => {
-    return http.post<ApiResponse<ActivityActionResult>>('/api/activities/signup', { activityId })
-  },
+  signup: (activityId: number): Promise<ApiResponse<ActivityActionResult>> => activitiesClient.signup<ApiResponse<ActivityActionResult>>(activityId),
 
-  cancel: (activityId: number): Promise<ApiResponse<ActivityActionResult>> => {
-    return http.post<ApiResponse<ActivityActionResult>>('/api/activities/cancel', { activityId })
-  },
+  cancel: (activityId: number): Promise<ApiResponse<ActivityActionResult>> => activitiesClient.cancel<ApiResponse<ActivityActionResult>>(activityId),
 
-  checkIn: (data: ActivityCheckInRequest): Promise<ApiResponse<ActivityActionResult>> => {
-    return http.post<ApiResponse<ActivityActionResult>>('/api/activities/checkin', data)
-  },
+  checkIn: (data: ActivityCheckInRequest): Promise<ApiResponse<ActivityActionResult>> => activitiesClient.checkIn<ApiResponse<ActivityActionResult>>(data),
 
-  checkOut: (data: ActivityCheckOutRequest): Promise<ApiResponse<ActivityActionResult>> => {
-    return http.post<ApiResponse<ActivityActionResult>>('/api/activities/checkout', data)
-  },
+  checkOut: (data: ActivityCheckOutRequest): Promise<ApiResponse<ActivityActionResult>> => activitiesClient.checkOut<ApiResponse<ActivityActionResult>>(data),
 
-  myActivities: (data: MyActivitiesRequest): Promise<ApiResponse<MyActivitiesData>> => {
-    return http.post<ApiResponse<MyActivitiesData>>('/api/activities/my', data)
-  },
+  listRegisteredActivities: (data: ActivityListRequest): Promise<ApiResponse<ActivityListData>> => activitiesClient.listRegisteredActivities<ApiResponse<ActivityListData>>(data),
 
-  create: (data: CreateOrganizationActivityRequest): Promise<ApiResponse<CreateOrganizationActivityData>> => {
-    return http.post<ApiResponse<CreateOrganizationActivityData>>('/api/activities/create', data)
-  },
+  create: (data: CreateOrganizationActivityRequest): Promise<ApiResponse<CreateOrganizationActivityData>> => activitiesClient.create<ApiResponse<CreateOrganizationActivityData>>(data),
 
-  update: (id: number, data: UpdateOrganizationActivityRequest): Promise<ApiResponse<OrganizationActivityActionResponse>> => {
-    return http.put<ApiResponse<OrganizationActivityActionResponse>>(`/api/activities/${id}`, data)
-  },
+  update: (id: number, data: UpdateOrganizationActivityRequest): Promise<ApiResponse<OrganizationActivityActionResponse>> => activitiesClient.update<ApiResponse<OrganizationActivityActionResponse>>(id, data),
 
-  remove: (id: number): Promise<ApiResponse<OrganizationActivityActionResponse>> => {
-    return http.delete<ApiResponse<OrganizationActivityActionResponse>>(`/api/activities/${id}`)
-  },
+  remove: (id: number): Promise<ApiResponse<OrganizationActivityActionResponse>> => activitiesClient.remove<ApiResponse<OrganizationActivityActionResponse>>(id),
 
-  cancelByOrganization: (id: number, data: CancelOrganizationActivityRequest): Promise<ApiResponse<OrganizationActivityActionResponse>> => {
-    return http.post<ApiResponse<OrganizationActivityActionResponse>>(`/api/activities/cancel/${id}`, data)
-  },
+  cancelByOrganization: (id: number, data: CancelOrganizationActivityRequest): Promise<ApiResponse<OrganizationActivityActionResponse>> => activitiesClient.cancelByOrganization<ApiResponse<OrganizationActivityActionResponse>>(id, data),
 
-  finishByOrganization: (id: number): Promise<ApiResponse<OrganizationActivityActionResponse>> => {
-    return http.post<ApiResponse<OrganizationActivityActionResponse>>(`/api/activities/finish/${id}`)
-  },
+  finishByOrganization: (id: number): Promise<ApiResponse<OrganizationActivityActionResponse>> => activitiesClient.finishByOrganization<ApiResponse<OrganizationActivityActionResponse>>(id),
 
-  generateAttendanceCodes: (id: number, data: AttendanceCodesGenerateRequest): Promise<ApiResponse<AttendanceCodeInfo>> => {
-    return http.post<ApiResponse<AttendanceCodeInfo>>(`/api/activities/attendance-codes/generate/${id}`, data)
-  },
+  generateAttendanceCodes: (id: number, data: AttendanceCodesGenerateRequest): Promise<ApiResponse<AttendanceCodeInfo>> => activitiesClient.generateAttendanceCodes<ApiResponse<AttendanceCodeInfo>>(id, data),
 
-  resetAttendanceCode: (id: number, data: AttendanceCodeResetRequest): Promise<ApiResponse<AttendanceCodeResetData>> => {
-    return http.post<ApiResponse<AttendanceCodeResetData>>(`/api/activities/attendance-codes/reset/${id}`, data)
-  },
+  resetAttendanceCode: (id: number, data: AttendanceCodeResetRequest): Promise<ApiResponse<AttendanceCodeResetData>> => activitiesClient.resetAttendanceCode<ApiResponse<AttendanceCodeResetData>>(id, data),
 
-  getAttendanceCodes: (id: number): Promise<ApiResponse<AttendanceCodeInfo>> => {
-    return http.get<ApiResponse<AttendanceCodeInfo>>(`/api/activities/attendance-codes/${id}`)
-  },
+  getAttendanceCodes: (id: number): Promise<ApiResponse<AttendanceCodeInfo>> => activitiesClient.getAttendanceCodes<ApiResponse<AttendanceCodeInfo>>(id),
 
-  supplementAttendance: (data: SupplementAttendanceRequest): Promise<ApiResponse<SupplementAttendanceData>> => {
-    return http.post<ApiResponse<SupplementAttendanceData>>('/api/activities/supplement-attendance', data)
-  }
+  supplementAttendance: (data: SupplementAttendanceRequest): Promise<ApiResponse<SupplementAttendanceData>> => activitiesClient.supplementAttendance<ApiResponse<SupplementAttendanceData>>(data)
+}
+
+export {
+  mapActivityItemToVolunteerView,
+  mapRegisteredActivityItemToVolunteerView,
+  mergeVolunteerActivityRows
 }

@@ -336,7 +336,7 @@ import StatusBadge from '@/components/data-list/StatusBadge.vue'
 import VolunteerPageHeader from '@/components/volunteer/VolunteerPageHeader.vue'
 import VolunteerSectionCard from '@/components/volunteer/VolunteerSectionCard.vue'
 import VolunteerSummaryCard from '@/components/volunteer/VolunteerSummaryCard.vue'
-import { activitiesApi, mapActivityItemToVolunteerView, mapMyActivityItemToVolunteerView } from '@/api/activities'
+import { activitiesApi, mergeVolunteerActivityRows } from '@/api/activities'
 import { useMessageStore } from '@/store/modules/messages'
 import { usePageStateStore } from '@/store/modules/pageState'
 import type { VolunteerActivityViewItem } from '@/types/activity'
@@ -528,7 +528,7 @@ const loadActivities = async () => {
         sortBy: 'start_time',
         sortOrder: 'asc'
       }),
-      activitiesApi.myActivities({
+      activitiesApi.listRegisteredActivities({
         page: 1,
         pageSize: 100
       })
@@ -542,16 +542,10 @@ const loadActivities = async () => {
       throw new Error(myActivitiesResponse.msg || '获取我的活动失败')
     }
 
-    const myActivityMap = new Map(myActivitiesResponse.data.list.map(item => [item.id, item]))
-    const mergedRows = activitiesResponse.data.list.map(item =>
-      mapActivityItemToVolunteerView(item, myActivityMap.get(item.id))
+    activityRows.value = mergeVolunteerActivityRows(
+      activitiesResponse.data.list,
+      myActivitiesResponse.data.list
     )
-
-    const missingMyRows = myActivitiesResponse.data.list
-      .filter(item => !activitiesResponse.data.list.some(activity => activity.id === item.id))
-      .map(mapMyActivityItemToVolunteerView)
-
-    activityRows.value = [...mergedRows, ...missingMyRows]
     syncSelectedActivity()
   } catch (error: any) {
     console.error('加载志愿者活动失败:', error)
@@ -571,9 +565,11 @@ const clearFilters = () => {
 const getStatusText = (status: VolunteerActivityViewItem['status']) => ({ upcoming: '可报名', registered: '已报名', completed: '已完成' }[status] || status)
 const getStatusTone = (status: VolunteerActivityViewItem['status']) => ({ upcoming: 'green', registered: 'blue', completed: 'slate' }[status] || 'slate') as 'green' | 'blue' | 'slate'
 
-const openActivityDrawer = (activity: VolunteerActivityViewItem) => {
-  selectedActivityId.value = activity.id
-  selectedActivitySnapshot.value = activity
+const openActivityDrawer = (activity: Record<string, any>, _index?: number) => {
+  const selected = activity as VolunteerActivityViewItem
+
+  selectedActivityId.value = selected.id
+  selectedActivitySnapshot.value = selected
   drawerOpen.value = true
 }
 

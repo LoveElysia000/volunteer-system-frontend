@@ -62,6 +62,7 @@ export interface ActivityListRequest {
   startTo?: string
   sortBy?: string
   sortOrder?: 'asc' | 'desc'
+  registeredOnly?: boolean
 }
 
 export interface ActivityListItem {
@@ -80,6 +81,15 @@ export interface ActivityListItem {
   status: ActivityStatus
   isRegistered?: boolean
   isFull?: boolean
+  signupTime?: string
+  checkInStatus?: AttendanceStatus
+  checkInTime?: string
+  checkOutStatus?: AttendanceStatus
+  checkOutTime?: string
+  workHourStatus?: WorkHourStatus
+  grantedHours?: number
+  signupStatus?: ActivitySignupStatus
+  auditReason?: string
 }
 
 export interface ActivityListData {
@@ -112,42 +122,6 @@ export interface ActivityDetailData {
     workHourStatus?: WorkHourStatus
     grantedHours?: number
   }
-}
-
-export interface MyActivitiesRequest {
-  page: number
-  pageSize: number
-  status?: ActivityStatus
-}
-
-export interface MyActivityItem {
-  id: number
-  orgId: number
-  orgName?: string
-  title: string
-  description: string
-  coverUrl?: string
-  startTime: string
-  endTime: string
-  location: string
-  duration: number
-  maxPeople: number
-  currentPeople: number
-  status: ActivityStatus
-  signupTime?: string
-  checkInStatus?: AttendanceStatus
-  checkInTime?: string
-  checkOutStatus?: AttendanceStatus
-  checkOutTime?: string
-  workHourStatus?: WorkHourStatus
-  grantedHours?: number
-  signupStatus?: ActivitySignupStatus
-  auditReason?: string
-}
-
-export interface MyActivitiesData {
-  total: number
-  list: MyActivityItem[]
 }
 
 export interface ActivityActionResult {
