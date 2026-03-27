@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { volunteerApi } from '@/api/volunteer'
 import { getApiMessage, isApiSuccess } from '@/api/types'
 import type {
@@ -21,6 +21,7 @@ export const useVolunteerStore = defineStore('volunteer', () => {
   const realNameAudit = ref<VolunteerRealNameSubmitData | null>(null)
   const summaryLoading = ref(false)
   const profileLoading = ref(false)
+  const currentVolunteerId = computed(() => profile.value?.id ?? null)
 
   const fetchHomeSummary = async () => {
     summaryLoading.value = true
@@ -36,10 +37,10 @@ export const useVolunteerStore = defineStore('volunteer', () => {
     }
   }
 
-  const fetchMyProfile = async (id: number) => {
+  const fetchMyProfile = async () => {
     profileLoading.value = true
     try {
-      const response = await volunteerApi.getMyProfile(id)
+      const response = await volunteerApi.getMyProfile()
       if (!isApiSuccess(response.code)) {
         throw new Error(getApiMessage(response) || '获取志愿者资料失败')
       }
@@ -67,8 +68,8 @@ export const useVolunteerStore = defineStore('volunteer', () => {
     return response
   }
 
-  const updateMyProfile = async (id: number, data: UpdateVolunteerProfileRequest) => {
-    const response = await volunteerApi.updateProfile(id, data)
+  const updateMyProfile = async (data: UpdateVolunteerProfileRequest) => {
+    const response = await volunteerApi.updateProfile(data)
     if (!isApiSuccess(response.code)) {
       throw new Error(getApiMessage(response) || '更新志愿者资料失败')
     }
@@ -103,6 +104,7 @@ export const useVolunteerStore = defineStore('volunteer', () => {
     realNameAudit,
     summaryLoading,
     profileLoading,
+    currentVolunteerId,
     fetchHomeSummary,
     fetchMyProfile,
     updateMyAccount,

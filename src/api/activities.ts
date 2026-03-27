@@ -70,7 +70,7 @@ const activitiesClient = createActivitiesApi(http)
 export const activitiesApi = {
   list: (data: ActivityListRequest): Promise<ApiResponse<ActivityListData>> => activitiesClient.list<ApiResponse<ActivityListData>>(data),
 
-  detail: (id: number): Promise<ApiResponse<ActivityDetailData>> => activitiesClient.detail<ApiResponse<ActivityDetailData>>(id),
+  detail: (activityId: number): Promise<ApiResponse<ActivityDetailData>> => activitiesClient.detail<ApiResponse<ActivityDetailData>>(activityId),
 
   signup: (activityId: number): Promise<ApiResponse<ActivityActionResult>> => activitiesClient.signup<ApiResponse<ActivityActionResult>>(activityId),
 
@@ -84,19 +84,19 @@ export const activitiesApi = {
 
   create: (data: CreateOrganizationActivityRequest): Promise<ApiResponse<CreateOrganizationActivityData>> => activitiesClient.create<ApiResponse<CreateOrganizationActivityData>>(data),
 
-  update: (id: number, data: UpdateOrganizationActivityRequest): Promise<ApiResponse<OrganizationActivityActionResponse>> => activitiesClient.update<ApiResponse<OrganizationActivityActionResponse>>(id, data),
+  update: (activityId: number, data: UpdateOrganizationActivityRequest): Promise<ApiResponse<OrganizationActivityActionResponse>> => activitiesClient.update<ApiResponse<OrganizationActivityActionResponse>>(activityId, data),
 
-  remove: (id: number): Promise<ApiResponse<OrganizationActivityActionResponse>> => activitiesClient.remove<ApiResponse<OrganizationActivityActionResponse>>(id),
+  remove: (activityId: number): Promise<ApiResponse<OrganizationActivityActionResponse>> => activitiesClient.remove<ApiResponse<OrganizationActivityActionResponse>>(activityId),
 
-  cancelByOrganization: (id: number, data: CancelOrganizationActivityRequest): Promise<ApiResponse<OrganizationActivityActionResponse>> => activitiesClient.cancelByOrganization<ApiResponse<OrganizationActivityActionResponse>>(id, data),
+  cancelByOrganization: (activityId: number, data: CancelOrganizationActivityRequest): Promise<ApiResponse<OrganizationActivityActionResponse>> => activitiesClient.cancelByOrganization<ApiResponse<OrganizationActivityActionResponse>>(activityId, data),
 
-  finishByOrganization: (id: number): Promise<ApiResponse<OrganizationActivityActionResponse>> => activitiesClient.finishByOrganization<ApiResponse<OrganizationActivityActionResponse>>(id),
+  finishByOrganization: (activityId: number): Promise<ApiResponse<OrganizationActivityActionResponse>> => activitiesClient.finishByOrganization<ApiResponse<OrganizationActivityActionResponse>>(activityId),
 
-  generateAttendanceCodes: (id: number, data: AttendanceCodesGenerateRequest): Promise<ApiResponse<AttendanceCodeInfo>> => activitiesClient.generateAttendanceCodes<ApiResponse<AttendanceCodeInfo>>(id, data),
+  generateAttendanceCodes: (activityId: number, data: AttendanceCodesGenerateRequest): Promise<ApiResponse<AttendanceCodeInfo>> => activitiesClient.generateAttendanceCodes<ApiResponse<AttendanceCodeInfo>>(activityId, data),
 
-  resetAttendanceCode: (id: number, data: AttendanceCodeResetRequest): Promise<ApiResponse<AttendanceCodeResetData>> => activitiesClient.resetAttendanceCode<ApiResponse<AttendanceCodeResetData>>(id, data),
+  resetAttendanceCode: (activityId: number, data: AttendanceCodeResetRequest): Promise<ApiResponse<AttendanceCodeResetData>> => activitiesClient.resetAttendanceCode<ApiResponse<AttendanceCodeResetData>>(activityId, data),
 
-  getAttendanceCodes: (id: number): Promise<ApiResponse<AttendanceCodeInfo>> => activitiesClient.getAttendanceCodes<ApiResponse<AttendanceCodeInfo>>(id),
+  getAttendanceCodes: (activityId: number): Promise<ApiResponse<AttendanceCodeInfo>> => activitiesClient.getAttendanceCodes<ApiResponse<AttendanceCodeInfo>>(activityId),
 
   supplementAttendance: (data: SupplementAttendanceRequest): Promise<ApiResponse<SupplementAttendanceData>> => activitiesClient.supplementAttendance<ApiResponse<SupplementAttendanceData>>(data)
 }

@@ -12,7 +12,7 @@ export enum UserIdentity {
 
 // 后端返回的用户信息
 export interface UserInfo {
-  userId: string
+  accountId: string
   userName: string
   email: string
   phone: string
@@ -81,7 +81,7 @@ export interface RefreshTokenResponse {
 
 // 前端用户信息（兼容现有代码）
 export interface User {
-  id: string
+  accountId: string
   username: string
   email: string
   realName: string

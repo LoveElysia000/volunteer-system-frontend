@@ -12,12 +12,6 @@ export const routes = [
     meta: { title: '登录' }
   },
   {
-    path: '/forgot-password',
-    name: 'forgot-password',
-    component: () => import('@/views/Auth/ForgotPassword.vue'),
-    meta: { title: '找回密码' }
-  },
-  {
     path: '/register',
     name: 'register',
     component: () => import('@/views/Auth/Register.vue'),
@@ -78,70 +72,16 @@ export const routes = [
         meta: { title: '活动详情' }
       },
       {
-        path: 'activities/history',
-        name: 'volunteer-history-activities',
-        component: () => import('@/views/Volunteer/HistoryActivities.vue'),
-        meta: { title: '历史活动' }
-      },
-      {
         path: 'organizations',
         name: 'volunteer-organizations',
         component: () => import('@/views/Volunteer/Organizations.vue'),
         meta: { title: '组织管理' }
       },
       {
-        path: 'records',
-        name: 'volunteer-records',
-        component: () => import('@/views/Volunteer/Records.vue'),
-        meta: { title: '个人记录' }
-      },
-      {
-        path: 'records/statistics',
-        name: 'volunteer-records-statistics',
-        component: () => import('@/views/Volunteer/RecordsStatistics.vue'),
-        meta: { title: '时长统计' }
-      },
-      {
-        path: 'records/reviews',
-        name: 'volunteer-records-reviews',
-        component: () => import('@/views/Volunteer/RecordsReviews.vue'),
-        meta: { title: '评价记录' }
-      },
-      {
-        path: 'achievements',
-        name: 'volunteer-achievements',
-        component: () => import('@/views/Volunteer/Achievements.vue'),
-        meta: { title: '成就徽章' }
-      },
-      {
-        path: 'achievements/levels',
-        name: 'volunteer-achievements-levels',
-        component: () => import('@/views/Volunteer/AchievementsLevels.vue'),
-        meta: { title: '等级进度' }
-      },
-      {
-        path: 'achievements/leaderboard',
-        name: 'volunteer-achievements-leaderboard',
-        component: () => import('@/views/Volunteer/AchievementsLeaderboard.vue'),
-        meta: { title: '排行榜' }
-      },
-      {
         path: 'profile',
         name: 'volunteer-profile',
         component: () => import('@/views/Volunteer/Profile.vue'),
         meta: { title: '个人信息' }
-      },
-      {
-        path: 'settings',
-        name: 'volunteer-settings',
-        component: () => import('@/views/Volunteer/Settings.vue'),
-        meta: { title: '账户设置' }
-      },
-      {
-        path: 'settings/notifications',
-        name: 'volunteer-settings-notifications',
-        component: () => import('@/views/Volunteer/SettingsNotifications.vue'),
-        meta: { title: '通知偏好' }
       }
     ]
   },
@@ -194,12 +134,6 @@ export const routes = [
         meta: { title: 'AI 助手' }
       },
       {
-        path: 'settings',
-        name: 'organization-settings',
-        component: () => import('@/views/Organization/Settings.vue'),
-        meta: { title: '设置' }
-      },
-      {
         path: 'members',
         name: 'organization-members',
         component: () => import('@/views/Organization/Members.vue'),
@@ -218,18 +152,6 @@ export const routes = [
         meta: { title: '活动审核' }
       },
       {
-        path: 'volunteers/statistics',
-        name: 'organization-volunteers-statistics',
-        component: () => import('@/views/Organization/VolunteerStatistics.vue'),
-        meta: { title: '志愿者统计' }
-      },
-      {
-        path: 'volunteers/evaluations',
-        name: 'organization-volunteers-evaluations',
-        component: () => import('@/views/Organization/VolunteerEvaluations.vue'),
-        meta: { title: '评价管理' }
-      },
-      {
         path: 'statistics/activities',
         name: 'organization-statistics-activities',
         component: () => import('@/views/Organization/StatisticsActivities.vue'),
@@ -246,18 +168,6 @@ export const routes = [
         name: 'organization-statistics-financial',
         component: () => import('@/views/Organization/WorkHours.vue'),
         meta: { title: '工时流水' }
-      },
-      {
-        path: 'notifications/announcements',
-        name: 'organization-notifications-announcements',
-        component: () => import('@/views/Organization/NotificationsAnnouncements.vue'),
-        meta: { title: '公告管理' }
-      },
-      {
-        path: 'settings/permissions',
-        name: 'organization-settings-permissions',
-        component: () => import('@/views/Organization/SettingsPermissions.vue'),
-        meta: { title: '权限管理' }
       }
     ]
   },

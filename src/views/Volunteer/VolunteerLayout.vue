@@ -331,10 +331,7 @@ const setSidebarToMax = () => {
 
 const cachedComponents = [
   'VolunteerActivities',
-  'VolunteerMyRegistrations',
-  'VolunteerHistoryActivities',
-  'VolunteerAchievements',
-  'VolunteerRecords'
+  'VolunteerMyRegistrations'
 ]
 
 const pageDescriptions: Record<string, string> = {
@@ -342,17 +339,8 @@ const pageDescriptions: Record<string, string> = {
   'volunteer-activities': '浏览推荐项目、管理报名状态，并快速筛选适合你的环保活动。',
   'volunteer-activity-detail': '查看单个活动的时间、地点、报名状态和服务信息。',
   'volunteer-my-registrations': '查看已经预约的活动，关注时间、地点和行前提醒。',
-  'volunteer-history-activities': '回顾已完成项目，沉淀稳定贡献记录和高频参与类型。',
   'volunteer-organizations': '查看你已加入的组织，并直接完成加入申请或退出操作。',
-  'volunteer-records': '集中查看服务记录、积分和可导出的参与明细。',
-  'volunteer-records-statistics': '从月份、主题和阶段观察你的服务时长和投入趋势。',
-  'volunteer-records-reviews': '查看组织反馈、协作评价和后续提升建议。',
-  'volunteer-achievements': '整理你的徽章墙、阶段成就和接下来可冲刺的里程碑。',
-  'volunteer-achievements-levels': '查看升级节奏、当前等级进度和下一阶段目标。',
-  'volunteer-achievements-leaderboard': '了解你的排名位置、连续服务表现和领先差距。',
   'volunteer-profile': '维护个人资料、服务偏好和志愿者展示信息。',
-  'volunteer-settings': '管理账户安全、隐私偏好和平台使用设置。',
-  'volunteer-settings-notifications': '配置活动提醒、系统消息和不同渠道的通知策略。'
 }
 
 const currentPage = computed(() => {
@@ -377,13 +365,12 @@ const handleLogout = async () => {
 }
 
 onMounted(async () => {
-  const userId = Number(user.value?.id)
-  if (!Number.isInteger(userId) || userId <= 0) return
+  if (!user.value?.accountId) return
 
   try {
     await Promise.all([
       volunteerStore.fetchHomeSummary(),
-      volunteerStore.fetchMyProfile(userId)
+      volunteerStore.fetchMyProfile()
     ])
   } catch (error) {
     console.error('加载志愿者工作台数据失败:', error)

@@ -55,11 +55,10 @@ export const useMembershipsStore = defineStore('memberships', () => {
     return response.data
   }
 
-  const fetchMyOrganizations = async (volunteerId: number) => {
+  const fetchMyOrganizations = async () => {
     myOrganizationsLoading.value = true
     try {
       const response = await membershipsApi.getVolunteerOrganizations({
-        volunteerId,
         page: 1,
         pageSize: 20
       })
@@ -74,21 +73,21 @@ export const useMembershipsStore = defineStore('memberships', () => {
     }
   }
 
-  const joinOrganization = async (volunteerId: number, organizationId: number) => {
-    const response = await membershipsApi.join({ volunteerId, organizationId })
+  const joinOrganization = async (organizationId: number) => {
+    const response = await membershipsApi.join({ organizationId })
     if (response.code !== 200) {
       throw new Error(response.msg || '申请加入组织失败')
     }
-    await fetchMyOrganizations(volunteerId)
+    await fetchMyOrganizations()
     return response.data
   }
 
-  const leaveOrganization = async (volunteerId: number, membershipId: number, reason?: string) => {
+  const leaveOrganization = async (membershipId: number, reason?: string) => {
     const response = await membershipsApi.leave({ membershipId, reason })
     if (response.code !== 200) {
       throw new Error(response.msg || '退出组织失败')
     }
-    await fetchMyOrganizations(volunteerId)
+    await fetchMyOrganizations()
     return response.data
   }
 

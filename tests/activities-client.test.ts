@@ -107,3 +107,36 @@ test('mergeVolunteerActivityRows keeps signup status and audit reason from regis
   assert.equal(rows[0]?.signupStatus, 3)
   assert.equal(rows[0]?.auditReason, '名额已满')
 })
+
+test('organization activity actions use activity resource style paths', async () => {
+  const postCalls: Array<{ url: string; data: unknown }> = []
+  const getCalls: Array<{ url: string; params: unknown }> = []
+  const api = createActivitiesApi({
+    post: async <T>(url: string, data?: unknown) => {
+      postCalls.push({ url, data })
+      return {} as T
+    },
+    get: async <T>(url: string, params?: unknown) => {
+      getCalls.push({ url, params })
+      return {} as T
+    },
+    put: async <T>() => ({} as T),
+    delete: async <T>() => ({} as T)
+  })
+
+  await api.cancelByOrganization(12, { reason: '天气原因' })
+  await api.finishByOrganization(12)
+  await api.generateAttendanceCodes(12, { codeType: 1 })
+  await api.resetAttendanceCode(12, { codeType: 2, validMinutes: 15 })
+  await api.getAttendanceCodes(12)
+
+  assert.deepEqual(postCalls, [
+    { url: '/api/activities/12/cancel', data: { reason: '天气原因' } },
+    { url: '/api/activities/12/finish', data: undefined },
+    { url: '/api/activities/12/attendance-codes/generate', data: { codeType: 1 } },
+    { url: '/api/activities/12/attendance-codes/reset', data: { codeType: 2, validMinutes: 15 } }
+  ])
+  assert.deepEqual(getCalls, [
+    { url: '/api/activities/12/attendance-codes', params: undefined }
+  ])
+})

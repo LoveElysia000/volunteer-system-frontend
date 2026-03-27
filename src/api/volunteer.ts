@@ -18,24 +18,24 @@ export const volunteerApi = {
     return http.post<ApiResponse<VolunteerListData>>('/api/volunteers/list', data)
   },
 
-  getDetail: (id: number): Promise<ApiResponse<VolunteerDetailData>> => {
-    return http.get<ApiResponse<VolunteerDetailData>>(`/api/volunteers/detail/${id}`)
+  getDetail: (volunteerId: number): Promise<ApiResponse<VolunteerDetailData>> => {
+    return http.get<ApiResponse<VolunteerDetailData>>(`/api/volunteers/${volunteerId}`)
   },
 
   getHomeSummary: (): Promise<ApiResponse<VolunteerHomeSummaryData>> => {
     return http.get<ApiResponse<VolunteerHomeSummaryData>>('/api/volunteers/home/summary')
   },
 
-  getMyProfile: (id: number): Promise<ApiResponse<VolunteerProfileData>> => {
-    return http.get<ApiResponse<VolunteerProfileData>>(`/api/volunteers/my/profile/${id}`)
+  getMyProfile: (): Promise<ApiResponse<VolunteerProfileData>> => {
+    return http.get<ApiResponse<VolunteerProfileData>>('/api/me/profile')
   },
 
   updateAccount: (data: UpdateVolunteerAccountRequest): Promise<ApiResponse<EmptyObjectData>> => {
-    return http.put<ApiResponse<EmptyObjectData>>('/api/volunteers/account', data)
+    return http.put<ApiResponse<EmptyObjectData>>('/api/me/account', data)
   },
 
-  updateProfile: (id: number, data: UpdateVolunteerProfileRequest): Promise<ApiResponse<EmptyObjectData>> => {
-    return http.put<ApiResponse<EmptyObjectData>>(`/api/volunteers/${id}`, data)
+  updateProfile: (data: UpdateVolunteerProfileRequest): Promise<ApiResponse<EmptyObjectData>> => {
+    return http.put<ApiResponse<EmptyObjectData>>('/api/me/volunteer-profile', data)
   },
 
   submitRealName: (data: VolunteerRealNameSubmitRequest): Promise<ApiResponse<VolunteerRealNameSubmitData>> => {

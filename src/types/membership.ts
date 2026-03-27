@@ -62,7 +62,6 @@ export interface OrganizationMemberInfo {
 }
 
 export interface VolunteerJoinRequest {
-  volunteerId: number
   organizationId: number
 }
 
@@ -82,7 +81,6 @@ export interface VolunteerLeaveData {
 }
 
 export interface VolunteerOrganizationsParams {
-  volunteerId: number
   status?: MembershipStatus
   page: number
   pageSize: number

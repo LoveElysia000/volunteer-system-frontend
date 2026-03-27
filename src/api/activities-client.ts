@@ -26,8 +26,8 @@ export const createActivitiesApi = (http: ActivitiesHttpClient) => ({
     return http.post<T>('/api/activities', data)
   },
 
-  detail: <T>(id: number) => {
-    return http.get<T>(`/api/activities/${id}`)
+  detail: <T>(activityId: number) => {
+    return http.get<T>(`/api/activities/${activityId}`)
   },
 
   signup: <T>(activityId: number) => {
@@ -54,32 +54,32 @@ export const createActivitiesApi = (http: ActivitiesHttpClient) => ({
     return http.post<T>('/api/activities/create', data)
   },
 
-  update: <T>(id: number, data: unknown) => {
-    return http.put<T>(`/api/activities/${id}`, data)
+  update: <T>(activityId: number, data: unknown) => {
+    return http.put<T>(`/api/activities/${activityId}`, data)
   },
 
-  remove: <T>(id: number) => {
-    return http.delete<T>(`/api/activities/${id}`)
+  remove: <T>(activityId: number) => {
+    return http.delete<T>(`/api/activities/${activityId}`)
   },
 
-  cancelByOrganization: <T>(id: number, data: unknown) => {
-    return http.post<T>(`/api/activities/cancel/${id}`, data)
+  cancelByOrganization: <T>(activityId: number, data: unknown) => {
+    return http.post<T>(`/api/activities/${activityId}/cancel`, data)
   },
 
-  finishByOrganization: <T>(id: number) => {
-    return http.post<T>(`/api/activities/finish/${id}`)
+  finishByOrganization: <T>(activityId: number) => {
+    return http.post<T>(`/api/activities/${activityId}/finish`)
   },
 
-  generateAttendanceCodes: <T>(id: number, data: unknown) => {
-    return http.post<T>(`/api/activities/attendance-codes/generate/${id}`, data)
+  generateAttendanceCodes: <T>(activityId: number, data: unknown) => {
+    return http.post<T>(`/api/activities/${activityId}/attendance-codes/generate`, data)
   },
 
-  resetAttendanceCode: <T>(id: number, data: unknown) => {
-    return http.post<T>(`/api/activities/attendance-codes/reset/${id}`, data)
+  resetAttendanceCode: <T>(activityId: number, data: unknown) => {
+    return http.post<T>(`/api/activities/${activityId}/attendance-codes/reset`, data)
   },
 
-  getAttendanceCodes: <T>(id: number) => {
-    return http.get<T>(`/api/activities/attendance-codes/${id}`)
+  getAttendanceCodes: <T>(activityId: number) => {
+    return http.get<T>(`/api/activities/${activityId}/attendance-codes`)
   },
 
   supplementAttendance: <T>(data: unknown) => {

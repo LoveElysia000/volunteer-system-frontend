@@ -68,7 +68,7 @@ export const useAssistantStore = defineStore('assistant', () => {
     sessions.value.find((session) => session.id === currentSessionId.value) || null
   ))
 
-  const getStorageKey = () => `assistant_sessions_${authStore.user?.id ?? 'anonymous'}`
+  const getStorageKey = () => `assistant_sessions_${authStore.user?.accountId ?? 'anonymous'}`
 
   const restoreSessions = () => {
     if (typeof window === 'undefined') return

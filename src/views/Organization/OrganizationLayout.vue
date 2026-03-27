@@ -336,8 +336,7 @@ const cachedComponents = [
   'Dashboard',
   'ActivityManagement',
   'VolunteerManagement',
-  'Statistics',
-  'Settings'
+  'Statistics'
 ]
 
 const pageDescriptions: Record<string, string> = {
@@ -347,18 +346,13 @@ const pageDescriptions: Record<string, string> = {
   'organization-volunteers': '维护志愿者档案、活跃度状态与参与表现。',
   'organization-statistics': '从活动、志愿者与财务维度洞察整体运营表现。',
   'organization-notifications': '集中处理平台消息、审核提醒和系统通知。',
-  'organization-settings': '管理组织账户安全、偏好配置与基础权限。',
   'organization-members': '维护组织成员身份、分工与协作权限。',
   'organization-activities-create': '创建新活动并配置流程、地点与参与要求。',
   'organization-activities-review': '审核活动申请与关键节点，降低运营风险。',
-  'organization-volunteers-statistics': '分析志愿者参与趋势、留存和服务贡献。',
-  'organization-volunteers-evaluations': '管理评价反馈与改进建议，形成正向协作闭环。',
   'organization-statistics-activities': '查看活动维度报表，评估执行质量与投入产出。',
   'organization-statistics-volunteers': '查看志愿者结构、活跃人群和增长状态。',
   'organization-statistics-financial': '查看工时发放、作废和重算流水，处理异常记录。',
-  'organization-assistant': '使用 AI 助手生成活动草案、整理运营内容并查看对话历史。',
-  'organization-notifications-announcements': '发布公告并追踪触达效果。',
-  'organization-settings-permissions': '配置组织角色权限与访问策略。'
+  'organization-assistant': '使用 AI 助手生成活动草案、整理运营内容并查看对话历史。'
 }
 
 const pageCaptions: Record<string, string> = {
@@ -368,18 +362,13 @@ const pageCaptions: Record<string, string> = {
   'organization-volunteers': 'Volunteer Operations',
   'organization-statistics': 'Data Reports',
   'organization-notifications': 'Notification Center',
-  'organization-settings': 'System Settings',
   'organization-members': 'Member Management',
   'organization-activities-create': 'Create Activity',
   'organization-activities-review': 'Activity Review',
-  'organization-volunteers-statistics': 'Volunteer Analytics',
-  'organization-volunteers-evaluations': 'Evaluation Management',
   'organization-statistics-activities': 'Activity Analytics',
   'organization-statistics-volunteers': 'Volunteer Reports',
   'organization-statistics-financial': 'Work Hour Logs',
-  'organization-assistant': 'AI Assistant',
-  'organization-notifications-announcements': 'Announcements',
-  'organization-settings-permissions': 'Permission Control'
+  'organization-assistant': 'AI Assistant'
 }
 
 const currentPage = computed(() => {

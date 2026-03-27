@@ -518,12 +518,6 @@ const saveAccountChanges = async () => {
 
 const saveProfileChanges = async () => {
   try {
-    const volunteerId = Number(user.value?.id)
-    if (!Number.isInteger(volunteerId) || volunteerId <= 0) {
-      messageStore.error('当前账号缺少志愿者标识，暂时无法保存')
-      return
-    }
-
     profileSaving.value = true
     const payload: UpdateVolunteerProfileRequest = {
       gender: profileForm.gender,
@@ -531,7 +525,7 @@ const saveProfileChanges = async () => {
       avatarUrl: avatarPreview.value || undefined,
       introduction: profileForm.introduction.trim() || undefined
     }
-    await volunteerStore.updateMyProfile(volunteerId, payload)
+    await volunteerStore.updateMyProfile(payload)
     await authStore.updateProfile({
       avatarUrl: avatarPreview.value || user.value?.avatarUrl
     })
@@ -582,18 +576,11 @@ const membershipRoleText = (role: MembershipRoleType) => ({
 }[role] || '未分配')
 
 const refreshOrganizations = async () => {
-  const volunteerId = profile.value?.id
-  if (!volunteerId) return
-  await membershipsStore.fetchMyOrganizations(volunteerId)
+  await membershipsStore.fetchMyOrganizations()
 }
 
 const joinOrganization = async () => {
-  const volunteerId = profile.value?.id
   const organizationId = Number(joinOrganizationId.value.trim())
-  if (!volunteerId) {
-    messageStore.error('当前账号缺少志愿者标识')
-    return
-  }
   if (!Number.isInteger(organizationId) || organizationId <= 0) {
     messageStore.error('请输入有效的组织 ID')
     return
@@ -601,7 +588,7 @@ const joinOrganization = async () => {
 
   organizationActionLoading.value = true
   try {
-    const response = await membershipsStore.joinOrganization(volunteerId, organizationId)
+    const response = await membershipsStore.joinOrganization(organizationId)
     joinOrganizationId.value = ''
     messageStore.success(response.message || '加入申请已提交')
   } catch (error: any) {
@@ -613,15 +600,9 @@ const joinOrganization = async () => {
 }
 
 const leaveOrganization = async (membershipId: number) => {
-  const volunteerId = profile.value?.id
-  if (!volunteerId) {
-    messageStore.error('当前账号缺少志愿者标识')
-    return
-  }
-
   organizationActionLoading.value = true
   try {
-    const response = await membershipsStore.leaveOrganization(volunteerId, membershipId, '志愿者主动退出')
+    const response = await membershipsStore.leaveOrganization(membershipId, '志愿者主动退出')
     messageStore.success(response.message || '已退出组织')
   } catch (error: any) {
     console.error('退出组织失败:', error)
@@ -632,10 +613,9 @@ const leaveOrganization = async (membershipId: number) => {
 }
 
 onMounted(async () => {
-  const volunteerId = Number(user.value?.id)
-  if (Number.isInteger(volunteerId) && volunteerId > 0 && !profile.value) {
+  if (user.value?.accountId && !profile.value) {
     try {
-      await volunteerStore.fetchMyProfile(volunteerId)
+      await volunteerStore.fetchMyProfile()
     } catch (error) {
       console.error('加载志愿者资料失败:', error)
     }

@@ -16,9 +16,24 @@ const STORAGE_KEYS = {
   USER: 'auth_user'
 }
 
+const normalizeStoredUser = (storedUser: string): User => {
+  const parsed = JSON.parse(storedUser) as Partial<User>
+  return {
+    accountId: parsed.accountId ?? '',
+    username: parsed.username ?? '',
+    email: parsed.email ?? '',
+    realName: parsed.realName ?? '',
+    role: parsed.role!,
+    avatarUrl: parsed.avatarUrl,
+    phone: parsed.phone,
+    points: parsed.points,
+    totalHours: parsed.totalHours
+  }
+}
+
 // 将后端UserInfo转换为前端User
 const transformUserInfo = (userInfo: UserInfo): User => ({
-  id: userInfo.userId,
+  accountId: userInfo.accountId,
   username: userInfo.userName,
   email: userInfo.email,
   realName: userInfo.displayName || userInfo.userName,
@@ -48,7 +63,7 @@ export const useAuthStore = defineStore('auth', () => {
         }
 
         token.value = storedToken
-        user.value = JSON.parse(storedUser)
+        user.value = normalizeStoredUser(storedUser)
 
         // 如果token即将过期，自动刷新
         if (tokenManager.isTokenExpiringSoon()) {

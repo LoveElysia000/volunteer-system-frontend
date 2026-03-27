@@ -246,7 +246,6 @@ import VolunteerSectionCard from '@/components/volunteer/VolunteerSectionCard.vu
 import VolunteerStatusBadge from '@/components/volunteer/VolunteerStatusBadge.vue'
 import { organizationsApi } from '@/api/organizations'
 import { getApiMessage, isApiSuccess } from '@/api/types'
-import { useAuthStore } from '@/store/modules/auth'
 import { useMembershipsStore } from '@/store/modules/memberships'
 import { useMessageStore } from '@/store/modules/messages'
 import { useVolunteerStore } from '@/store/modules/volunteer'
@@ -257,7 +256,6 @@ defineOptions({
   name: 'VolunteerOrganizations'
 })
 
-const authStore = useAuthStore()
 const volunteerStore = useVolunteerStore()
 const membershipsStore = useMembershipsStore()
 const messageStore = useMessageStore()
@@ -267,8 +265,6 @@ const organizations = ref<OrganizationInfo[]>([])
 const organizationsTotal = ref(0)
 const organizationsLoading = ref(false)
 const organizationActionLoading = ref(false)
-
-const volunteerId = computed(() => volunteerStore.profile?.id || null)
 
 const membershipByOrganizationId = computed<Record<number, OrganizationMemberInfo>>(() => (
   membershipsStore.myOrganizations.reduce<Record<number, OrganizationMemberInfo>>((acc, item) => {
@@ -375,16 +371,11 @@ const loadOrganizations = async () => {
 }
 
 const refreshMemberships = async () => {
-  if (!volunteerId.value) return
-  await membershipsStore.fetchMyOrganizations(volunteerId.value)
+  await membershipsStore.fetchMyOrganizations()
 }
 
 const joinOrganization = async (organizationId: string | number) => {
   const normalizedOrganizationId = normalizeNumber(organizationId)
-  if (!volunteerId.value) {
-    messageStore.error('当前账号缺少志愿者标识')
-    return
-  }
   if (!Number.isInteger(normalizedOrganizationId) || normalizedOrganizationId <= 0) {
     messageStore.error('组织 ID 无效，暂时无法加入')
     return
@@ -392,7 +383,7 @@ const joinOrganization = async (organizationId: string | number) => {
 
   organizationActionLoading.value = true
   try {
-    const response = await membershipsStore.joinOrganization(volunteerId.value, normalizedOrganizationId)
+    const response = await membershipsStore.joinOrganization(normalizedOrganizationId)
     messageStore.success(response.message || '加入申请已提交')
     await Promise.all([
       refreshMemberships(),
@@ -408,10 +399,6 @@ const joinOrganization = async (organizationId: string | number) => {
 
 const leaveOrganization = async (membershipId: string | number | null | undefined) => {
   const normalizedMembershipId = normalizeNumber(membershipId)
-  if (!volunteerId.value) {
-    messageStore.error('当前账号缺少志愿者标识')
-    return
-  }
   if (!Number.isInteger(normalizedMembershipId) || normalizedMembershipId <= 0) {
     messageStore.error('组织关系标识无效，暂时无法退出')
     return
@@ -419,7 +406,7 @@ const leaveOrganization = async (membershipId: string | number | null | undefine
 
   organizationActionLoading.value = true
   try {
-    const response = await membershipsStore.leaveOrganization(volunteerId.value, normalizedMembershipId, '志愿者主动退出')
+    const response = await membershipsStore.leaveOrganization(normalizedMembershipId, '志愿者主动退出')
     messageStore.success(response.message || '已退出组织')
     await Promise.all([
       refreshMemberships(),
@@ -434,17 +421,12 @@ const leaveOrganization = async (membershipId: string | number | null | undefine
 }
 
 onMounted(async () => {
-  let profileReady = false
-
   try {
-    const authUserId = normalizeNumber(authStore.user?.id)
-    if (Number.isInteger(authUserId) && authUserId > 0 && !volunteerStore.profile) {
-      await volunteerStore.fetchMyProfile(authUserId)
+    if (!volunteerStore.profile) {
+      await volunteerStore.fetchMyProfile()
     }
-    profileReady = true
   } catch (error) {
     console.error('加载志愿者资料失败:', error)
-    messageStore.error('加载志愿者资料失败，暂时无法读取我的组织关系')
   }
 
   try {
@@ -452,8 +434,6 @@ onMounted(async () => {
   } catch (error) {
     console.error('加载组织列表失败:', error)
   }
-
-  if (!profileReady && !volunteerStore.profile) return
 
   try {
     await refreshMemberships()

@@ -32,8 +32,8 @@ export const createOrganizationsApi = (http: OrganizationsHttpClient) => ({
     return http.post<T>('/api/organizations/search', data)
   },
 
-  detail: <T>(id: number) => {
-    return http.get<T>(`/api/organizations/${id}`)
+  detail: <T>(organizationId: number) => {
+    return http.get<T>(`/api/organizations/${organizationId}`)
   },
 
   create: <T>(data: unknown) => {
@@ -44,20 +44,20 @@ export const createOrganizationsApi = (http: OrganizationsHttpClient) => ({
     return http.put<T>('/api/organizations/account', data)
   },
 
-  update: <T>(id: number, data: unknown) => {
-    return http.put<T>(`/api/organizations/${id}`, data)
+  update: <T>(organizationId: number, data: unknown) => {
+    return http.put<T>(`/api/organizations/${organizationId}`, data)
   },
 
-  remove: <T>(id: number) => {
-    return http.delete<T>(`/api/organizations/${id}`)
+  remove: <T>(organizationId: number) => {
+    return http.delete<T>(`/api/organizations/${organizationId}`)
   },
 
-  disable: <T>(id: number, data: unknown) => {
-    return http.post<T>(`/api/organizations/${id}/disable`, data)
+  disable: <T>(organizationId: number, data: unknown) => {
+    return http.post<T>(`/api/organizations/${organizationId}/disable`, data)
   },
 
-  enable: <T>(id: number, data: unknown) => {
-    return http.post<T>(`/api/organizations/${id}/enable`, data)
+  enable: <T>(organizationId: number, data: unknown) => {
+    return http.post<T>(`/api/organizations/${organizationId}/enable`, data)
   },
 
   bulkDelete: <T>(data: unknown) => {

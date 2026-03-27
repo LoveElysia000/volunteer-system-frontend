@@ -21,10 +21,10 @@
             浏览推荐活动
           </RouterLink>
           <RouterLink
-            to="/volunteer/records"
+            to="/volunteer/profile"
             class="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/10 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/15"
           >
-            查看服务记录
+            查看个人资料
           </RouterLink>
         </div>
       </div>

@@ -308,12 +308,13 @@
                       记住我
                     </label>
 
-                    <router-link
-                      to="/forgot-password"
-                      class="text-sm font-semibold text-primary-700 transition hover:text-primary-700 hover:underline"
+                    <button
+                      type="button"
+                      class="text-sm font-semibold text-slate-400"
+                      disabled
                     >
-                      忘记密码？
-                    </router-link>
+                      忘记密码暂未开放
+                    </button>
                   </div>
 
                   <button
@@ -557,7 +558,7 @@ const modeButtonClass = (mode: LoginType) => {
 }
 
 const showHelpMessage = () => {
-  messageStore.info('如果你暂时无法登录，可以先尝试找回密码，或联系平台管理员协助处理。')
+  messageStore.info('如果你暂时无法登录，请联系平台管理员协助处理。')
 }
 
 const handleLogin = async () => {

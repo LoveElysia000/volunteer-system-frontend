@@ -56,10 +56,10 @@ export const useOrganizationStore = defineStore('organization', () => {
     return response.data
   }
 
-  const fetchOrganization = async (id: number) => {
+  const fetchOrganization = async (organizationId: number) => {
     loading.value = true
     try {
-      const response = await organizationsApi.detail(id)
+      const response = await organizationsApi.detail(organizationId)
       if (!isApiSuccess(response.code)) {
         throw new Error(getApiMessage(response) || '获取组织信息失败')
       }
@@ -88,8 +88,8 @@ export const useOrganizationStore = defineStore('organization', () => {
     return response.data
   }
 
-  const updateOrganization = async (id: number, data: UpdateOrganizationRequest) => {
-    const response = await organizationsApi.update(id, data)
+  const updateOrganization = async (organizationId: number, data: UpdateOrganizationRequest) => {
+    const response = await organizationsApi.update(organizationId, data)
     if (!isApiSuccess(response.code)) {
       throw new Error(getApiMessage(response) || '更新组织信息失败')
     }
@@ -100,21 +100,21 @@ export const useOrganizationStore = defineStore('organization', () => {
       organizationCertification.value = { ...organizationCertification.value, organizationCode: data.organizationCode }
     }
     organizations.value = organizations.value.map((item) => (
-      item.id === id
+      item.id === organizationId
         ? { ...item, ...data }
         : item
     ))
     return response.data
   }
 
-  const removeOrganization = async (id: number) => {
-    const response = await organizationsApi.remove(id)
+  const removeOrganization = async (organizationId: number) => {
+    const response = await organizationsApi.remove(organizationId)
     if (!isApiSuccess(response.code)) {
       throw new Error(getApiMessage(response) || '删除组织失败')
     }
-    organizations.value = organizations.value.filter((item) => item.id !== id)
+    organizations.value = organizations.value.filter((item) => item.id !== organizationId)
     total.value = Math.max(total.value - 1, 0)
-    if (currentOrganization.value?.id === id) {
+    if (currentOrganization.value?.id === organizationId) {
       currentOrganization.value = null
       accountInfo.value = null
       organizationCertification.value = null
@@ -123,29 +123,29 @@ export const useOrganizationStore = defineStore('organization', () => {
     return response.data
   }
 
-  const disableOrganization = async (id: number, data: OrganizationActionRequest) => {
-    const response = await organizationsApi.disable(id, data)
+  const disableOrganization = async (organizationId: number, data: OrganizationActionRequest) => {
+    const response = await organizationsApi.disable(organizationId, data)
     if (!isApiSuccess(response.code)) {
       throw new Error(getApiMessage(response) || '停用组织失败')
     }
     organizations.value = organizations.value.map((item) => (
-      item.id === id ? { ...item, status: 0 } : item
+      item.id === organizationId ? { ...item, status: 0 } : item
     ))
-    if (currentOrganization.value?.id === id) {
+    if (currentOrganization.value?.id === organizationId) {
       currentOrganization.value = { ...currentOrganization.value, status: 0 }
     }
     return response.data
   }
 
-  const enableOrganization = async (id: number, data: OrganizationActionRequest) => {
-    const response = await organizationsApi.enable(id, data)
+  const enableOrganization = async (organizationId: number, data: OrganizationActionRequest) => {
+    const response = await organizationsApi.enable(organizationId, data)
     if (!isApiSuccess(response.code)) {
       throw new Error(getApiMessage(response) || '启用组织失败')
     }
     organizations.value = organizations.value.map((item) => (
-      item.id === id ? { ...item, status: 1 } : item
+      item.id === organizationId ? { ...item, status: 1 } : item
     ))
-    if (currentOrganization.value?.id === id) {
+    if (currentOrganization.value?.id === organizationId) {
       currentOrganization.value = { ...currentOrganization.value, status: 1 }
     }
     return response.data

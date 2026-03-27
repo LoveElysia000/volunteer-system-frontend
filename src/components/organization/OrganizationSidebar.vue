@@ -19,10 +19,7 @@ import { useRoute, useRouter } from 'vue-router'
 import {
   HomeIcon,
   CalendarIcon,
-  UserIcon,
   BarChartIcon,
-  SettingsIcon,
-  ClockIcon,
   StarIcon,
   UsersIcon,
   TrophyIcon,
@@ -121,18 +118,6 @@ const menuItems = computed<SidebarMenuItem[]>(() => [
         label: '志愿者列表',
         icon: UsersIcon,
         to: '/organization/volunteers'
-      },
-      {
-        key: 'volunteer-statistics',
-        label: '志愿者统计',
-        icon: BarChartIcon,
-        to: '/organization/volunteers/statistics'
-      },
-      {
-        key: 'evaluation-management',
-        label: '评价管理',
-        icon: StarIcon,
-        to: '/organization/volunteers/evaluations'
       }
     ]
   },
@@ -177,31 +162,6 @@ const menuItems = computed<SidebarMenuItem[]>(() => [
         label: '消息通知',
         icon: BellIcon,
         to: '/organization/notifications'
-      },
-      {
-        key: 'announcement-management',
-        label: '公告管理',
-        icon: BookmarkIcon,
-        to: '/organization/notifications/announcements'
-      }
-    ]
-  },
-  {
-    key: 'settings',
-    label: '系统设置',
-    icon: SettingsIcon,
-    children: [
-      {
-        key: 'account-settings',
-        label: '账户设置',
-        icon: UserIcon,
-        to: '/organization/settings'
-      },
-      {
-        key: 'permission-management',
-        label: '权限管理',
-        icon: ClockIcon,
-        to: '/organization/settings/permissions'
       }
     ]
   }

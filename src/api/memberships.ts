@@ -28,8 +28,8 @@ export const membershipsApi = {
     return http.get<ApiResponse<OrganizationMembersData>>(`/api/organizations/${organizationId}/members`, params)
   },
 
-  getVolunteerOrganizations: ({ volunteerId, ...params }: VolunteerOrganizationsParams): Promise<ApiResponse<VolunteerOrganizationsData>> => {
-    return http.get<ApiResponse<VolunteerOrganizationsData>>(`/api/volunteers/${volunteerId}/organizations`, params)
+  getVolunteerOrganizations: (params: VolunteerOrganizationsParams): Promise<ApiResponse<VolunteerOrganizationsData>> => {
+    return http.get<ApiResponse<VolunteerOrganizationsData>>('/api/me/organizations', params)
   },
 
   getMembershipStats: (params: MembershipStatsParams): Promise<ApiResponse<MembershipStatsData>> => {

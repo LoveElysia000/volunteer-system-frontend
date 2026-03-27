@@ -28,19 +28,19 @@ export const organizationsApi = {
 
   search: (data: OrganizationSearchRequest): Promise<ApiResponse<OrganizationListData>> => organizationsClient.search<ApiResponse<OrganizationListData>>(data),
 
-  detail: (id: number): Promise<ApiResponse<OrganizationDetailData>> => organizationsClient.detail<ApiResponse<OrganizationDetailData>>(id),
+  detail: (organizationId: number): Promise<ApiResponse<OrganizationDetailData>> => organizationsClient.detail<ApiResponse<OrganizationDetailData>>(organizationId),
 
   create: (data: CreateOrganizationRequest): Promise<ApiResponse<CreateOrganizationData>> => organizationsClient.create<ApiResponse<CreateOrganizationData>>(data),
 
   updateAccount: (data: UpdateOrganizationAccountRequest): Promise<ApiResponse<Record<string, never>>> => organizationsClient.updateAccount<ApiResponse<Record<string, never>>>(data),
 
-  update: (id: number, data: UpdateOrganizationRequest): Promise<ApiResponse<UpdateOrganizationData>> => organizationsClient.update<ApiResponse<UpdateOrganizationData>>(id, data),
+  update: (organizationId: number, data: UpdateOrganizationRequest): Promise<ApiResponse<UpdateOrganizationData>> => organizationsClient.update<ApiResponse<UpdateOrganizationData>>(organizationId, data),
 
-  remove: (id: number): Promise<ApiResponse<OrganizationActionData>> => organizationsClient.remove<ApiResponse<OrganizationActionData>>(id),
+  remove: (organizationId: number): Promise<ApiResponse<OrganizationActionData>> => organizationsClient.remove<ApiResponse<OrganizationActionData>>(organizationId),
 
-  disable: (id: number, data: OrganizationActionRequest): Promise<ApiResponse<OrganizationActionData>> => organizationsClient.disable<ApiResponse<OrganizationActionData>>(id, data),
+  disable: (organizationId: number, data: OrganizationActionRequest): Promise<ApiResponse<OrganizationActionData>> => organizationsClient.disable<ApiResponse<OrganizationActionData>>(organizationId, data),
 
-  enable: (id: number, data: OrganizationActionRequest): Promise<ApiResponse<OrganizationActionData>> => organizationsClient.enable<ApiResponse<OrganizationActionData>>(id, data),
+  enable: (organizationId: number, data: OrganizationActionRequest): Promise<ApiResponse<OrganizationActionData>> => organizationsClient.enable<ApiResponse<OrganizationActionData>>(organizationId, data),
 
   bulkDelete: (data: OrganizationBulkDeleteRequest): Promise<ApiResponse<OrganizationBulkDeleteData>> => organizationsClient.bulkDelete<ApiResponse<OrganizationBulkDeleteData>>(data),
 

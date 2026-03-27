@@ -21,13 +21,7 @@ import {
   HomeIcon,
   CalendarIcon,
   UserIcon,
-  BarChartIcon,
-  AwardIcon,
-  SettingsIcon,
-  ClockIcon,
-  StarIcon,
   UsersIcon,
-  TrophyIcon,
   Building2Icon
 } from 'lucide-vue-next'
 import MenuItem from './MenuItem.vue'
@@ -82,12 +76,6 @@ const menuItems = computed<SidebarMenuItem[]>(() => [
         label: '我的报名',
         icon: UsersIcon,
         to: '/volunteer/activities/my-registrations'
-      },
-      {
-        key: 'history-activities',
-        label: '历史活动',
-        icon: ClockIcon,
-        to: '/volunteer/activities/history'
       }
     ]
   },
@@ -105,33 +93,11 @@ const menuItems = computed<SidebarMenuItem[]>(() => [
     ]
   },
   {
-    key: 'records',
-    label: '个人记录',
-    icon: BarChartIcon,
-    children: [
-      { key: 'service-records', label: '服务记录', icon: BarChartIcon, to: '/volunteer/records' },
-      { key: 'time-statistics', label: '时长统计', icon: ClockIcon, to: '/volunteer/records/statistics' },
-      { key: 'review-records', label: '评价记录', icon: StarIcon, to: '/volunteer/records/reviews' }
-    ]
-  },
-  {
-    key: 'achievements',
-    label: '成长体系',
-    icon: AwardIcon,
-    children: [
-      { key: 'badge-wall', label: '徽章墙', icon: AwardIcon, to: '/volunteer/achievements' },
-      { key: 'level-progress', label: '等级进度', icon: TrophyIcon, to: '/volunteer/achievements/levels' },
-      { key: 'leaderboard', label: '排行榜', icon: UsersIcon, to: '/volunteer/achievements/leaderboard' }
-    ]
-  },
-  {
     key: 'profile',
     label: '个人中心',
     icon: UserIcon,
     children: [
-      { key: 'personal-info', label: '个人信息', icon: UserIcon, to: '/volunteer/profile' },
-      { key: 'account-settings', label: '账户设置', icon: SettingsIcon, to: '/volunteer/settings' },
-      { key: 'notification-preferences', label: '通知偏好', icon: SettingsIcon, to: '/volunteer/settings/notifications' }
+      { key: 'personal-info', label: '个人信息', icon: UserIcon, to: '/volunteer/profile' }
     ]
   }
 ])
