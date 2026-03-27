@@ -3,7 +3,7 @@
     <template #header>
       <OrganizationPageHeader
         eyebrow="通知中心"
-        title="通知管理"
+        title="通知中心"
         description="集中处理系统消息、审核提醒和活动通知。"
         :meta-items="headerMeta"
         mode="compact"
@@ -11,10 +11,10 @@
         <template #actions>
           <button
             class="org-toolbar-button disabled:cursor-not-allowed disabled:opacity-60"
-            :disabled="markingRead || !unreadIds.length"
+            :disabled="markingRead || !filteredUnreadIds.length"
             @click="markAllAsRead"
           >
-            {{ markingRead ? '处理中...' : '全部标记已读' }}
+            {{ markingRead ? '处理中...' : '当前列表标记已读' }}
           </button>
         </template>
       </OrganizationPageHeader>
@@ -23,7 +23,7 @@
     <template #toolbar>
       <DataToolbar>
         <template #filters>
-          <div class="data-list-filter-stack">
+          <div class="flex flex-wrap items-center gap-3">
             <label class="data-list-checkbox-filter">
               <input
                 v-model="unreadOnly"
@@ -39,6 +39,27 @@
               class="input min-w-[240px]"
               placeholder="搜索通知标题、内容或业务类型"
             >
+            <select
+              v-model.number="pageSize"
+              class="input min-w-[140px]"
+            >
+              <option :value="10">
+                每页 10 条
+              </option>
+              <option :value="20">
+                每页 20 条
+              </option>
+              <option :value="50">
+                每页 50 条
+              </option>
+            </select>
+          </div>
+        </template>
+
+        <template #summary>
+          <div class="flex flex-wrap items-center gap-3 text-sm text-slate-500">
+            <span>第 {{ page }} / {{ totalPages }} 页</span>
+            <span>当前筛选 {{ filteredNotifications.length }} 条，共 {{ notificationsStore.total }} 条</span>
           </div>
         </template>
 
@@ -46,9 +67,23 @@
           <Button
             variant="outline"
             :loading="loading"
-            @click="loadNotifications"
+            @click="reloadFromFirstPage"
           >
             刷新通知
+          </Button>
+          <Button
+            variant="outline"
+            :disabled="loading || page <= 1"
+            @click="goToPreviousPage"
+          >
+            上一页
+          </Button>
+          <Button
+            variant="outline"
+            :disabled="loading || page >= totalPages"
+            @click="goToNextPage"
+          >
+            下一页
           </Button>
         </template>
       </DataToolbar>
@@ -156,7 +191,15 @@
           class="space-y-5"
         >
           <section class="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
-            <div class="grid gap-4 sm:grid-cols-2">
+            <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                  事件类型
+                </p>
+                <p class="mt-1 text-sm font-semibold text-slate-900">
+                  {{ selectedNotification.eventType || '未标记' }}
+                </p>
+              </div>
               <div>
                 <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
                   业务类型
@@ -230,6 +273,8 @@ const messageStore = useMessageStore()
 const unreadOnly = ref(false)
 const markingRead = ref(false)
 const searchQuery = ref('')
+const page = ref(1)
+const pageSize = ref(20)
 const selectedNotificationId = ref<number | null>(null)
 const drawerOpen = ref(false)
 
@@ -245,16 +290,15 @@ const loading = computed(() => notificationsStore.loading)
 const unreadIds = computed(() => notifications.value
   .filter(item => item.readStatus !== NotificationReadStatus.READ)
   .map(item => item.inboxId))
+const totalPages = computed(() => Math.max(1, Math.ceil(notificationsStore.total / pageSize.value)))
 const unreadCount = computed(() => unreadIds.value.length)
 
 const filteredNotifications = computed(() => {
-  const keyword = searchQuery.value.trim().toLowerCase()
-  return notifications.value.filter((item) => {
-    if (!keyword) return true
-    return [item.title, item.content, item.bizType || '', item.eventType || '']
-      .some((field) => field.toLowerCase().includes(keyword))
-  })
+  return notifications.value
 })
+const filteredUnreadIds = computed(() => filteredNotifications.value
+  .filter(item => item.readStatus !== NotificationReadStatus.READ)
+  .map(item => item.inboxId))
 
 const selectedNotification = computed(() => (
   filteredNotifications.value.find((item) => item.inboxId === selectedNotificationId.value)
@@ -264,20 +308,39 @@ const selectedNotification = computed(() => (
 
 const headerMeta = computed(() => [
   { label: '消息总数', value: `${notificationsStore.total}`, detail: '来自通知中心接口' },
-  { label: '未读消息', value: `${unreadCount.value}`, detail: unreadOnly.value ? '当前仅展示未读' : '可批量标记已读' }
+  { label: '未读消息', value: `${unreadCount.value}`, detail: unreadOnly.value ? '当前仅展示未读' : '可批量标记已读' },
+  { label: '分页进度', value: `${page.value}/${totalPages.value}`, detail: `每页 ${pageSize.value} 条` }
 ])
 
 const loadNotifications = async () => {
   try {
     await notificationsStore.fetchNotifications({
-      page: 1,
-      pageSize: 20,
-      unreadOnly: unreadOnly.value || undefined
+      page: page.value,
+      pageSize: pageSize.value,
+      unreadOnly: unreadOnly.value || undefined,
+      keyword: searchQuery.value || undefined
     })
   } catch (error: any) {
     console.error('加载通知失败:', error)
     messageStore.error(error.message || '加载通知失败，请稍后重试')
   }
+}
+
+const reloadFromFirstPage = async () => {
+  page.value = 1
+  await loadNotifications()
+}
+
+const goToPreviousPage = async () => {
+  if (page.value <= 1) return
+  page.value -= 1
+  await loadNotifications()
+}
+
+const goToNextPage = async () => {
+  if (page.value >= totalPages.value) return
+  page.value += 1
+  await loadNotifications()
 }
 
 const openNotificationDrawer = (item: Record<string, any>) => {
@@ -305,7 +368,7 @@ const markSingleAsRead = async (id: number) => {
 const markAllAsRead = async () => {
   markingRead.value = true
   try {
-    await notificationsStore.markNotificationsAsRead(unreadIds.value)
+    await notificationsStore.markNotificationsAsRead(filteredUnreadIds.value)
     messageStore.success('未读通知已全部标记为已读')
   } catch (error: any) {
     console.error('批量标记通知已读失败:', error)
@@ -329,6 +392,17 @@ const formatDate = (value?: string) => {
 }
 
 watch(unreadOnly, () => {
+  page.value = 1
+  void loadNotifications()
+})
+
+watch(pageSize, () => {
+  page.value = 1
+  void loadNotifications()
+})
+
+watch(searchQuery, () => {
+  page.value = 1
   void loadNotifications()
 })
 

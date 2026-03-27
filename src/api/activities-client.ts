@@ -8,7 +8,7 @@ type ActivitiesHttpClient = {
 type ActivitiesListRequest = {
   page: number
   pageSize: number
-  status?: number
+  status?: number[]
   keyword?: string
   startFrom?: string
   startTo?: string
@@ -16,13 +16,8 @@ type ActivitiesListRequest = {
   sortOrder?: 'asc' | 'desc'
 }
 
-const withRegisteredOnly = <T extends ActivitiesListRequest>(data: T) => ({
-  ...data,
-  registeredOnly: true
-})
-
 export const createActivitiesApi = (http: ActivitiesHttpClient) => ({
-  list: <T>(data: ActivitiesListRequest & { registeredOnly?: boolean }) => {
+  list: <T>(data: ActivitiesListRequest) => {
     return http.post<T>('/api/activities', data)
   },
 
@@ -47,7 +42,7 @@ export const createActivitiesApi = (http: ActivitiesHttpClient) => ({
   },
 
   listRegisteredActivities: <T>(data: ActivitiesListRequest) => {
-    return http.post<T>('/api/activities', withRegisteredOnly(data))
+    return http.post<T>('/api/activities/my', data)
   },
 
   create: <T>(data: unknown) => {

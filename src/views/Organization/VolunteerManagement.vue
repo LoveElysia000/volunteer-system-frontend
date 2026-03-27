@@ -36,21 +36,95 @@
     <template #toolbar>
       <DataToolbar>
         <template #filters>
-          <input
-            v-model.trim="keyword"
-            type="text"
-            class="input max-w-sm"
-            placeholder="搜索志愿者姓名"
-          >
+          <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <input
+              v-model.trim="keyword"
+              type="text"
+              class="input"
+              placeholder="搜索志愿者姓名"
+            >
+            <select
+              v-model="auditStatusFilter"
+              class="input"
+            >
+              <option :value="undefined">
+                全部审核状态
+              </option>
+              <option :value="VolunteerAuditStatus.UNVERIFIED">
+                未认证
+              </option>
+              <option :value="VolunteerAuditStatus.PENDING">
+                审核中
+              </option>
+              <option :value="VolunteerAuditStatus.APPROVED">
+                已通过
+              </option>
+              <option :value="VolunteerAuditStatus.REJECTED">
+                已驳回
+              </option>
+            </select>
+            <select
+              v-model="statusFilter"
+              class="input"
+            >
+              <option :value="undefined">
+                全部账户状态
+              </option>
+              <option :value="VolunteerStatus.ACTIVE">
+                活跃
+              </option>
+              <option :value="VolunteerStatus.INACTIVE">
+                非活跃
+              </option>
+              <option :value="VolunteerStatus.OTHER">
+                其他
+              </option>
+            </select>
+            <select
+              v-model.number="pageSize"
+              class="input"
+            >
+              <option :value="10">
+                每页 10 条
+              </option>
+              <option :value="20">
+                每页 20 条
+              </option>
+              <option :value="50">
+                每页 50 条
+              </option>
+            </select>
+          </div>
+        </template>
+
+        <template #summary>
+          <div class="flex flex-wrap items-center gap-3 text-sm text-slate-500">
+            <span>第 {{ page }} / {{ totalPages }} 页</span>
+            <span>当前 {{ volunteers.length }} 条，共 {{ total }} 条</span>
+          </div>
         </template>
 
         <template #actions>
           <Button
             variant="outline"
             :loading="loading"
-            @click="loadVolunteers"
+            @click="reloadFromFirstPage"
           >
             刷新列表
+          </Button>
+          <Button
+            variant="outline"
+            :disabled="loading || page <= 1"
+            @click="goToPreviousPage"
+          >
+            上一页
+          </Button>
+          <Button
+            variant="outline"
+            :disabled="loading || page >= totalPages"
+            @click="goToNextPage"
+          >
+            下一页
           </Button>
         </template>
       </DataToolbar>
@@ -62,7 +136,7 @@
       >
         <DataTable
           :columns="columns"
-          :items="volunteers"
+          :items="filteredVolunteers"
           :loading="loading"
           row-key="id"
           :selected-key="selectedVolunteerId"
@@ -208,6 +282,14 @@
                   {{ selectedVolunteer.updatedAt || selectedVolunteer.createdAt || '待更新' }}
                 </p>
               </div>
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                  注册时间
+                </p>
+                <p class="mt-1 text-sm font-semibold text-slate-900">
+                  {{ selectedVolunteer.createdAt || '待更新' }}
+                </p>
+              </div>
             </div>
           </section>
 
@@ -245,7 +327,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import Button from '@/components/ui/Button.vue'
 import DataListPage from '@/components/data-list/DataListPage.vue'
 import DataToolbar from '@/components/data-list/DataToolbar.vue'
@@ -263,6 +345,10 @@ const messageStore = useMessageStore()
 
 const importInputRef = ref<HTMLInputElement | null>(null)
 const keyword = ref('')
+const auditStatusFilter = ref<VolunteerAuditStatus | undefined>(undefined)
+const statusFilter = ref<VolunteerStatus | undefined>(undefined)
+const page = ref(1)
+const pageSize = ref(20)
 const volunteers = ref<VolunteerListItem[]>([])
 const total = ref(0)
 const loading = ref(false)
@@ -271,6 +357,7 @@ const exporting = ref(false)
 const selectedVolunteerId = ref<number | null>(null)
 const selectedVolunteerSnapshot = ref<(VolunteerListItem & Partial<VolunteerProfileInfo>) | null>(null)
 const drawerOpen = ref(false)
+const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pageSize.value)))
 
 const columns: DataTableColumn[] = [
   { key: 'identity', label: '志愿者', width: '260px' },
@@ -282,14 +369,25 @@ const columns: DataTableColumn[] = [
 ]
 
 const headerMeta = computed(() => {
-  const activeCount = volunteers.value.filter((item) => item.status === VolunteerStatus.ACTIVE).length
-  const totalHours = volunteers.value.reduce((sum, item) => sum + item.totalHours, 0)
+  const activeCount = filteredVolunteers.value.filter((item) => item.status === VolunteerStatus.ACTIVE).length
+  const totalHours = filteredVolunteers.value.reduce((sum, item) => sum + item.totalHours, 0)
   return [
     { label: '总志愿者', value: `${total.value}`, detail: '当前列表规模' },
-    { label: '活跃志愿者', value: `${activeCount}`, detail: '当前状态为活跃' },
-    { label: '总服务时长', value: `${totalHours}h`, detail: '当前页统计' }
+    { label: '活跃志愿者', value: `${activeCount}`, detail: '当前筛选结果中状态为活跃' },
+    { label: '总服务时长', value: `${totalHours}h`, detail: '当前筛选结果统计' },
+    { label: '分页进度', value: `${page.value}/${totalPages.value}`, detail: `每页 ${pageSize.value} 条` }
   ]
 })
+
+const filteredVolunteers = computed(() => volunteers.value.filter((item) => {
+  if (auditStatusFilter.value !== undefined && item.auditStatus !== auditStatusFilter.value) {
+    return false
+  }
+  if (statusFilter.value !== undefined && item.status !== statusFilter.value) {
+    return false
+  }
+  return true
+}))
 
 const selectedVolunteer = computed(() => {
   if (selectedVolunteerId.value === null) {
@@ -315,8 +413,10 @@ const loadVolunteers = async () => {
   try {
     const response = await volunteerApi.list({
       keyword: keyword.value || undefined,
-      page: 1,
-      pageSize: 20
+      auditStatus: auditStatusFilter.value,
+      status: statusFilter.value,
+      page: page.value,
+      pageSize: pageSize.value
     })
     if (response.code !== 200) {
       throw new Error(response.msg || '获取志愿者列表失败')
@@ -330,6 +430,23 @@ const loadVolunteers = async () => {
   } finally {
     loading.value = false
   }
+}
+
+const reloadFromFirstPage = async () => {
+  page.value = 1
+  await loadVolunteers()
+}
+
+const goToPreviousPage = async () => {
+  if (page.value <= 1) return
+  page.value -= 1
+  await loadVolunteers()
+}
+
+const goToNextPage = async () => {
+  if (page.value >= totalPages.value) return
+  page.value += 1
+  await loadVolunteers()
 }
 
 const triggerImport = () => {
@@ -404,8 +521,8 @@ const exportVolunteers = async () => {
   try {
     const response = await adminApi.exportVolunteers({
       keyword: keyword.value || '',
-      auditStatus: undefined,
-      status: undefined
+      auditStatus: auditStatusFilter.value,
+      status: statusFilter.value
     })
     downloadBlob(
       response.data,
@@ -453,6 +570,11 @@ const genderText = (gender?: number) => {
 }
 
 onMounted(() => {
+  void loadVolunteers()
+})
+
+watch([keyword, auditStatusFilter, statusFilter, pageSize], () => {
+  page.value = 1
   void loadVolunteers()
 })
 </script>

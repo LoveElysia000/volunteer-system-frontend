@@ -8,6 +8,7 @@ export const useVolunteerMetrics = () => {
   const user = computed(() => authStore.user)
   const summary = computed(() => volunteerStore.summary)
   const profile = computed(() => volunteerStore.profile)
+  const registeredActivities = computed(() => volunteerStore.registeredActivities)
 
   const summaryStats = computed(() => summary.value?.stats)
   const points = computed(() =>
@@ -28,8 +29,12 @@ export const useVolunteerMetrics = () => {
   const monthlyHoursGrowth = computed(() => summary.value?.monthlyGrowth ?? 0)
   const monthlyPointsGrowth = computed(() => 0)
   const totalActivities = computed(() => summaryStats.value?.activityCount ?? 0)
-  const completedActivities = computed(() => 0)
-  const upcomingActivities = computed(() => 0)
+  const completedActivities = computed(() => (
+    registeredActivities.value.filter((item) => item.status === 'completed').length
+  ))
+  const upcomingActivities = computed(() => (
+    registeredActivities.value.filter((item) => item.status !== 'completed').length
+  ))
 
   return {
     user,
@@ -45,6 +50,7 @@ export const useVolunteerMetrics = () => {
     monthlyPointsGrowth,
     totalActivities,
     completedActivities,
-    upcomingActivities
+    upcomingActivities,
+    registeredActivities
   }
 }

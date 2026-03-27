@@ -27,6 +27,13 @@
           {{ isExporting ? '导出中...' : '导出报表' }}
         </button>
 
+        <FilterSelect
+          v-model="selectedReportPeriod"
+          :options="reportPeriodOptions"
+          :icon="CalendarRangeIcon"
+          compact
+        />
+
         <RouterLink
           to="/organization/activities/create"
           class="org-toolbar-button org-toolbar-button--soft"
@@ -70,6 +77,41 @@
         </div>
       </OrganizationMetricCard>
     </div>
+
+    <OrganizationSectionCard
+      title="报表范围"
+      caption="Report Range"
+      description="控制看板统计与运营报表导出的时间范围。"
+      tone="soft"
+    >
+      <div class="grid gap-4 md:grid-cols-3">
+        <input
+          v-model="customStart"
+          type="date"
+          class="input"
+          :disabled="selectedReportPeriod !== 'custom'"
+          placeholder="自定义开始"
+        >
+        <input
+          v-model="customEnd"
+          type="date"
+          class="input"
+          :disabled="selectedReportPeriod !== 'custom'"
+          placeholder="自定义结束"
+        >
+        <div class="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
+          <p class="font-semibold text-slate-900">
+            当前导出范围
+          </p>
+          <p class="mt-1">
+            {{ resolvedRange.start }} ~ {{ resolvedRange.end }}
+          </p>
+        </div>
+      </div>
+      <p class="mt-3 text-xs text-slate-500">
+        自定义开始 / 自定义结束仅在选择“自定义区间”后生效。
+      </p>
+    </OrganizationSectionCard>
 
     <div class="grid gap-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(320px,1fr)]">
       <OrganizationSectionCard
@@ -303,10 +345,18 @@ const { ensureOrganizationId } = useOrganizationContext()
 
 const searchKeyword = ref('')
 const selectedTrendRange = ref<'12m' | 'qtr' | 'ytd'>('12m')
+const selectedReportPeriod = ref<'last_7_days' | 'last_30_days' | 'custom'>('last_30_days')
+const customStart = ref('')
+const customEnd = ref('')
 const trendRangeOptions = [
   { value: '12m', label: '近 12 个月', description: '查看完整年度趋势' },
   { value: 'qtr', label: '近一季度', description: '聚焦最近 4 个周期变化' },
   { value: 'ytd', label: '年初至今', description: '查看本年度累计走势' }
+] as const
+const reportPeriodOptions = [
+  { value: 'last_7_days', label: '近 7 天', description: '适合查看最近执行波动' },
+  { value: 'last_30_days', label: '近 30 天', description: '默认运营周期' },
+  { value: 'custom', label: '自定义区间', description: '手动选择导出和统计范围' }
 ] as const
 const isExporting = ref(false)
 
@@ -340,9 +390,27 @@ const filteredTopProjectRows = computed(() => {
   })
 })
 
+const formatDate = (value: Date) => value.toISOString().slice(0, 10)
+
+const resolvedRange = computed(() => {
+  if (selectedReportPeriod.value === 'custom' && customStart.value && customEnd.value) {
+    return { start: customStart.value, end: customEnd.value }
+  }
+
+  const endDate = new Date()
+  const startDate = new Date(endDate)
+  startDate.setDate(endDate.getDate() - (selectedReportPeriod.value === 'last_7_days' ? 7 : 30))
+
+  return {
+    start: formatDate(startDate),
+    end: formatDate(endDate)
+  }
+})
+
 const headerMeta = computed(() => [
   { label: '当前管理员', value: user.value?.realName || '组织管理员', detail: '当前在线' },
-  { label: '当前日期', value: currentDateLabel.value, detail: '本地工作区时间' }
+  { label: '当前日期', value: currentDateLabel.value, detail: '本地工作区时间' },
+  { label: '统计范围', value: `${resolvedRange.value.start} ~ ${resolvedRange.value.end}`, detail: '用于看板和报表导出' }
 ])
 
 const metricIconMap: Record<string, any> = {
@@ -385,10 +453,6 @@ const handleExport = async () => {
     return
   }
 
-  const endDate = new Date()
-  const startDate = new Date(endDate)
-  startDate.setDate(endDate.getDate() - 30)
-  const formatDate = (value: Date) => value.toISOString().slice(0, 10)
   const getDownloadFileName = (contentDisposition?: string | null, fallback = 'export.xlsx') => {
     const match = contentDisposition?.match(/filename\*=UTF-8''([^;]+)|filename="?([^"]+)"?/)
     return decodeURIComponent(match?.[1] || match?.[2] || fallback)
@@ -407,10 +471,10 @@ const handleExport = async () => {
   isExporting.value = true
   try {
     const response = await adminApi.exportOpsReport({
-      periodType: 'custom',
+      periodType: selectedReportPeriod.value,
       orgId,
-      start: formatDate(startDate),
-      end: formatDate(endDate)
+      start: resolvedRange.value.start,
+      end: resolvedRange.value.end
     })
     downloadBlob(
       response.data,
@@ -429,16 +493,11 @@ const loadAnalytics = async () => {
   const orgId = await ensureOrganizationId()
   if (!orgId) return
 
-  const endDate = new Date()
-  const startDate = new Date(endDate)
-  startDate.setDate(endDate.getDate() - 30)
-  const formatDate = (value: Date) => value.toISOString().slice(0, 10)
-
   try {
     await analyticsStore.fetchOrganizationAnalytics({
       orgId,
-      start: formatDate(startDate),
-      end: formatDate(endDate)
+      start: resolvedRange.value.start,
+      end: resolvedRange.value.end
     })
   } catch (error: any) {
     console.error('加载组织看板统计失败:', error)

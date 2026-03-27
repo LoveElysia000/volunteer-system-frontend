@@ -100,10 +100,10 @@ const menuItems = computed<SidebarMenuItem[]>(() => [
       },
       {
         key: 'activity-review',
-        label: '活动审核',
+        label: '审核中心',
         icon: StarIcon,
         to: '/organization/activities/review',
-        badge: '3',
+        badge: '待办',
         badgeClass: 'bg-sky-100 text-sky-700'
       }
     ]

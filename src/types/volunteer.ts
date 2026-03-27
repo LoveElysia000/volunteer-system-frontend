@@ -64,6 +64,8 @@ export interface VolunteerProfileData {
 
 export interface VolunteerListRequest {
   keyword?: string
+  auditStatus?: VolunteerAuditStatus
+  status?: VolunteerStatus
   page: number
   pageSize: number
 }

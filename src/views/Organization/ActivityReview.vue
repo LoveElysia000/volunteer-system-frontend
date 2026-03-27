@@ -3,8 +3,8 @@
     <template #header>
       <OrganizationPageHeader
         eyebrow="审核队列"
-        title="活动审核"
-        description="集中处理活动申请与待办审批。"
+        title="审核中心"
+        description="集中处理实名认证、组织资料、活动等各类待办审批。"
         :meta-items="headerMeta"
       />
     </template>
@@ -12,7 +12,7 @@
     <template #toolbar>
       <DataToolbar>
         <template #filters>
-          <div class="grid gap-3 lg:grid-cols-[minmax(220px,320px)_180px]">
+          <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
             <input
               v-model.trim="searchQuery"
               type="text"
@@ -20,11 +20,58 @@
               placeholder="搜索标题、说明或审核单号"
             >
             <FilterSelect
+              v-model="targetTypeFilter"
+              title="审核类型"
+              :icon="FoldersIcon"
+              :options="targetTypeOptions"
+            />
+            <FilterSelect
               v-model="queueFilter"
               title="审核队列"
               :icon="TimerResetIcon"
               :options="queueFilterOptions"
             />
+            <input
+              v-model="createdFrom"
+              type="date"
+              class="input"
+              placeholder="开始日期"
+            >
+            <input
+              v-model="createdTo"
+              type="date"
+              class="input"
+              placeholder="结束日期"
+            >
+            <input
+              v-model.number="slaHours"
+              type="number"
+              min="1"
+              class="input"
+              placeholder="SLA 小时数"
+            >
+            <select
+              v-model.number="pageSize"
+              class="input"
+            >
+              <option :value="10">
+                每页 10 条
+              </option>
+              <option :value="20">
+                每页 20 条
+              </option>
+              <option :value="50">
+                每页 50 条
+              </option>
+            </select>
+          </div>
+        </template>
+
+        <template #summary>
+          <div class="flex flex-wrap items-center gap-3 text-sm text-slate-500">
+            <span>第 {{ page }} / {{ totalPages }} 页</span>
+            <span>接口返回 {{ auditsStore.total }} 条待审核</span>
+            <span>当前列表 {{ filteredItems.length }} 条</span>
           </div>
         </template>
 
@@ -48,9 +95,23 @@
           <Button
             variant="outline"
             :loading="loading"
-            @click="loadAudits"
+            @click="reloadFromFirstPage"
           >
             刷新审核队列
+          </Button>
+          <Button
+            variant="outline"
+            :disabled="loading || page <= 1"
+            @click="goToPreviousPage"
+          >
+            上一页
+          </Button>
+          <Button
+            variant="outline"
+            :disabled="loading || page >= totalPages"
+            @click="goToNextPage"
+          >
+            下一页
           </Button>
         </template>
       </DataToolbar>
@@ -237,7 +298,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import Button from '@/components/ui/Button.vue'
 import FilterSelect from '@/components/ui/FilterSelect.vue'
 import Textarea from '@/components/ui/Textarea.vue'
@@ -250,8 +311,8 @@ import OrganizationPageHeader from '@/components/organization/OrganizationPageHe
 import OrganizationSectionCard from '@/components/organization/OrganizationSectionCard.vue'
 import { useAuditsStore } from '@/store/modules/audits'
 import { useMessageStore } from '@/store/modules/messages'
-import { AuditDecisionAction, AuditTargetType } from '@/types/audit'
-import { TimerResetIcon } from 'lucide-vue-next'
+import { AuditDecisionAction, AuditStatus, AuditTargetType } from '@/types/audit'
+import { FoldersIcon, TimerResetIcon } from 'lucide-vue-next'
 
 const auditsStore = useAuditsStore()
 const messageStore = useMessageStore()
@@ -263,10 +324,23 @@ const actionLoading = ref(false)
 const drawerOpen = ref(false)
 const searchQuery = ref('')
 const queueFilter = ref<'all' | 'overdue' | 'pending'>('all')
+const targetTypeFilter = ref<'all' | AuditTargetType>('all')
+const createdFrom = ref('')
+const createdTo = ref('')
+const slaHours = ref<number | undefined>()
+const page = ref(1)
+const pageSize = ref(20)
 const queueFilterOptions = [
   { value: 'all', label: '全部队列', description: '查看所有待审核记录' },
   { value: 'overdue', label: '已超时', description: '优先处理超过时限的审核单' },
   { value: 'pending', label: '正常待处理', description: '查看仍在正常处理时限内的记录' }
+] as const
+const targetTypeOptions = [
+  { value: 'all', label: '全部类型', description: '统一查看实名、组织、成员和活动审核' },
+  { value: AuditTargetType.VOLUNTEER_REAL_NAME, label: '实名审核', description: '查看志愿者实名申请' },
+  { value: AuditTargetType.ORGANIZATION, label: '组织审核', description: '查看组织资料和认证变更' },
+  { value: AuditTargetType.MEMBERSHIP, label: '成员审核', description: '查看加入组织申请' },
+  { value: AuditTargetType.ACTIVITY_SIGNUP, label: '活动报名', description: '查看活动报名审核' }
 ] as const
 
 const columns: DataTableColumn[] = [
@@ -298,6 +372,7 @@ const columns: DataTableColumn[] = [
 const items = computed(() => auditsStore.items)
 const detail = computed(() => auditsStore.currentRecord)
 const loading = computed(() => auditsStore.loading)
+const totalPages = computed(() => Math.max(1, Math.ceil(auditsStore.total / pageSize.value)))
 const selectedAudit = computed(() => (
   items.value.find((item) => item.id === selectedAuditId.value) || null
 ))
@@ -323,17 +398,37 @@ const filteredItems = computed(() => {
   })
 })
 
+const targetTypes = computed(() => (
+  targetTypeFilter.value === 'all'
+    ? [
+        AuditTargetType.VOLUNTEER_REAL_NAME,
+        AuditTargetType.ORGANIZATION,
+        AuditTargetType.MEMBERSHIP,
+        AuditTargetType.ACTIVITY_SIGNUP
+      ]
+    : [targetTypeFilter.value]
+))
+
 const headerMeta = computed(() => [
   { label: '待审核总数', value: `${auditsStore.total}`, detail: '来源于审核中心接口' },
-  { label: '当前模块', value: '活动报名审核', detail: '筛选 targetType=4' }
+  {
+    label: '当前模块',
+    value: targetTypeFilter.value === 'all' ? '综合审核' : targetTypeText(targetTypeFilter.value),
+    detail: '覆盖实名、组织、成员与活动报名'
+  }
 ])
 
 const loadAudits = async () => {
   try {
     const data = await auditsStore.fetchPending({
-      targetTypes: [AuditTargetType.ACTIVITY_SIGNUP],
-      page: 1,
-      pageSize: 20
+      targetTypes: targetTypes.value,
+      status: [AuditStatus.PENDING],
+      keyword: searchQuery.value || undefined,
+      page: page.value,
+      pageSize: pageSize.value,
+      createdFrom: createdFrom.value || undefined,
+      createdTo: createdTo.value || undefined,
+      slaHours: slaHours.value || undefined
     })
 
     if (!selectedAuditId.value && data.list.length) {
@@ -343,6 +438,23 @@ const loadAudits = async () => {
     console.error('加载审核列表失败:', error)
     messageStore.error(error.message || '加载审核列表失败，请稍后重试')
   }
+}
+
+const reloadFromFirstPage = async () => {
+  page.value = 1
+  await loadAudits()
+}
+
+const goToPreviousPage = async () => {
+  if (page.value <= 1) return
+  page.value -= 1
+  await loadAudits()
+}
+
+const goToNextPage = async () => {
+  if (page.value >= totalPages.value) return
+  page.value += 1
+  await loadAudits()
 }
 
 const openAuditById = async (id: number) => {
@@ -442,5 +554,9 @@ const targetTypeText = (targetType: AuditTargetType) => ({
 
 onMounted(() => {
   void loadAudits()
+})
+
+watch([searchQuery, queueFilter, targetTypeFilter, createdFrom, createdTo, slaHours, pageSize], () => {
+  void reloadFromFirstPage()
 })
 </script>

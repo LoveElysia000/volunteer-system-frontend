@@ -94,6 +94,28 @@
             placeholder="可选，填写活动封面 URL"
           >
         </div>
+        <div
+          v-if="form.coverUrl.trim()"
+          class="md:col-span-2"
+        >
+          <p class="mb-2 text-sm font-medium text-gray-700">
+            活动封面预览
+          </p>
+          <div class="overflow-hidden rounded-xl border border-gray-200 bg-slate-50">
+            <img
+              :src="form.coverUrl.trim()"
+              alt="活动封面预览"
+              class="h-56 w-full object-cover"
+            >
+          </div>
+        </div>
+      </div>
+
+      <div
+        v-if="recentCreatedActivityId"
+        class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700"
+      >
+        最近创建 ID：#{{ recentCreatedActivityId }}
       </div>
 
       <div class="flex justify-end">
@@ -123,6 +145,7 @@ const router = useRouter()
 const messageStore = useMessageStore()
 const organizationStore = useOrganizationStore()
 const submitting = ref(false)
+const recentCreatedActivityId = ref<number | null>(null)
 const organizationId = computed(() => organizationStore.activeOrganizationId ?? organizationStore.currentOrganization?.id ?? 0)
 
 const form = reactive<CreateOrganizationActivityRequest>({
@@ -173,6 +196,14 @@ const submitActivity = async () => {
     messageStore.error('请先填写完整的活动基础信息')
     return
   }
+  if (new Date(form.endTime).getTime() <= new Date(form.startTime).getTime()) {
+    messageStore.error('结束时间必须晚于开始时间')
+    return
+  }
+  if (form.duration <= 0 || form.maxPeople <= 0) {
+    messageStore.error('活动时长和人数上限都必须大于 0')
+    return
+  }
   submitting.value = true
   try {
     form.orgId = organizationId.value
@@ -192,7 +223,8 @@ const submitActivity = async () => {
       throw new Error(response.msg || '创建活动失败')
     }
 
-    messageStore.success(response.data.message || '活动创建成功')
+    recentCreatedActivityId.value = response.data.id
+    messageStore.success(response.data.message || `活动创建成功，ID #${response.data.id}`)
     router.push('/organization/activities')
   } catch (error: any) {
     console.error('创建活动失败:', error)

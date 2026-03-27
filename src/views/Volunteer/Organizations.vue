@@ -38,6 +38,46 @@
           description="已加入、待审核、已驳回的组织关系都统一放在这里。"
           tone="soft"
         >
+          <div class="mb-4 grid gap-3 md:grid-cols-3">
+            <select
+              v-model.number="membershipStatusFilter"
+              class="input"
+            >
+              <option :value="0">
+                全部关系状态
+              </option>
+              <option :value="MembershipStatus.PENDING">
+                待审核
+              </option>
+              <option :value="MembershipStatus.ACTIVE">
+                已加入
+              </option>
+              <option :value="MembershipStatus.REJECTED">
+                已驳回
+              </option>
+              <option :value="MembershipStatus.LEFT">
+                已退出
+              </option>
+            </select>
+            <select
+              v-model.number="membershipsPageSize"
+              class="input"
+            >
+              <option :value="10">
+                每页 10 条
+              </option>
+              <option :value="20">
+                每页 20 条
+              </option>
+              <option :value="50">
+                每页 50 条
+              </option>
+            </select>
+            <div class="flex items-center justify-end gap-2 text-sm text-slate-500">
+              <span>第 {{ membershipsPage }} / {{ membershipsTotalPages }} 页</span>
+            </div>
+          </div>
+
           <div
             v-if="membershipsStore.myOrganizationsLoading"
             class="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500"
@@ -98,6 +138,23 @@
                 </button>
               </div>
             </article>
+
+            <div class="flex justify-end gap-2">
+              <button
+                class="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                :disabled="membershipsStore.myOrganizationsLoading || membershipsPage <= 1"
+                @click="goToPreviousMembershipsPage"
+              >
+                上一页
+              </button>
+              <button
+                class="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                :disabled="membershipsStore.myOrganizationsLoading || membershipsPage >= membershipsTotalPages"
+                @click="goToNextMembershipsPage"
+              >
+                下一页
+              </button>
+            </div>
           </div>
         </VolunteerSectionCard>
       </div>
@@ -108,7 +165,7 @@
           description="通过关键词筛选活跃组织，找到适合你长期参与的协作方向。"
         >
           <div class="space-y-5">
-            <div class="flex flex-col gap-3 md:flex-row">
+            <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
               <div class="relative flex-1">
                 <SearchIcon class="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                 <input
@@ -119,13 +176,60 @@
                   @keyup.enter="loadOrganizations"
                 >
               </div>
+              <input
+                v-model="organizationTypeFilter"
+                type="text"
+                class="input h-12 rounded-2xl border-slate-200 bg-slate-50 shadow-none"
+                placeholder="组织类型"
+                @keyup.enter="loadOrganizations"
+              >
+              <input
+                v-model="regionFilter"
+                type="text"
+                class="input h-12 rounded-2xl border-slate-200 bg-slate-50 shadow-none"
+                placeholder="地区"
+                @keyup.enter="loadOrganizations"
+              >
+              <select
+                v-model.number="organizationsPageSize"
+                class="input h-12 rounded-2xl border-slate-200 bg-slate-50 shadow-none"
+              >
+                <option :value="12">
+                  每页 12 条
+                </option>
+                <option :value="24">
+                  每页 24 条
+                </option>
+                <option :value="48">
+                  每页 48 条
+                </option>
+              </select>
+            </div>
+            <div class="flex flex-col gap-3 md:flex-row md:justify-between md:items-center">
               <button
                 class="rounded-full bg-emerald-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-300"
                 :disabled="organizationsLoading"
-                @click="loadOrganizations"
+                @click="reloadOrganizationsFromFirstPage"
               >
                 {{ organizationsLoading ? '搜索中...' : '搜索组织' }}
               </button>
+              <div class="flex items-center gap-2 text-sm text-slate-500">
+                <span>第 {{ organizationsPage }} / {{ organizationsTotalPages }} 页</span>
+                <button
+                  class="rounded-full border border-slate-200 px-4 py-2 font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                  :disabled="organizationsLoading || organizationsPage <= 1"
+                  @click="goToPreviousOrganizationsPage"
+                >
+                  上一页
+                </button>
+                <button
+                  class="rounded-full border border-slate-200 px-4 py-2 font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                  :disabled="organizationsLoading || organizationsPage >= organizationsTotalPages"
+                  @click="goToNextOrganizationsPage"
+                >
+                  下一页
+                </button>
+              </div>
             </div>
 
             <div class="grid gap-4 md:grid-cols-3">
@@ -239,7 +343,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { SearchIcon } from 'lucide-vue-next'
 import VolunteerPageHeader from '@/components/volunteer/VolunteerPageHeader.vue'
 import VolunteerSectionCard from '@/components/volunteer/VolunteerSectionCard.vue'
@@ -261,10 +365,17 @@ const membershipsStore = useMembershipsStore()
 const messageStore = useMessageStore()
 
 const searchQuery = ref('')
+const organizationTypeFilter = ref('')
+const regionFilter = ref('')
 const organizations = ref<OrganizationInfo[]>([])
 const organizationsTotal = ref(0)
 const organizationsLoading = ref(false)
 const organizationActionLoading = ref(false)
+const organizationsPage = ref(1)
+const organizationsPageSize = ref(24)
+const membershipsPage = ref(1)
+const membershipsPageSize = ref(20)
+const membershipStatusFilter = ref(0)
 
 const membershipByOrganizationId = computed<Record<number, OrganizationMemberInfo>>(() => (
   membershipsStore.myOrganizations.reduce<Record<number, OrganizationMemberInfo>>((acc, item) => {
@@ -294,7 +405,8 @@ const pendingMembershipCount = computed(() => (
 
 const headerMeta = computed(() => [
   { label: '已加入组织', value: `${activeMembershipCount.value} 个`, detail: '活跃协作关系' },
-  { label: '待审核申请', value: `${pendingMembershipCount.value} 个`, detail: '等待组织侧处理' }
+  { label: '待审核申请', value: `${pendingMembershipCount.value} 个`, detail: '等待组织侧处理' },
+  { label: '公开组织', value: `${organizationsTotal.value} 个`, detail: '当前筛选条件下的公开组织总量' }
 ])
 
 const summaryCards = computed(() => [
@@ -308,6 +420,8 @@ const discoveryMetrics = computed(() => [
   { label: '接口总量', value: `${organizationsTotal.value}`, detail: '组织列表接口返回总数' },
   { label: '可直接申请', value: `${organizations.value.filter(item => canJoinOrganization(item.id)).length}`, detail: '尚未建立关系的组织' }
 ])
+const organizationsTotalPages = computed(() => Math.max(1, Math.ceil(organizationsTotal.value / organizationsPageSize.value)))
+const membershipsTotalPages = computed(() => Math.max(1, Math.ceil(membershipsStore.myOrganizationsTotal / membershipsPageSize.value)))
 
 const membershipStatusText = (status: string | number | null | undefined) => ({
   [MembershipStatus.PENDING]: '待审核',
@@ -352,8 +466,10 @@ const loadOrganizations = async () => {
     const keyword = searchQuery.value.trim()
     const response = await organizationsApi.publicList({
       keyword: keyword || undefined,
-      page: 1,
-      pageSize: 24
+      organizationType: organizationTypeFilter.value || undefined,
+      region: regionFilter.value || undefined,
+      page: organizationsPage.value,
+      pageSize: organizationsPageSize.value
     })
 
     if (!isApiSuccess(response.code)) {
@@ -371,7 +487,40 @@ const loadOrganizations = async () => {
 }
 
 const refreshMemberships = async () => {
-  await membershipsStore.fetchMyOrganizations()
+  await membershipsStore.fetchMyOrganizations({
+    status: membershipStatusFilter.value || undefined,
+    page: membershipsPage.value,
+    pageSize: membershipsPageSize.value
+  })
+}
+
+const reloadOrganizationsFromFirstPage = async () => {
+  organizationsPage.value = 1
+  await loadOrganizations()
+}
+
+const goToPreviousOrganizationsPage = async () => {
+  if (organizationsPage.value <= 1) return
+  organizationsPage.value -= 1
+  await loadOrganizations()
+}
+
+const goToNextOrganizationsPage = async () => {
+  if (organizationsPage.value >= organizationsTotalPages.value) return
+  organizationsPage.value += 1
+  await loadOrganizations()
+}
+
+const goToPreviousMembershipsPage = async () => {
+  if (membershipsPage.value <= 1) return
+  membershipsPage.value -= 1
+  await refreshMemberships()
+}
+
+const goToNextMembershipsPage = async () => {
+  if (membershipsPage.value >= membershipsTotalPages.value) return
+  membershipsPage.value += 1
+  await refreshMemberships()
 }
 
 const joinOrganization = async (organizationId: string | number) => {
@@ -441,5 +590,15 @@ onMounted(async () => {
     console.error('加载组织关系失败:', error)
     messageStore.error('加载组织关系失败，请稍后重试')
   }
+})
+
+watch([searchQuery, organizationTypeFilter, regionFilter, organizationsPageSize], () => {
+  organizationsPage.value = 1
+  void loadOrganizations()
+})
+
+watch([membershipStatusFilter, membershipsPageSize], () => {
+  membershipsPage.value = 1
+  void refreshMemberships()
 })
 </script>

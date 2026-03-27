@@ -11,6 +11,7 @@ import type {
   OrganizationCertificationInfo,
   OrganizationInfo,
   OrganizationListRequest,
+  OrganizationSearchRequest,
   UpdateOrganizationAccountRequest,
   UpdateOrganizationRequest
 } from '@/types/organization'
@@ -24,10 +25,10 @@ export const useOrganizationStore = defineStore('organization', () => {
   const loading = ref(false)
   const activeOrganizationId = ref<number | null>(null)
 
-  const fetchOrganizations = async (params: OrganizationListRequest) => {
+  const fetchOrganizations = async (params: OrganizationListRequest | OrganizationSearchRequest) => {
     loading.value = true
     try {
-      const response = params.keyword
+      const response = (params.startDate || params.endDate)
         ? await organizationsApi.search(params)
         : await organizationsApi.list(params)
       if (!isApiSuccess(response.code)) {

@@ -11,6 +11,14 @@
     <OrganizationSectionCard
       title="活动执行指标"
     >
+      <div class="mb-4 rounded-[1.2rem] border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
+        <p class="font-semibold text-slate-900">
+          统计口径
+        </p>
+        <p class="mt-1">
+          {{ funnel.value?.start || '待确认' }} ~ {{ funnel.value?.end || '待确认' }}
+        </p>
+      </div>
       <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <article
           v-for="item in activityMetrics"
@@ -44,17 +52,19 @@ const analyticsStore = useAnalyticsStore()
 const messageStore = useMessageStore()
 const { ensureOrganizationId } = useOrganizationContext()
 
-const dashboard = computed(() => analyticsStore.dashboard)
+const funnel = computed(() => analyticsStore.funnel)
 const headerMeta = computed(() => [
-  { label: '报名总数', value: `${dashboard.value?.signupCount ?? 0}`, detail: '活动执行起点' },
-  { label: '到场率', value: `${Math.round(dashboard.value?.attendanceRate ?? 0)}%`, detail: '当前统计区间' }
+  { label: '报名总数', value: `${funnel.value?.signupCount ?? 0}`, detail: '转化漏斗中的报名阶段' },
+  { label: '到场转化', value: `${Math.round(funnel.value?.signupToAttendanceRate ?? 0)}%`, detail: '报名到到场的转化率' },
+  { label: '工时转化', value: `${Math.round(funnel.value?.attendanceToWorkhourRate ?? 0)}%`, detail: '到场到工时发放的转化率' }
 ])
 
 const activityMetrics = computed(() => [
-  { label: '报名人数', value: `${dashboard.value?.signupCount ?? 0}`, detail: '统计区间内累计报名' },
-  { label: '通过人数', value: `${dashboard.value?.approvedSignupCount ?? 0}`, detail: '审核通过后进入执行' },
-  { label: '到场人数', value: `${dashboard.value?.attendanceCount ?? 0}`, detail: '实际完成签到' },
-  { label: '发放工时', value: `${dashboard.value?.grantedWorkHours ?? 0}h`, detail: '签到签退后已结算' }
+  { label: '注册人数', value: `${funnel.value?.registrationCount ?? 0}`, detail: '进入平台注册的总人数' },
+  { label: '成员人数', value: `${funnel.value?.membershipCount ?? 0}`, detail: `转化率 ${Math.round(funnel.value?.registrationToMembershipRate ?? 0)}%` },
+  { label: '报名人数', value: `${funnel.value?.signupCount ?? 0}`, detail: `转化率 ${Math.round(funnel.value?.membershipToSignupRate ?? 0)}%` },
+  { label: '到场人数', value: `${funnel.value?.attendanceCount ?? 0}`, detail: `转化率 ${Math.round(funnel.value?.signupToAttendanceRate ?? 0)}%` },
+  { label: '工时发放', value: `${funnel.value?.workhourCount ?? 0}`, detail: `转化率 ${Math.round(funnel.value?.attendanceToWorkhourRate ?? 0)}%` }
 ])
 
 const loadAnalytics = async () => {

@@ -60,14 +60,40 @@
             </template>
 
             <template #actions>
-              <div class="data-list-search lg:min-w-[300px]">
-                <SearchIcon class="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <div class="grid gap-3 lg:grid-cols-[minmax(240px,300px)_180px_180px_160px]">
+                <div class="data-list-search lg:min-w-[240px]">
+                  <SearchIcon class="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                  <input
+                    v-model="searchQuery"
+                    type="text"
+                    placeholder="搜索活动名称、地点或描述"
+                    class="data-list-search-input"
+                  >
+                </div>
                 <input
-                  v-model="searchQuery"
-                  type="text"
-                  placeholder="搜索活动名称、地点或描述"
-                  class="data-list-search-input"
+                  v-model="startFrom"
+                  type="date"
+                  class="input"
                 >
+                <input
+                  v-model="endTo"
+                  type="date"
+                  class="input"
+                >
+                <select
+                  v-model.number="pageSize"
+                  class="input"
+                >
+                  <option :value="10">
+                    每页 10 条
+                  </option>
+                  <option :value="20">
+                    每页 20 条
+                  </option>
+                  <option :value="50">
+                    每页 50 条
+                  </option>
+                </select>
               </div>
             </template>
           </DataToolbar>
@@ -87,7 +113,25 @@
               <span class="font-semibold text-slate-800">{{ filteredActivities.length }}</span>
               个匹配活动
             </p>
-            <p>排序逻辑：状态优先，时间靠前</p>
+            <div class="flex flex-wrap items-center gap-2">
+              <span>第 {{ page }} / {{ totalPages }} 页</span>
+              <Button
+                variant="outline"
+                rounded
+                :disabled="loading || page <= 1"
+                @click="goToPreviousPage"
+              >
+                上一页
+              </Button>
+              <Button
+                variant="outline"
+                rounded
+                :disabled="loading || page >= totalPages"
+                @click="goToNextPage"
+              >
+                下一页
+              </Button>
+            </div>
           </div>
 
           <DataList
@@ -367,12 +411,18 @@ const messageStore = useMessageStore()
 const pageStateStore = usePageStateStore()
 const activeTab = ref<ActivityTab>(pageStateStore.state.volunteerActivities.activeTab as ActivityTab || 'all')
 const searchQuery = ref(pageStateStore.state.volunteerActivities.searchQuery || '')
+const startFrom = ref('')
+const endTo = ref('')
+const page = ref(1)
+const pageSize = ref(20)
 const loading = ref(false)
 const actionActivityId = ref<number | null>(null)
 const activityRows = ref<VolunteerActivityViewItem[]>([])
+const total = ref(0)
 const selectedActivityId = ref<number | null>(null)
 const selectedActivitySnapshot = ref<VolunteerActivityViewItem | null>(null)
 const drawerOpen = ref(false)
+const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pageSize.value)))
 
 const filterTabs: FilterTab[] = [
   { id: 'all', label: '全部' },
@@ -498,7 +548,8 @@ const activityPriorityQueue = computed<ActivityPriorityItem[]>(() => {
 
 const summaryMeta = computed(() => [
   { label: '推荐任务', value: `${upcomingCount.value} 场`, detail: '本周优先可参加' },
-  { label: '已报名', value: `${registeredCount.value} 场`, detail: '注意签到提醒' }
+  { label: '已报名', value: `${registeredCount.value} 场`, detail: '注意签到提醒' },
+  { label: '分页进度', value: `${page.value}/${totalPages.value}`, detail: `共 ${total.value} 场活动` }
 ])
 
 const setActiveTab = (tab: ActivityTab) => {
@@ -522,9 +573,11 @@ const loadActivities = async () => {
   try {
     const [activitiesResponse, myActivitiesResponse] = await Promise.all([
       activitiesApi.list({
-        page: 1,
-        pageSize: 100,
+        page: page.value,
+        pageSize: pageSize.value,
         keyword: searchQuery.value.trim() || undefined,
+        startFrom: startFrom.value || undefined,
+        startTo: endTo.value || undefined,
         sortBy: 'start_time',
         sortOrder: 'asc'
       }),
@@ -546,11 +599,13 @@ const loadActivities = async () => {
       activitiesResponse.data.list,
       myActivitiesResponse.data.list
     )
+    total.value = activitiesResponse.data.total || 0
     syncSelectedActivity()
   } catch (error: any) {
     console.error('加载志愿者活动失败:', error)
     messageStore.error(error.message || '加载活动失败，请稍后重试')
     activityRows.value = []
+    total.value = 0
   } finally {
     loading.value = false
   }
@@ -559,7 +614,22 @@ const loadActivities = async () => {
 const clearFilters = () => {
   activeTab.value = 'all'
   searchQuery.value = ''
+  startFrom.value = ''
+  endTo.value = ''
+  page.value = 1
   pageStateStore.resetVolunteerActivitiesState()
+}
+
+const goToPreviousPage = async () => {
+  if (page.value <= 1) return
+  page.value -= 1
+  await loadActivities()
+}
+
+const goToNextPage = async () => {
+  if (page.value >= totalPages.value) return
+  page.value += 1
+  await loadActivities()
 }
 
 const getStatusText = (status: VolunteerActivityViewItem['status']) => ({ upcoming: '可报名', registered: '已报名', completed: '已完成' }[status] || status)
@@ -623,5 +693,10 @@ const handleCancel = async (id: number) => {
 
 watch(activityRows, () => {
   syncSelectedActivity()
+})
+
+watch([activeTab, searchQuery, startFrom, endTo, pageSize], () => {
+  page.value = 1
+  void loadActivities()
 })
 </script>

@@ -34,6 +34,16 @@
         <div class="rounded-[1.5rem] border border-slate-200 bg-slate-50/80 p-5">
           <div class="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
             <div class="space-y-3">
+              <div
+                v-if="detail.coverUrl"
+                class="overflow-hidden rounded-[1.35rem] border border-slate-200 bg-white"
+              >
+                <img
+                  :src="detail.coverUrl"
+                  alt="活动封面"
+                  class="h-52 w-full object-cover"
+                >
+              </div>
               <div class="flex flex-wrap items-center gap-3">
                 <VolunteerStatusBadge
                   :label="statusText"
@@ -101,6 +111,12 @@
             <p class="mt-2 text-sm font-semibold text-slate-800">
               {{ detail.currentPeople }}/{{ detail.maxPeople }}
             </p>
+            <p
+              class="mt-1 text-xs font-medium"
+              :class="remainingSeats > 0 ? 'text-emerald-600' : 'text-rose-600'"
+            >
+              剩余名额：{{ remainingSeats > 0 ? remainingSeats : 0 }}
+            </p>
           </div>
         </div>
 
@@ -120,6 +136,7 @@
             <div class="mt-2 space-y-1 text-sm text-slate-700">
               <p>签到状态：{{ ATTENDANCE_STATUS_LABELS[detail.checkInStatus ?? AttendanceStatus.NOT_CHECKED] }}</p>
               <p>签退状态：{{ CHECK_OUT_STATUS_LABELS[detail.checkOutStatus ?? AttendanceStatus.NOT_CHECKED] }}</p>
+              <p>工时状态：{{ WORK_HOUR_STATUS_LABELS[detail.workHourStatus ?? WorkHourStatus.UNSETTLED] }}</p>
               <p>已发工时：{{ detail.grantedHours ?? 0 }}</p>
             </div>
           </div>
@@ -169,11 +186,17 @@
               >
               <button
                 class="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
-                :disabled="actionLoading || !checkOutCode || detail.checkOutStatus === AttendanceStatus.CHECKED"
+                :disabled="actionLoading || !checkOutCode || detail.checkOutStatus === AttendanceStatus.CHECKED || detail.checkInStatus !== AttendanceStatus.CHECKED"
                 @click="handleCheckOut"
               >
                 {{ detail.checkOutStatus === AttendanceStatus.CHECKED ? CHECK_OUT_STATUS_LABELS[AttendanceStatus.CHECKED] : actionLoading ? '处理中...' : '提交签退' }}
               </button>
+              <p
+                v-if="detail.checkInStatus !== AttendanceStatus.CHECKED"
+                class="text-xs text-amber-600"
+              >
+                请先完成签到，再提交签退。
+              </p>
               <p
                 v-if="detail.checkOutTime"
                 class="text-xs text-slate-500"
@@ -202,7 +225,8 @@ import { activitiesApi } from '@/api/activities'
 import {
   ACTIVITY_STATUS_LABELS,
   ATTENDANCE_STATUS_LABELS,
-  CHECK_OUT_STATUS_LABELS
+  CHECK_OUT_STATUS_LABELS,
+  WORK_HOUR_STATUS_LABELS
 } from '@/constants/status'
 import VolunteerPageHeader from '@/components/volunteer/VolunteerPageHeader.vue'
 import VolunteerSectionCard from '@/components/volunteer/VolunteerSectionCard.vue'
@@ -211,6 +235,7 @@ import { useMessageStore } from '@/store/modules/messages'
 import {
   ActivityStatus,
   AttendanceStatus,
+  WorkHourStatus,
   type ActivityDetailData
 } from '@/types/activity'
 
@@ -225,9 +250,14 @@ const checkOutCode = ref('')
 const activityId = computed(() => Number(route.params.id))
 
 const detailTitle = computed(() => detail.value?.title || '活动详情')
+const remainingSeats = computed(() => {
+  if (!detail.value) return 0
+  return detail.value.maxPeople - detail.value.currentPeople
+})
 const headerMeta = computed(() => [
   { label: '活动状态', value: statusText.value, detail: '实时取自接口' },
-  { label: '服务时长', value: `${detail.value?.duration ?? 0} 小时`, detail: '当前活动安排' }
+  { label: '服务时长', value: `${detail.value?.duration ?? 0} 小时`, detail: '当前活动安排' },
+  { label: '剩余名额', value: `${remainingSeats.value > 0 ? remainingSeats.value : 0} 个`, detail: remainingSeats.value > 0 ? '仍可继续报名' : '当前名额已满' }
 ])
 
 const statusText = computed(() => {

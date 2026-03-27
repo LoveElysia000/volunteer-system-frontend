@@ -67,8 +67,12 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import DataList from '@/components/data-list/DataList.vue'
+import { useVolunteerStore } from '@/store/modules/volunteer'
 import VolunteerStatusBadge from './VolunteerStatusBadge.vue'
-import { registeredActivities } from '@/data/volunteerCenter'
+
+const volunteerStore = useVolunteerStore()
+const registeredActivities = computed(() => volunteerStore.registeredActivities.slice(0, 3))
 </script>

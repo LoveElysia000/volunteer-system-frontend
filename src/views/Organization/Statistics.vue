@@ -7,6 +7,12 @@
       :meta-items="headerMeta"
     >
       <template #actions>
+        <FilterSelect
+          v-model="selectedReportPeriod"
+          :options="reportPeriodOptions"
+          :icon="CalendarRangeIcon"
+          compact
+        />
         <button
           class="org-toolbar-button org-toolbar-button--soft"
           @click="exportOpsReport"
@@ -22,6 +28,40 @@
         </button>
       </template>
     </OrganizationPageHeader>
+
+    <OrganizationSectionCard
+      title="统计范围"
+      description="选择统计查询与运营报表导出的时间区间。"
+      tone="soft"
+    >
+      <div class="grid gap-4 md:grid-cols-3">
+        <input
+          v-model="customStart"
+          type="date"
+          class="input"
+          :disabled="selectedReportPeriod !== 'custom'"
+          placeholder="自定义开始"
+        >
+        <input
+          v-model="customEnd"
+          type="date"
+          class="input"
+          :disabled="selectedReportPeriod !== 'custom'"
+          placeholder="自定义结束"
+        >
+        <div class="rounded-[1.25rem] border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
+          <p class="font-semibold text-slate-900">
+            当前统计范围
+          </p>
+          <p class="mt-1">
+            {{ resolvedRange.start }} ~ {{ resolvedRange.end }}
+          </p>
+        </div>
+      </div>
+      <p class="mt-3 text-xs text-slate-500">
+        自定义开始 / 自定义结束仅在选择“自定义区间”后生效。
+      </p>
+    </OrganizationSectionCard>
 
     <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
       <OrganizationMetricCard
@@ -60,7 +100,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
+import FilterSelect from '@/components/ui/FilterSelect.vue'
 import OrganizationPageHeader from '@/components/organization/OrganizationPageHeader.vue'
 import OrganizationMetricCard from '@/components/organization/OrganizationMetricCard.vue'
 import OrganizationSectionCard from '@/components/organization/OrganizationSectionCard.vue'
@@ -69,6 +110,7 @@ import { useOrganizationStore } from '@/store/modules/organization'
 import { useMessageStore } from '@/store/modules/messages'
 import { adminApi } from '@/api/admin'
 import { useOrganizationContext } from '@/composables/useOrganizationContext'
+import { CalendarRangeIcon } from 'lucide-vue-next'
 
 const analyticsStore = useAnalyticsStore()
 const organizationStore = useOrganizationStore()
@@ -78,10 +120,35 @@ const { ensureOrganizationId } = useOrganizationContext()
 const loading = computed(() => analyticsStore.loading)
 const funnel = computed(() => analyticsStore.funnel)
 const dashboard = computed(() => analyticsStore.dashboard)
+const selectedReportPeriod = ref<'last_7_days' | 'last_30_days' | 'custom'>('last_30_days')
+const customStart = ref('')
+const customEnd = ref('')
+const reportPeriodOptions = [
+  { value: 'last_7_days', label: '近 7 天', description: '适合近期复盘' },
+  { value: 'last_30_days', label: '近 30 天', description: '默认统计口径' },
+  { value: 'custom', label: '自定义区间', description: '按需拉取统计与导出报表' }
+] as const
+
+const formatDate = (value: Date) => value.toISOString().slice(0, 10)
+
+const resolvedRange = computed(() => {
+  if (selectedReportPeriod.value === 'custom' && customStart.value && customEnd.value) {
+    return { start: customStart.value, end: customEnd.value }
+  }
+
+  const endDate = new Date()
+  const startDate = new Date(endDate)
+  startDate.setDate(endDate.getDate() - (selectedReportPeriod.value === 'last_7_days' ? 7 : 30))
+
+  return {
+    start: formatDate(startDate),
+    end: formatDate(endDate)
+  }
+})
 
 const headerMeta = computed(() => [
   { label: '组织 ID', value: `${organizationStore.activeOrganizationId ?? '-'}`, detail: '当前统计范围' },
-  { label: '统计区间', value: dashboard.value?.start ? `${dashboard.value.start} ~ ${dashboard.value.end}` : '最近 30 天', detail: '接口返回时间范围' }
+  { label: '统计区间', value: `${resolvedRange.value.start} ~ ${resolvedRange.value.end}`, detail: '查询与导出共用时间范围' }
 ])
 
 const getDownloadFileName = (contentDisposition?: string | null, fallback = 'export.xlsx') => {
@@ -122,16 +189,11 @@ const loadAnalytics = async () => {
     return
   }
 
-  const endDate = new Date()
-  const startDate = new Date(endDate)
-  startDate.setDate(endDate.getDate() - 30)
-  const formatDate = (value: Date) => value.toISOString().slice(0, 10)
-
   try {
     await analyticsStore.fetchOrganizationAnalytics({
       orgId,
-      start: formatDate(startDate),
-      end: formatDate(endDate)
+      start: resolvedRange.value.start,
+      end: resolvedRange.value.end
     })
   } catch (error: any) {
     console.error('加载统计失败:', error)
@@ -146,17 +208,12 @@ const exportOpsReport = async () => {
     return
   }
 
-  const endDate = new Date()
-  const startDate = new Date(endDate)
-  startDate.setDate(endDate.getDate() - 30)
-  const formatDate = (value: Date) => value.toISOString().slice(0, 10)
-
   try {
     const response = await adminApi.exportOpsReport({
-      periodType: 'custom',
+      periodType: selectedReportPeriod.value,
       orgId,
-      start: formatDate(startDate),
-      end: formatDate(endDate)
+      start: resolvedRange.value.start,
+      end: resolvedRange.value.end
     })
     downloadBlob(
       response.data,

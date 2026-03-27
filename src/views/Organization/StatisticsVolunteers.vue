@@ -11,6 +11,14 @@
     <OrganizationSectionCard
       title="志愿者转化指标"
     >
+      <div class="mb-4 rounded-[1.2rem] border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
+        <p class="font-semibold text-slate-900">
+          统计口径
+        </p>
+        <p class="mt-1">
+          {{ dashboard.value?.start || '待确认' }} ~ {{ dashboard.value?.end || '待确认' }}
+        </p>
+      </div>
       <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <article
           v-for="item in volunteerMetrics"
@@ -44,17 +52,17 @@ const analyticsStore = useAnalyticsStore()
 const messageStore = useMessageStore()
 const { ensureOrganizationId } = useOrganizationContext()
 
-const funnel = computed(() => analyticsStore.funnel)
+const dashboard = computed(() => analyticsStore.dashboard)
 const headerMeta = computed(() => [
-  { label: '成员数', value: `${funnel.value?.membershipCount ?? 0}`, detail: '从注册沉淀而来' },
-  { label: '成员转报名', value: `${Math.round(funnel.value?.membershipToSignupRate ?? 0)}%`, detail: '反映成员活跃度' }
+  { label: '报名总数', value: `${dashboard.value?.signupCount ?? 0}`, detail: '复用组织看板汇总接口' },
+  { label: '到场率', value: `${Math.round(dashboard.value?.attendanceRate ?? 0)}%`, detail: '反映志愿者参与活跃度' }
 ])
 
 const volunteerMetrics = computed(() => [
-  { label: '注册人数', value: `${funnel.value?.registrationCount ?? 0}`, detail: '进入平台的总人数' },
-  { label: '成员人数', value: `${funnel.value?.membershipCount ?? 0}`, detail: `转化率 ${Math.round(funnel.value?.registrationToMembershipRate ?? 0)}%` },
-  { label: '报名人数', value: `${funnel.value?.signupCount ?? 0}`, detail: `转化率 ${Math.round(funnel.value?.membershipToSignupRate ?? 0)}%` },
-  { label: '到场人数', value: `${funnel.value?.attendanceCount ?? 0}`, detail: `转化率 ${Math.round(funnel.value?.signupToAttendanceRate ?? 0)}%` }
+  { label: '报名人数', value: `${dashboard.value?.signupCount ?? 0}`, detail: '当前统计区间内累计报名' },
+  { label: '通过报名', value: `${dashboard.value?.approvedSignupCount ?? 0}`, detail: '已审核通过的报名人数' },
+  { label: '到场人数', value: `${dashboard.value?.attendanceCount ?? 0}`, detail: `到场率 ${Math.round(dashboard.value?.attendanceRate ?? 0)}%` },
+  { label: '发放工时', value: `${dashboard.value?.grantedWorkHours ?? 0}h`, detail: '当前统计区间内已结算工时' }
 ])
 
 const loadAnalytics = async () => {

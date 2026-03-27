@@ -63,6 +63,33 @@
         description="可以直接提问，也可以生成活动草案。"
       >
         <div class="flex h-[560px] flex-col">
+          <div class="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-[1.2rem] border border-slate-200 bg-slate-50/80 px-4 py-3">
+            <div>
+              <p class="text-sm font-semibold text-slate-900">
+                对话模式
+              </p>
+              <p class="mt-1 text-xs text-slate-500">
+                流式模式适合连续生成，标准对话会一次性返回完整结果。
+              </p>
+            </div>
+            <div class="inline-flex rounded-full bg-white p-1 shadow-sm">
+              <button
+                class="rounded-full px-3 py-1.5 text-sm font-semibold transition"
+                :class="chatMode === 'stream' ? 'bg-[#ec5b13] text-white' : 'text-slate-500'"
+                @click="chatMode = 'stream'"
+              >
+                流式对话
+              </button>
+              <button
+                class="rounded-full px-3 py-1.5 text-sm font-semibold transition"
+                :class="chatMode === 'standard' ? 'bg-[#ec5b13] text-white' : 'text-slate-500'"
+                @click="chatMode = 'standard'"
+              >
+                标准对话
+              </button>
+            </div>
+          </div>
+
           <div class="flex-1 space-y-4 overflow-y-auto pr-1">
             <div
               v-if="assistantStore.loading"
@@ -90,6 +117,30 @@
               <p class="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-700">
                 {{ message.content }}
               </p>
+              <div
+                v-if="message.role === 1"
+                class="mt-3 space-y-2 rounded-xl border border-white/70 bg-white/60 px-3 py-3 text-xs text-slate-500"
+              >
+                <div class="flex flex-wrap gap-3">
+                  <span>完成状态：{{ finishReasonText(message.finish_reason) }}</span>
+                  <span>输入 tokens：{{ message.token_in || 0 }}</span>
+                  <span>输出 tokens：{{ message.token_out || 0 }}</span>
+                  <span>耗时：{{ message.latency_ms || 0 }}ms</span>
+                </div>
+                <div v-if="message.tool_calls?.length">
+                  <p class="font-semibold text-slate-600">
+                    工具调用
+                  </p>
+                  <ul class="mt-1 space-y-1">
+                    <li
+                      v-for="toolCall in message.tool_calls"
+                      :key="`${message.id}-${toolCall.tool_name}-${toolCall.latency_ms}`"
+                    >
+                      {{ toolCall.tool_name }} · {{ toolCall.success ? '成功' : toolCall.error_msg || '失败' }} · {{ toolCall.latency_ms }}ms
+                    </li>
+                  </ul>
+                </div>
+              </div>
               <p class="mt-2 text-xs text-slate-400">
                 {{ message.created_at || '刚刚' }}
               </p>
@@ -182,6 +233,7 @@ const messageStore = useMessageStore()
 
 const prompt = ref('')
 const draftDialogOpen = ref(false)
+const chatMode = ref<'stream' | 'standard'>('stream')
 const draftForm = reactive({
   topic: '',
   target_people: '',
@@ -219,7 +271,11 @@ const sendPrompt = async () => {
   const value = prompt.value.trim()
   if (!value) return
   try {
-    await assistantStore.sendMessage(value)
+    if (chatMode.value === 'standard') {
+      await assistantStore.sendMessageNonStream(value)
+    } else {
+      await assistantStore.sendMessage(value)
+    }
     prompt.value = ''
   } catch (error: any) {
     console.error('发送 AI 消息失败:', error)
@@ -252,6 +308,13 @@ const roleText = (role: number) => {
   if (role === 1) return '助手'
   if (role === 2) return '你'
   return '消息'
+}
+
+const finishReasonText = (finishReason: number) => {
+  if (finishReason === 1) return '正常完成'
+  if (finishReason === 2) return '长度截断'
+  if (finishReason === 3) return '工具调用结束'
+  return '处理中'
 }
 
 const formatDateTime = (value?: string) => {

@@ -55,12 +55,17 @@ export const useMembershipsStore = defineStore('memberships', () => {
     return response.data
   }
 
-  const fetchMyOrganizations = async () => {
+  const fetchMyOrganizations = async (params?: {
+    status?: number
+    page?: number
+    pageSize?: number
+  }) => {
     myOrganizationsLoading.value = true
     try {
       const response = await membershipsApi.getVolunteerOrganizations({
-        page: 1,
-        pageSize: 20
+        status: params?.status,
+        page: params?.page ?? 1,
+        pageSize: params?.pageSize ?? 20
       })
       if (response.code !== 200) {
         throw new Error(response.msg || '获取已加入组织失败')
@@ -100,8 +105,7 @@ export const useMembershipsStore = defineStore('memberships', () => {
     loading,
     myOrganizationsLoading,
     fetchMembers,
-    updateStatus
-,
+    updateStatus,
     fetchMyOrganizations,
     joinOrganization,
     leaveOrganization

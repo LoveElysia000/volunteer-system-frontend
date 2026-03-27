@@ -125,7 +125,7 @@ export const routes = [
         path: 'notifications',
         name: 'organization-notifications',
         component: () => import('@/views/Organization/Notifications.vue'),
-        meta: { title: '通知管理' }
+        meta: { title: '通知中心' }
       },
       {
         path: 'assistant',
@@ -149,7 +149,7 @@ export const routes = [
         path: 'activities/review',
         name: 'organization-activities-review',
         component: () => import('@/views/Organization/ActivityReview.vue'),
-        meta: { title: '活动审核' }
+        meta: { title: '审核中心' }
       },
       {
         path: 'statistics/activities',

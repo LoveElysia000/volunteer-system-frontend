@@ -370,7 +370,8 @@ onMounted(async () => {
   try {
     await Promise.all([
       volunteerStore.fetchHomeSummary(),
-      volunteerStore.fetchMyProfile()
+      volunteerStore.fetchMyProfile(),
+      volunteerStore.fetchRegisteredActivities()
     ])
   } catch (error) {
     console.error('加载志愿者工作台数据失败:', error)

@@ -69,6 +69,49 @@
           </div>
         </div>
 
+        <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+          <select
+            v-model="listFilters.status"
+            class="input !rounded-[1rem] !border-white/90 !bg-white"
+          >
+            <option value="">
+              全部状态
+            </option>
+            <option value="1">
+              已启用
+            </option>
+            <option value="0">
+              已停用
+            </option>
+          </select>
+
+          <input
+            v-model="listFilters.organizationType"
+            type="text"
+            class="input !rounded-[1rem] !border-white/90 !bg-white"
+            placeholder="组织类型"
+          >
+
+          <input
+            v-model="listFilters.region"
+            type="text"
+            class="input !rounded-[1rem] !border-white/90 !bg-white"
+            placeholder="地区"
+          >
+
+          <input
+            v-model="listFilters.startDate"
+            type="date"
+            class="input !rounded-[1rem] !border-white/90 !bg-white"
+          >
+
+          <input
+            v-model="listFilters.endDate"
+            type="date"
+            class="input !rounded-[1rem] !border-white/90 !bg-white"
+          >
+        </div>
+
         <div
           v-if="organizationStore.organizations.length"
           class="overflow-hidden rounded-[1.2rem] border border-slate-200 bg-white"
@@ -367,6 +410,10 @@
                           <span class="drawer-label">Logo 地址</span>
                           <span class="drawer-value break-all">{{ currentOrganization.logoUrl || '待补充' }}</span>
                         </div>
+                        <div class="drawer-field">
+                          <span class="drawer-label">官网地址</span>
+                          <span class="drawer-value break-all">{{ currentOrganization.websiteUrl || '待补充' }}</span>
+                        </div>
                       </div>
                     </template>
                     <template v-else>
@@ -387,6 +434,14 @@
                           Logo 地址
                           <input
                             v-model="organizationForm.logoUrl"
+                            type="text"
+                            class="input mt-2"
+                          >
+                        </label>
+                        <label class="drawer-edit-label">
+                          官网地址
+                          <input
+                            v-model="organizationForm.websiteUrl"
                             type="text"
                             class="input mt-2"
                           >
@@ -564,6 +619,22 @@
             :max-rows="5"
           />
         </label>
+        <label class="drawer-edit-label">
+          官网地址
+          <input
+            v-model="createForm.websiteUrl"
+            type="text"
+            class="input mt-2"
+          >
+        </label>
+        <label class="drawer-edit-label">
+          Logo 地址
+          <input
+            v-model="createForm.logoUrl"
+            type="text"
+            class="input mt-2"
+          >
+        </label>
       </div>
       <div class="mt-4 flex justify-end gap-3">
         <button
@@ -616,6 +687,11 @@ const drawerLoading = ref(false)
 const drawerMode = ref<'view' | 'edit'>('view')
 const listFilters = reactive({
   keyword: '',
+  status: '',
+  organizationType: '',
+  region: '',
+  startDate: '',
+  endDate: '',
   page: 1,
   pageSize: 10
 })
@@ -705,6 +781,11 @@ const loadOrganizations = async () => {
   try {
     await organizationStore.fetchOrganizations({
       keyword: listFilters.keyword.trim() || undefined,
+      status: listFilters.status === '' ? undefined : [Number(listFilters.status)],
+      organizationType: listFilters.organizationType.trim() || undefined,
+      region: listFilters.region.trim() || undefined,
+      startDate: listFilters.startDate || undefined,
+      endDate: listFilters.endDate || undefined,
       page: listFilters.page,
       pageSize: listFilters.pageSize
     })
@@ -725,6 +806,14 @@ watch(
       listFilters.page = 1
       loadOrganizations()
     }, 250)
+  }
+)
+
+watch(
+  () => [listFilters.status, listFilters.organizationType, listFilters.region, listFilters.startDate, listFilters.endDate],
+  () => {
+    listFilters.page = 1
+    void loadOrganizations()
   }
 )
 
@@ -761,6 +850,9 @@ const saveAccountChanges = async () => {
       phone: payload.phone || authStore.user?.phone
     })
     messageStore.success('账户信息已更新')
+    if (organizationStore.activeOrganizationId) {
+      await loadOrganization(organizationStore.activeOrganizationId)
+    }
   } catch (error: any) {
     console.error('保存账户信息失败:', error)
     messageStore.error(error.message || '保存账户信息失败，请稍后重试')
@@ -792,6 +884,7 @@ const saveOrganizationChanges = async () => {
     }
     await organizationStore.updateOrganization(targetId, payload)
     messageStore.success('组织主体资料已更新')
+    await loadOrganization(targetId)
     drawerMode.value = 'view'
   } catch (error: any) {
     console.error('保存组织信息失败:', error)
@@ -839,6 +932,7 @@ const createOrganization = async () => {
     createDialogOpen.value = false
     resetCreateForm()
     messageStore.success('组织已创建')
+    await loadOrganizations()
   } catch (error: any) {
     console.error('创建组织失败:', error)
     messageStore.error(error.message || '创建组织失败，请稍后重试')
@@ -853,9 +947,13 @@ const toggleOrganizationStatus = async () => {
     if (currentOrganization.value.status === 1) {
       await organizationStore.disableOrganization(currentOrganization.value.id, { reason: '前端管理台停用' })
       messageStore.success('组织已停用')
+      await loadOrganizations()
+      await loadOrganization(currentOrganization.value.id)
     } else {
       await organizationStore.enableOrganization(currentOrganization.value.id, { reason: '前端管理台启用' })
       messageStore.success('组织已启用')
+      await loadOrganizations()
+      await loadOrganization(currentOrganization.value.id)
     }
   } catch (error: any) {
     console.error('更新组织状态失败:', error)
@@ -866,9 +964,11 @@ const toggleOrganizationStatus = async () => {
 const deleteCurrentOrganization = async () => {
   if (!currentOrganization.value) return
   try {
-    await organizationStore.removeOrganization(currentOrganization.value.id)
+    const removedId = currentOrganization.value.id
+    await organizationStore.removeOrganization(removedId)
     closeDrawer()
     messageStore.success('组织已删除')
+    await loadOrganizations()
   } catch (error: any) {
     console.error('删除组织失败:', error)
     messageStore.error(error.message || '删除组织失败，请稍后重试')
@@ -886,6 +986,10 @@ const batchUpdateOrganizations = async (action: 'enable' | 'disable') => {
       const response = await organizationStore.batchDisableOrganizations({ ids, reason: '批量停用当前筛选结果' })
       messageStore.success(`批量停用完成，成功 ${response.successCount} 条`)
     }
+    await loadOrganizations()
+    if (organizationStore.activeOrganizationId) {
+      await loadOrganization(organizationStore.activeOrganizationId)
+    }
   } catch (error: any) {
     console.error('批量更新组织失败:', error)
     messageStore.error(error.message || '批量更新组织失败，请稍后重试')
@@ -899,6 +1003,7 @@ const batchDeleteOrganizations = async () => {
     const response = await organizationStore.bulkDeleteOrganizations({ ids })
     messageStore.success(`批量删除完成，成功 ${response.successCount} 条`)
     closeDrawer()
+    await loadOrganizations()
   } catch (error: any) {
     console.error('批量删除组织失败:', error)
     messageStore.error(error.message || '批量删除组织失败，请稍后重试')

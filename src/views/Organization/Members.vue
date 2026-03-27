@@ -21,7 +21,7 @@
     <template #toolbar>
       <DataToolbar>
         <template #filters>
-          <div class="grid gap-3 lg:grid-cols-2">
+          <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
             <FilterSelect
               v-model="statusFilter"
               title="成员状态"
@@ -35,6 +35,19 @@
               :icon="ShieldCheckIcon"
               :options="roleFilterOptions"
             />
+            <FilterSelect
+              v-model="pageSize"
+              title="每页条数"
+              :icon="UserRoundSearchIcon"
+              :options="pageSizeOptions"
+            />
+          </div>
+        </template>
+
+        <template #summary>
+          <div class="flex flex-wrap items-center gap-3 text-sm text-slate-500">
+            <span>第 {{ page }} / {{ totalPages }} 页</span>
+            <span>当前 {{ members.length }} 条，共 {{ membershipsStore.total }} 条</span>
           </div>
         </template>
 
@@ -42,9 +55,23 @@
           <Button
             variant="outline"
             :loading="loading"
-            @click="loadMembers"
+            @click="reloadFromFirstPage"
           >
             刷新成员列表
+          </Button>
+          <Button
+            variant="outline"
+            :disabled="loading || page <= 1"
+            @click="goToPreviousPage"
+          >
+            上一页
+          </Button>
+          <Button
+            variant="outline"
+            :disabled="loading || page >= totalPages"
+            @click="goToNextPage"
+          >
+            下一页
           </Button>
         </template>
       </DataToolbar>
@@ -266,6 +293,8 @@ const { ensureOrganizationId } = useOrganizationContext()
 const keyword = ref('')
 const statusFilter = ref<MembershipStatus | undefined>()
 const roleFilter = ref<MembershipRole | undefined>()
+const page = ref(1)
+const pageSize = ref(20)
 const statusFilterOptions = [
   { key: 'all-status', value: undefined, label: '全部状态', description: '查看所有成员审批状态' },
   { key: 'pending', value: MembershipStatus.PENDING, label: '待审核', description: '仅显示等待处理的申请' },
@@ -278,6 +307,11 @@ const roleFilterOptions = [
   { key: 'member', value: MembershipRole.MEMBER, label: '普通成员', description: '组织中的基础成员角色' },
   { key: 'admin', value: MembershipRole.ADMIN, label: '管理员', description: '拥有部分管理权限的成员' },
   { key: 'owner', value: MembershipRole.OWNER, label: '负责人', description: '组织负责人或最高权限成员' }
+] as const
+const pageSizeOptions = [
+  { key: 'member-page-size-10', value: 10, label: '10 条', description: '适合逐条核对' },
+  { key: 'member-page-size-20', value: 20, label: '20 条', description: '默认查看密度' },
+  { key: 'member-page-size-50', value: 50, label: '50 条', description: '适合批量浏览' }
 ] as const
 const selectedMembershipId = ref<number | null>(null)
 const selectedMembershipSnapshot = ref<MemberInfo | null>(null)
@@ -335,10 +369,14 @@ const selectedMember = computed(() => {
 const isUpdatingSelectedMember = computed(() => {
   return selectedMember.value !== null && updatingMembershipId.value === selectedMember.value.membershipId
 })
+const totalPages = computed(() => Math.max(1, Math.ceil((membershipsStore.total || 0) / pageSize.value)))
 const headerMeta = computed(() => [
   { label: '成员总数', value: `${membershipsStore.stats?.totalCount ?? 0}`, detail: '来自成员统计接口' },
   { label: '待审核', value: `${membershipsStore.stats?.pendingCount ?? 0}`, detail: '可直接在本页处理' },
-  { label: '正式成员', value: `${membershipsStore.stats?.activeCount ?? 0}`, detail: '当前组织稳定成员' }
+  { label: '正式成员', value: `${membershipsStore.stats?.activeCount ?? 0}`, detail: '当前组织稳定成员' },
+  { label: '未激活', value: `${membershipsStore.stats?.inactiveCount ?? 0}`, detail: '当前未激活成员数' },
+  { label: '已挂起', value: `${membershipsStore.stats?.suspendedCount ?? 0}`, detail: '当前挂起成员数' },
+  { label: '分页进度', value: `${page.value}/${totalPages.value}`, detail: `每页 ${pageSize.value} 条` }
 ])
 
 const syncSelectedMember = () => {
@@ -377,14 +415,31 @@ const loadMembers = async () => {
       keyword: keyword.value || undefined,
       status: statusFilter.value,
       role: roleFilter.value,
-      page: 1,
-      pageSize: 20
+      page: page.value,
+      pageSize: pageSize.value
     })
     syncSelectedMember()
   } catch (error: any) {
     console.error('加载成员失败:', error)
     messageStore.error(error.message || '加载成员失败，请稍后重试')
   }
+}
+
+const reloadFromFirstPage = async () => {
+  page.value = 1
+  await loadMembers()
+}
+
+const goToPreviousPage = async () => {
+  if (page.value <= 1) return
+  page.value -= 1
+  await loadMembers()
+}
+
+const goToNextPage = async () => {
+  if (page.value >= totalPages.value) return
+  page.value += 1
+  await loadMembers()
 }
 
 const updateSelectedMemberStatus = async (status: MembershipStatus) => {
@@ -462,6 +517,7 @@ const roleTone = (role: MembershipRole) => ({
 }[role] || 'slate')
 
 watch([keyword, statusFilter, roleFilter], () => {
+  page.value = 1
   void loadMembers()
 })
 

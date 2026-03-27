@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import { volunteerApi } from '@/api/volunteer'
+import { activitiesApi, mapRegisteredActivityItemToVolunteerView } from '@/api/activities'
 import { getApiMessage, isApiSuccess } from '@/api/types'
 import type {
   VolunteerAccountInfo,
@@ -12,6 +13,7 @@ import type {
   VolunteerProfileData,
   VolunteerVerificationInfo
 } from '@/types/volunteer'
+import type { VolunteerActivityViewItem } from '@/types/activity'
 
 export const useVolunteerStore = defineStore('volunteer', () => {
   const summary = ref<VolunteerHomeSummaryData | null>(null)
@@ -19,8 +21,10 @@ export const useVolunteerStore = defineStore('volunteer', () => {
   const accountInfo = ref<VolunteerAccountInfo | null>(null)
   const verification = ref<VolunteerVerificationInfo | null>(null)
   const realNameAudit = ref<VolunteerRealNameSubmitData | null>(null)
+  const registeredActivities = ref<VolunteerActivityViewItem[]>([])
   const summaryLoading = ref(false)
   const profileLoading = ref(false)
+  const registeredActivitiesLoading = ref(false)
   const currentVolunteerId = computed(() => profile.value?.id ?? null)
 
   const fetchHomeSummary = async () => {
@@ -96,19 +100,39 @@ export const useVolunteerStore = defineStore('volunteer', () => {
     return response.data
   }
 
+  const fetchRegisteredActivities = async () => {
+    registeredActivitiesLoading.value = true
+    try {
+      const response = await activitiesApi.listRegisteredActivities({
+        page: 1,
+        pageSize: 6
+      })
+      if (!isApiSuccess(response.code)) {
+        throw new Error(getApiMessage(response) || '获取已报名活动失败')
+      }
+      registeredActivities.value = (response.data.list || []).map(mapRegisteredActivityItemToVolunteerView)
+      return registeredActivities.value
+    } finally {
+      registeredActivitiesLoading.value = false
+    }
+  }
+
   return {
     summary,
     profile,
     accountInfo,
     verification,
     realNameAudit,
+    registeredActivities,
     summaryLoading,
     profileLoading,
+    registeredActivitiesLoading,
     currentVolunteerId,
     fetchHomeSummary,
     fetchMyProfile,
     updateMyAccount,
     updateMyProfile,
-    submitRealName
+    submitRealName,
+    fetchRegisteredActivities
   }
 })

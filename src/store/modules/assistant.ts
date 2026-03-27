@@ -22,7 +22,8 @@ const createLocalMessage = (partial: Partial<AssistantMessageItem> & Pick<Assist
   token_out: partial.token_out ?? 0,
   latency_ms: partial.latency_ms ?? 0,
   request_id: partial.request_id ?? '',
-  created_at: partial.created_at ?? nowIso()
+  created_at: partial.created_at ?? nowIso(),
+  tool_calls: partial.tool_calls ?? []
 })
 
 const extractStreamText = (payload: string) => {
@@ -200,6 +201,46 @@ export const useAssistantStore = defineStore('assistant', () => {
     }
   }
 
+  const sendMessageNonStream = async (message: string) => {
+    const session = await ensureSession()
+    sending.value = true
+    try {
+      const userMessage = createLocalMessage({
+        role: 2,
+        content: message,
+        session_id: session.id
+      })
+      messages.value = [...messages.value, userMessage]
+
+      const response = await assistantApi.chat({
+        session_id: session.id,
+        message,
+        stream: false
+      })
+
+      if (response.code !== 200) {
+        throw new Error(response.msg || '发送 AI 消息失败')
+      }
+
+      const assistantMessage = createLocalMessage({
+        role: 1,
+        content: response.data.reply || '',
+        session_id: session.id,
+        finish_reason: 1,
+        token_in: response.data.usage?.token_in ?? 0,
+        token_out: response.data.usage?.token_out ?? 0,
+        latency_ms: response.data.usage?.latency_ms ?? 0,
+        tool_calls: response.data.tool_calls || []
+      })
+
+      messages.value = [...messages.value, assistantMessage]
+      touchSession(session.id, session.title || message.slice(0, 20))
+      return response.data
+    } finally {
+      sending.value = false
+    }
+  }
+
   const generateActivityDraft = async (data: Omit<AssistantActivityDraftRequest, 'session_id'>) => {
     const session = await ensureSession()
     sending.value = true
@@ -230,6 +271,7 @@ export const useAssistantStore = defineStore('assistant', () => {
     createSession,
     loadMessages,
     sendMessage,
+    sendMessageNonStream,
     generateActivityDraft
   }
 })

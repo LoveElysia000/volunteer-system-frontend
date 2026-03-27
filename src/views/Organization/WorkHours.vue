@@ -33,12 +33,44 @@
               :icon="HistoryIcon"
               :options="operationTypeOptions"
             />
+            <FilterSelect
+              v-model="pageSize"
+              title="每页条数"
+              :icon="HistoryIcon"
+              :options="pageSizeOptions"
+            />
+          </div>
+        </template>
+
+        <template #summary>
+          <div class="flex flex-wrap items-center gap-3 text-sm text-slate-500">
+            <span>第 {{ page }} / {{ totalPages }} 页</span>
+            <span>共 {{ total }} 条流水</span>
+          </div>
+        </template>
+
+        <template #actions>
+          <div class="flex flex-wrap gap-2">
             <Button
               variant="outline"
               :loading="loading"
-              @click="loadLogs"
+              @click="reloadFromFirstPage"
             >
               刷新流水
+            </Button>
+            <Button
+              variant="outline"
+              :disabled="loading || page <= 1"
+              @click="goToPreviousPage"
+            >
+              上一页
+            </Button>
+            <Button
+              variant="outline"
+              :disabled="loading || page >= totalPages"
+              @click="goToNextPage"
+            >
+              下一页
             </Button>
           </div>
         </template>
@@ -132,15 +164,37 @@
             </div>
 
             <div
-              v-if="selectedLog"
-              class="rounded-2xl border border-white/70 bg-white/90 px-4 py-4 text-sm text-slate-600"
+              v-if="selectedLog || lastActionResult"
+              class="space-y-3 rounded-2xl border border-white/70 bg-white/90 px-4 py-4 text-sm text-slate-600"
             >
-              <p class="font-semibold text-slate-900">
-                当前引用流水 #{{ selectedLog.id }}
-              </p>
-              <p class="mt-2">
-                原因：{{ selectedLog.reason || '无' }}
-              </p>
+              <div v-if="selectedLog">
+                <p class="font-semibold text-slate-900">
+                  当前引用流水 #{{ selectedLog.id }}
+                </p>
+                <p class="mt-2">
+                  原因：{{ selectedLog.reason || '无' }}
+                </p>
+              </div>
+              <div
+                v-if="lastActionResult"
+                class="rounded-2xl border border-emerald-100 bg-emerald-50/70 px-3 py-3"
+              >
+                <p class="font-semibold text-emerald-900">
+                  最新处理结果
+                </p>
+                <p class="mt-1">
+                  {{ lastActionResult.actionLabel }} 已提交，生成流水 #{{ lastActionResult.workHourLogId }}
+                </p>
+                <p class="mt-1 break-all text-xs text-emerald-800">
+                  本次请求幂等键：{{ lastActionResult.idempotencyKey }}
+                </p>
+                <p
+                  v-if="lastActionResult.grantedHours !== undefined"
+                  class="mt-1"
+                >
+                  发放工时：{{ lastActionResult.grantedHours }}h
+                </p>
+              </div>
             </div>
 
             <div class="flex flex-col gap-3 sm:flex-row sm:justify-end">
@@ -219,6 +273,14 @@
               </div>
               <div>
                 <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                  服务次数变化
+                </p>
+                <p class="mt-1 text-sm font-semibold text-slate-900">
+                  {{ selectedLog.serviceCountDelta > 0 ? '+' : '' }}{{ selectedLog.serviceCountDelta }}
+                </p>
+              </div>
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
                   操作时间
                 </p>
                 <p class="mt-1 text-sm font-semibold text-slate-900">
@@ -231,6 +293,14 @@
                 </p>
                 <p class="mt-1 break-all text-sm font-semibold text-slate-900">
                   {{ selectedLog.idempotencyKey || '-' }}
+                </p>
+              </div>
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                  操作人 ID
+                </p>
+                <p class="mt-1 text-sm font-semibold text-slate-900">
+                  {{ selectedLog.operatorId || '-' }}
                 </p>
               </div>
             </div>
@@ -289,6 +359,21 @@
                   :max-length="{ length: 120, errorOnly: true }"
                 />
               </div>
+            </div>
+
+            <div
+              v-if="lastActionResult"
+              class="rounded-2xl border border-emerald-100 bg-emerald-50/70 px-4 py-4 text-sm text-emerald-900"
+            >
+              <p class="font-semibold">
+                最新处理结果
+              </p>
+              <p class="mt-1">
+                {{ lastActionResult.actionLabel }} 已返回流水 #{{ lastActionResult.workHourLogId }}
+              </p>
+              <p class="mt-1 break-all text-xs text-emerald-800">
+                本次请求幂等键：{{ lastActionResult.idempotencyKey }}
+              </p>
             </div>
           </section>
         </div>
@@ -355,10 +440,17 @@ const operationTypeOptions = [
 ] as const
 const logs = ref<WorkHourLogItem[]>([])
 const total = ref(0)
+const page = ref(1)
+const pageSize = ref(20)
 const loading = ref(false)
 const acting = ref(false)
 const selectedLogId = ref<number | null>(null)
 const drawerOpen = ref(false)
+const pageSizeOptions = [
+  { key: 'page-size-10', value: 10, label: '10 条', description: '适合逐条核对' },
+  { key: 'page-size-20', value: 20, label: '20 条', description: '默认查看密度' },
+  { key: 'page-size-50', value: 50, label: '50 条', description: '适合批量巡检' }
+] as const
 
 const columns: DataTableColumn[] = [
   { key: 'operation', label: '流水项', width: '320px', cellClass: 'align-top' },
@@ -372,11 +464,19 @@ const actionForm = ref({
   hours: 0,
   reason: ''
 })
+const lastActionResult = ref<{
+  actionLabel: string
+  workHourLogId: number
+  idempotencyKey: string
+  grantedHours?: number
+} | null>(null)
 
 const selectedLog = computed(() => logs.value.find((log) => log.id === selectedLogId.value) || null)
+const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pageSize.value)))
 const headerMeta = computed(() => [
   { label: '流水总数', value: `${total.value}`, detail: '当前记录数量' },
-  { label: '当前筛选', value: operationType.value ? operationText(operationType.value) : '全部操作', detail: '支持发放 / 作废 / 重算' }
+  { label: '当前筛选', value: operationType.value ? operationText(operationType.value) : '全部操作', detail: '支持发放 / 作废 / 重算' },
+  { label: '分页进度', value: `${page.value}/${totalPages.value}`, detail: `每页 ${pageSize.value} 条` }
 ])
 
 const openLogDrawer = (item: Record<string, any>) => {
@@ -397,8 +497,8 @@ const loadLogs = async () => {
   loading.value = true
   try {
     const response = await workHoursApi.list({
-      page: 1,
-      pageSize: 20,
+      page: page.value,
+      pageSize: pageSize.value,
       activityId: activityId.value,
       signupId: signupId.value,
       operationType: operationType.value
@@ -408,7 +508,9 @@ const loadLogs = async () => {
     }
     logs.value = response.data.list || []
     total.value = response.data.total || 0
-    selectedLogId.value = logs.value[0]?.id ?? null
+    if (!logs.value.some((log) => log.id === selectedLogId.value)) {
+      selectedLogId.value = logs.value[0]?.id ?? null
+    }
   } catch (error: any) {
     console.error('加载工时流水失败:', error)
     messageStore.error(error.message || '加载工时流水失败，请稍后重试')
@@ -417,7 +519,29 @@ const loadLogs = async () => {
   }
 }
 
-const makeIdempotencyKey = (prefix: string) => `${prefix}-${Date.now()}`
+const makeIdempotencyKey = (prefix: string, targetSignupId: number) => {
+  const suffix = typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+    ? crypto.randomUUID()
+    : `${Date.now()}-${Math.random().toString(16).slice(2)}`
+  return `${prefix}-${targetSignupId}-${suffix}`
+}
+
+const reloadFromFirstPage = async () => {
+  page.value = 1
+  await loadLogs()
+}
+
+const goToPreviousPage = async () => {
+  if (page.value <= 1) return
+  page.value -= 1
+  await loadLogs()
+}
+
+const goToNextPage = async () => {
+  if (page.value >= totalPages.value) return
+  page.value += 1
+  await loadLogs()
+}
 
 const voidWorkHour = async () => {
   if (!actionForm.value.signupId || !actionForm.value.reason) {
@@ -426,13 +550,19 @@ const voidWorkHour = async () => {
   }
   acting.value = true
   try {
+    const idempotencyKey = makeIdempotencyKey('void', actionForm.value.signupId)
     const response = await workHoursApi.void({
       signupId: actionForm.value.signupId,
       reason: actionForm.value.reason,
-      idempotencyKey: makeIdempotencyKey('void')
+      idempotencyKey
     })
     if (response.code !== 200) {
       throw new Error(response.msg || '作废工时失败')
+    }
+    lastActionResult.value = {
+      actionLabel: '作废工时',
+      workHourLogId: response.data.workHourLogId,
+      idempotencyKey
     }
     messageStore.success('工时已作废')
     await loadLogs()
@@ -451,14 +581,21 @@ const recalculateWorkHour = async () => {
   }
   acting.value = true
   try {
+    const idempotencyKey = makeIdempotencyKey('recalculate', actionForm.value.signupId)
     const response = await workHoursApi.recalculate({
       signupId: actionForm.value.signupId,
       hours: actionForm.value.hours,
       reason: actionForm.value.reason,
-      idempotencyKey: makeIdempotencyKey('recalculate')
+      idempotencyKey
     })
     if (response.code !== 200) {
       throw new Error(response.msg || '重算工时失败')
+    }
+    lastActionResult.value = {
+      actionLabel: '重算工时',
+      workHourLogId: response.data.workHourLogId,
+      idempotencyKey,
+      grantedHours: response.data.grantedHours
     }
     messageStore.success(`工时已重算，发放 ${response.data.grantedHours}h`)
     await loadLogs()

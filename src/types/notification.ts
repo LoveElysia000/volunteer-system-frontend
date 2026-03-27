@@ -20,6 +20,7 @@ export interface NotificationListRequest {
   page?: number
   pageSize?: number
   unreadOnly?: boolean
+  keyword?: string
 }
 
 export interface NotificationListData {

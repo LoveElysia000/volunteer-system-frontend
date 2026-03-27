@@ -54,6 +54,7 @@ export interface AssistantMessageItem {
   latency_ms: number
   request_id: string
   created_at: string
+  tool_calls?: AssistantToolCall[]
 }
 
 export interface AssistantMessagesData {
