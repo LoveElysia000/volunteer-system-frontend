@@ -1,0 +1,12 @@
+export const BACKEND_ACTIVITY_STATUS = {
+  RECRUITING: 1,
+  FINISHED: 2,
+  CANCELED: 3
+} as const
+
+export const BACKEND_ACTIVITY_SIGNUP_STATUS = {
+  PENDING: 1,
+  SUCCESS: 2,
+  REJECTED: 3,
+  CANCELED: 4
+} as const

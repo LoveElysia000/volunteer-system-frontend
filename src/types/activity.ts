@@ -56,7 +56,7 @@ export enum WorkHourStatus {
 export interface ActivityListRequest {
   page: number
   pageSize: number
-  status?: ActivityStatus[]
+  status?: number[]
   keyword?: string
   startFrom?: string
   startTo?: string
@@ -238,6 +238,7 @@ export interface VolunteerActivityViewItem {
   participants: number
   capacity: number
   duration: number
+  activityStatus: ActivityStatus
   status: 'upcoming' | 'registered' | 'completed'
   userRegistrationStatus: 'registered' | 'not_registered'
   tag?: string

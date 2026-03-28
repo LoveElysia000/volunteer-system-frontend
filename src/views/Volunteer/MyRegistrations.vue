@@ -23,7 +23,7 @@
           <div class="grid w-full gap-3 lg:grid-cols-[minmax(0,1fr)_auto]">
             <Input
               v-model.trim="keyword"
-              placeholder="搜索已报名活动名称"
+              placeholder="搜索报名记录或活动名称"
               allow-clear
               theme="emerald"
             />
@@ -46,7 +46,7 @@
           </div>
           <FilterSelect
             v-model="statusFilter"
-            title="活动状态"
+            title="报名状态"
             :options="statusOptions"
             theme="emerald"
           />
@@ -88,14 +88,14 @@
           <div class="space-y-5">
             <div class="grid gap-4 md:grid-cols-3">
               <VolunteerSummaryCard
-                label="我的活动"
+                label="报名记录"
                 :value="String(registeredActivities.length)"
-                detail="包含待审核与已生效记录"
+                detail="包含待审核、成功、驳回与取消"
                 tone="blue"
                 class="volunteer-surface-lift"
               />
               <VolunteerSummaryCard
-                label="本周待参与"
+                label="待参与记录"
                 :value="String(soonCount)"
                 detail="优先查看时间提醒"
                 tone="green"
@@ -118,8 +118,8 @@
               interactive
               open-text="查看详情"
               open-style="text"
-              empty-title="当前没有已报名活动"
-              empty-description="去活动列表挑选合适的任务后，这里会显示你的预约记录。"
+              empty-title="当前没有匹配的报名记录"
+              empty-description="调整报名状态或关键词后再试，新的报名记录也会显示在这里。"
               @row-click="openRegistrationDrawer"
             >
               <template #default="{ item }">
@@ -248,7 +248,7 @@
                   活动状态
                 </p>
                 <p class="mt-1 text-sm font-semibold text-slate-900">
-                  {{ registrationStatusText(selectedRegistration.status) }}
+                  {{ registrationActivityStatusText(selectedRegistration.activityStatus) }}
                 </p>
               </div>
               <div>
@@ -333,15 +333,16 @@ import { activitiesApi, mapRegisteredActivityItemToVolunteerView } from '@/api/a
 import { useMessageStore } from '@/store/modules/messages'
 import {
   ActivitySignupStatus,
-  ActivityStatus,
   type VolunteerActivityViewItem
 } from '@/types/activity'
+import { BACKEND_ACTIVITY_SIGNUP_STATUS, BACKEND_ACTIVITY_STATUS } from '@/constants/activityEnums'
+import { buildVolunteerMyRegistrationsRequest, countUpcomingParticipations } from './activityFeed'
 
 const router = useRouter()
 const messageStore = useMessageStore()
 const loading = ref(false)
 const keyword = ref('')
-const statusFilter = ref<ActivityStatus | ''>('')
+const statusFilter = ref<ActivitySignupStatus | ''>('')
 const page = ref(1)
 const pageSize = ref(20)
 const registeredActivities = ref<VolunteerActivityViewItem[]>([])
@@ -351,34 +352,29 @@ const selectedRegistrationSnapshot = ref<VolunteerActivityViewItem | null>(null)
 const drawerOpen = ref(false)
 const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pageSize.value)))
 const statusOptions = [
-  { key: 'registration-status-all', value: '', label: '全部活动状态', description: '查看所有报名记录' },
-  { key: 'registration-status-open', value: ActivityStatus.OPEN, label: '待参加', description: '活动尚未开始' },
-  { key: 'registration-status-ended', value: ActivityStatus.ENDED, label: '已结束', description: '活动已完成或结束' },
-  { key: 'registration-status-cancelled', value: ActivityStatus.CANCELLED, label: '已取消', description: '活动已取消或失效' }
+  { key: 'registration-status-all', value: '', label: '全部报名状态', description: '查看所有报名记录' },
+  { key: 'registration-status-pending', value: ActivitySignupStatus.PENDING, label: '待审核', description: '等待组织审核处理' },
+  { key: 'registration-status-success', value: ActivitySignupStatus.SUCCESS, label: '报名成功', description: '报名已生效，可按活动安排参与' },
+  { key: 'registration-status-rejected', value: ActivitySignupStatus.REJECTED, label: '已驳回', description: '审核未通过，可查看备注' },
+  { key: 'registration-status-cancelled', value: ActivitySignupStatus.CANCELLED, label: '已取消', description: '报名已取消或已失效' }
 ] as const
 const pageSizeOptions = [
   { key: 'registration-page-10', value: 10, label: '每页 10 条', description: '紧凑浏览' },
   { key: 'registration-page-20', value: 20, label: '每页 20 条', description: '默认密度' },
   { key: 'registration-page-50', value: 50, label: '每页 50 条', description: '适合集中处理' }
 ] as const
-const selectedStatuses = computed<ActivityStatus[] | undefined>(() => {
-  if (statusFilter.value === '') {
-    return [ActivityStatus.OPEN, ActivityStatus.ENDED, ActivityStatus.CANCELLED]
-  }
-
-  return [statusFilter.value]
-})
-
 const loadRegisteredActivities = async () => {
   loading.value = true
 
   try {
-    const response = await activitiesApi.listRegisteredActivities({
-      page: page.value,
-      pageSize: pageSize.value,
-      keyword: keyword.value || undefined,
-      status: selectedStatuses.value
-    })
+    const response = await activitiesApi.listRegisteredActivities(
+      buildVolunteerMyRegistrationsRequest({
+        page: page.value,
+        pageSize: pageSize.value,
+        keyword: keyword.value,
+        statusFilter: statusFilter.value
+      })
+    )
 
     if (response.code !== 200) {
       throw new Error(response.msg || '获取我的报名失败')
@@ -413,7 +409,7 @@ const selectedRegistration = computed(() => {
   return sortedRegistrations.value.find((item) => item.id === selectedRegistrationId.value) ?? selectedRegistrationSnapshot.value
 })
 
-const soonCount = computed(() => sortedRegistrations.value.slice(0, 2).length)
+const soonCount = computed(() => countUpcomingParticipations(sortedRegistrations.value))
 const averageDuration = computed(() => {
   if (!registeredActivities.value.length) return 0
   const totalDuration = registeredActivities.value.reduce((sum, item) => sum + item.duration, 0)
@@ -421,13 +417,13 @@ const averageDuration = computed(() => {
 })
 
 const headerMeta = computed(() => [
-  { label: '报名记录', value: `${registeredActivities.value.length} 条`, detail: '包含不同审核进度' },
+  { label: '报名记录', value: `${registeredActivities.value.length} 条`, detail: '覆盖不同报名状态' },
   { label: '近期优先', value: `${soonCount.value} 场`, detail: '建议提前确认路线' },
   { label: '分页进度', value: `${page.value}/${totalPages.value}`, detail: `共 ${total.value} 条报名记录` }
 ])
 
 const registrationStatusSummary = computed(() => (
-  statusOptions.find((option) => option.value === statusFilter.value)?.label || '全部活动状态'
+  statusOptions.find((option) => option.value === statusFilter.value)?.label || '全部报名状态'
 ))
 
 const registrationKeywordSummary = computed(() => (
@@ -466,31 +462,31 @@ const closeRegistrationDrawer = () => {
 }
 
 const registrationBadgeLabel = (item: VolunteerActivityViewItem) => {
-  if (item.signupStatus === ActivitySignupStatus.PENDING) return '待审核'
-  if (item.signupStatus === ActivitySignupStatus.REJECTED) return '已驳回'
-  if (item.signupStatus === ActivitySignupStatus.CANCELLED) return '已取消报名'
-  return item.userRegistrationStatus === 'registered' ? '已报名' : '未报名'
+  if (item.signupStatus === BACKEND_ACTIVITY_SIGNUP_STATUS.PENDING) return '待审核'
+  if (item.signupStatus === BACKEND_ACTIVITY_SIGNUP_STATUS.REJECTED) return '已驳回'
+  if (item.signupStatus === BACKEND_ACTIVITY_SIGNUP_STATUS.CANCELED) return '已取消报名'
+  return item.userRegistrationStatus === 'registered' ? '报名成功' : '未生效'
 }
 
 const registrationBadgeTone = (item: VolunteerActivityViewItem) => {
-  if (item.signupStatus === ActivitySignupStatus.PENDING) return 'amber'
-  if (item.signupStatus === ActivitySignupStatus.REJECTED) return 'rose'
-  if (item.signupStatus === ActivitySignupStatus.CANCELLED) return 'slate'
+  if (item.signupStatus === BACKEND_ACTIVITY_SIGNUP_STATUS.PENDING) return 'amber'
+  if (item.signupStatus === BACKEND_ACTIVITY_SIGNUP_STATUS.REJECTED) return 'rose'
+  if (item.signupStatus === BACKEND_ACTIVITY_SIGNUP_STATUS.CANCELED) return 'slate'
   return 'blue'
 }
 
 const registrationProgressText = (item: VolunteerActivityViewItem) => {
-  if (item.signupStatus === ActivitySignupStatus.PENDING) return '等待组织审核'
-  if (item.signupStatus === ActivitySignupStatus.REJECTED) return '审核未通过'
-  if (item.signupStatus === ActivitySignupStatus.CANCELLED) return '已取消报名'
+  if (item.signupStatus === BACKEND_ACTIVITY_SIGNUP_STATUS.PENDING) return '等待组织审核'
+  if (item.signupStatus === BACKEND_ACTIVITY_SIGNUP_STATUS.REJECTED) return '审核未通过'
+  if (item.signupStatus === BACKEND_ACTIVITY_SIGNUP_STATUS.CANCELED) return '已取消报名'
   return '报名已生效'
 }
 
-const registrationStatusText = (status: VolunteerActivityViewItem['status']) => ({
-  upcoming: '待参加',
-  registered: '已报名',
-  completed: '已完成'
-}[status] || status)
+const registrationActivityStatusText = (status: VolunteerActivityViewItem['activityStatus']) => ({
+  [BACKEND_ACTIVITY_STATUS.RECRUITING]: '招募中',
+  [BACKEND_ACTIVITY_STATUS.FINISHED]: '已结束',
+  [BACKEND_ACTIVITY_STATUS.CANCELED]: '已取消'
+}[status] || String(status))
 
 const formatDateTime = (value?: string) => {
   if (!value) return '待确认'

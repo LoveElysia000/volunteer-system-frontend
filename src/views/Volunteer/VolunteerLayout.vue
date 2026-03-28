@@ -2,7 +2,7 @@
   <div class="volunteer-shell">
     <div class="volunteer-shell-main flex h-screen">
       <aside
-        class="volunteer-nav-surface hidden shrink-0 overflow-y-auto lg:block"
+        class="volunteer-nav-surface hidden shrink-0 overflow-y-auto xl:block"
         :style="desktopSidebarStyle"
       >
         <div class="flex min-h-full flex-col gap-6 px-5 py-6">
@@ -67,7 +67,7 @@
         </div>
       </aside>
       <div
-        class="volunteer-resize-handle hidden lg:flex"
+        class="volunteer-resize-handle hidden xl:flex"
         aria-label="调整导航宽度"
         aria-orientation="vertical"
         aria-valuemax="420"
@@ -84,7 +84,7 @@
       />
 
       <div class="flex min-w-0 flex-1 flex-col overflow-hidden">
-        <div class="border-b border-white/70 bg-white/75 px-4 py-3 backdrop-blur lg:hidden">
+        <div class="border-b border-white/70 bg-white/75 px-4 py-3 backdrop-blur xl:hidden">
           <div class="flex items-center justify-between">
             <button
               class="rounded-full border border-slate-200 bg-white p-2 text-slate-600"
@@ -171,7 +171,7 @@
     <transition name="volunteer-mobile-drawer">
       <div
         v-if="isMobileSidebarOpen"
-        class="fixed inset-0 z-40 bg-slate-950/35 backdrop-blur-sm lg:hidden"
+        class="fixed inset-0 z-40 bg-slate-950/35 backdrop-blur-sm xl:hidden"
         @click="isMobileSidebarOpen = false"
       />
     </transition>
@@ -179,7 +179,7 @@
     <transition name="volunteer-mobile-drawer">
       <aside
         v-if="isMobileSidebarOpen"
-        class="volunteer-mobile-drawer-panel fixed inset-y-0 left-0 z-50 w-[302px] max-w-[85vw] overflow-y-auto bg-white/95 px-5 py-6 backdrop-blur lg:hidden"
+        class="volunteer-mobile-drawer-panel fixed inset-y-0 left-0 z-50 w-[302px] max-w-[85vw] overflow-y-auto bg-white/95 px-5 py-6 backdrop-blur xl:hidden"
       >
         <div class="flex min-h-full flex-col gap-6">
           <div class="flex items-center justify-between">
@@ -383,6 +383,10 @@ const headerMeta = computed(() => [
   { label: '当前身份', value: '环保志愿者', detail: '已登录工作台' },
   { label: '成长等级', value: `Lv.${volunteerLevel.value}`, detail: `${points.value} 当前积分` }
 ])
+const shouldPrefetchRegisteredActivities = computed(() => {
+  const routeName = String(route.name || '')
+  return routeName === 'volunteer-dashboard'
+})
 
 const handleLogout = async () => {
   await authStore.logout()
@@ -397,7 +401,9 @@ onMounted(async () => {
     await Promise.all([
       volunteerStore.fetchHomeSummary(),
       volunteerStore.fetchMyProfile(),
-      volunteerStore.fetchRegisteredActivities()
+      ...(shouldPrefetchRegisteredActivities.value
+        ? [volunteerStore.fetchRegisteredActivities()]
+        : [])
     ])
   } catch (error) {
     console.error('加载志愿者工作台数据失败:', error)

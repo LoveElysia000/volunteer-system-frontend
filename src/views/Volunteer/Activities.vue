@@ -157,8 +157,8 @@
               <div class="space-y-3">
                 <div class="flex flex-wrap items-center gap-3">
                   <StatusBadge
-                    :label="getStatusText(item.status)"
-                    :tone="getStatusTone(item.status)"
+                    :label="getStatusText(item.activityStatus)"
+                    :tone="getStatusTone(item.activityStatus)"
                   />
                   <StatusBadge
                     :label="item.userRegistrationStatus === 'registered' ? '已报名' : '待报名'"
@@ -258,8 +258,8 @@
 
             <div class="flex flex-wrap gap-2">
               <StatusBadge
-                :label="getStatusText(selectedActivity.status)"
-                :tone="getStatusTone(selectedActivity.status)"
+                :label="getStatusText(selectedActivity.activityStatus)"
+                :tone="getStatusTone(selectedActivity.activityStatus)"
               />
               <StatusBadge
                 :label="selectedActivity.userRegistrationStatus === 'registered' ? '已报名' : '待报名'"
@@ -391,12 +391,18 @@ import StatusBadge from '@/components/data-list/StatusBadge.vue'
 import VolunteerPageHeader from '@/components/volunteer/VolunteerPageHeader.vue'
 import VolunteerSectionCard from '@/components/volunteer/VolunteerSectionCard.vue'
 import VolunteerSummaryCard from '@/components/volunteer/VolunteerSummaryCard.vue'
-import { activitiesApi, mergeVolunteerActivityRows } from '@/api/activities'
+import { activitiesApi, mapActivityItemToVolunteerView } from '@/api/activities'
 import { useMessageStore } from '@/store/modules/messages'
 import { usePageStateStore } from '@/store/modules/pageState'
 import type { VolunteerActivityViewItem } from '@/types/activity'
+import {
+  buildVolunteerActivityListRequest,
+  buildVolunteerActivityRouteQuery,
+  normalizeVolunteerActivityRoute,
+  type ActivityTab
+} from './activityFeed'
+import { BACKEND_ACTIVITY_STATUS } from '@/constants/activityEnums'
 
-type ActivityTab = 'all' | VolunteerActivityViewItem['status']
 type VolunteerTone = 'green' | 'blue' | 'amber' | 'rose'
 
 interface FilterTab {
@@ -439,62 +445,64 @@ const pageSizeOptions = [
   { key: 'activities-page-20', value: 20, label: '每页 20 条', description: '默认密度' },
   { key: 'activities-page-50', value: 50, label: '每页 50 条', description: '适合批量查看' }
 ] as const
+const hasLoadedOnce = ref(false)
 
 const filterTabs: FilterTab[] = [
-  { id: 'all', label: '全部' },
-  { id: 'upcoming', label: '可报名' },
-  { id: 'registered', label: '已报名' },
-  { id: 'completed', label: '已完成' }
+  { id: 'all', label: '全部活动' },
+  { id: 'recruiting', label: '招募中' },
+  { id: 'finished', label: '已结束' },
+  { id: 'canceled', label: '已取消' }
 ]
 
-const isActivityTab = (value: string): value is ActivityTab => {
-  return filterTabs.some(tab => tab.id === value)
-}
-
-const getQueryActivityId = (value: unknown) => {
-  if (typeof value !== 'string') {
-    return null
-  }
-
-  const parsed = Number(value)
-  return Number.isInteger(parsed) && parsed > 0 ? parsed : null
-}
-
 const openActivityFromQuery = () => {
-  const queryActivityId = getQueryActivityId(route.query.id)
-  if (queryActivityId === null) {
+  const { activityId } = normalizeVolunteerActivityRoute(route.query)
+  if (activityId === null) {
     return
   }
 
-  const target = activityRows.value.find((item) => item.id === queryActivityId)
+  const target = activityRows.value.find((item) => item.id === activityId)
   if (target) {
     openActivityDrawer(target)
   }
 }
 
 watch(() => route.query, async (query) => {
-  if (typeof query.tab === 'string' && isActivityTab(query.tab)) activeTab.value = query.tab
-  else activeTab.value = 'all'
-  if (typeof query.search === 'string') searchQuery.value = query.search
-  else searchQuery.value = ''
-  await loadActivities()
+  const nextRouteState = normalizeVolunteerActivityRoute(query)
+  const shouldReload = !hasLoadedOnce.value
+    || nextRouteState.tab !== activeTab.value
+    || nextRouteState.search !== searchQuery.value
+
+  activeTab.value = nextRouteState.tab
+  searchQuery.value = nextRouteState.search
+
+  if (shouldReload) {
+    page.value = 1
+    await loadActivities()
+    hasLoadedOnce.value = true
+  }
+
   openActivityFromQuery()
 }, { immediate: true })
 
 watch([activeTab, searchQuery, drawerOpen, selectedActivityId], ([tab, search, isDrawerOpen, selectedId]) => {
-  const query: Record<string, string> = {}
-  if (tab && tab !== 'all') query.tab = tab
-  if (search) query.search = search
-  if (isDrawerOpen && selectedId !== null) query.id = String(selectedId)
-  router.replace({ query })
+  const query = buildVolunteerActivityRouteQuery({
+    tab,
+    search,
+    activityId: isDrawerOpen ? selectedId : null
+  })
+  const currentQuery = buildVolunteerActivityRouteQuery(normalizeVolunteerActivityRoute(route.query))
+
+  if (JSON.stringify(query) !== JSON.stringify(currentQuery)) {
+    void router.replace({ query })
+  }
+
   pageStateStore.updateVolunteerActivitiesState({ activeTab: tab, searchQuery: search })
 })
 
 const filteredActivities = computed(() => activityRows.value.filter((activity) => {
-  const tabMatch = activeTab.value === 'all' || activity.status === activeTab.value
   const keyword = searchQuery.value.trim().toLowerCase()
   const searchMatch = !keyword || [activity.title, activity.description, activity.location].some((field) => field.toLowerCase().includes(keyword))
-  return tabMatch && searchMatch
+  return searchMatch
 }))
 
 const selectedActivity = computed(() => {
@@ -520,15 +528,15 @@ const canCancelSelected = computed(() => {
   return selectedActivity.value?.userRegistrationStatus === 'registered'
 })
 
-const upcomingCount = computed(() => activityRows.value.filter(item => item.status === 'upcoming').length)
+const recruitingCount = computed(() => activityRows.value.filter(item => item.status !== 'completed').length)
 const registeredCount = computed(() => activityRows.value.filter(item => item.userRegistrationStatus === 'registered').length)
 const completedCount = computed(() => activityRows.value.filter(item => item.status === 'completed').length)
 
 const activityPulseCards = computed<ActivityPulseCard[]>(() => [
   {
-    label: '可报名活动',
-    value: String(upcomingCount.value),
-    detail: '优先查看名额紧张项目',
+    label: '招募中活动',
+    value: String(recruitingCount.value),
+    detail: '当前仍可参与报名的活动',
     tone: 'green'
   },
   {
@@ -563,7 +571,7 @@ const activityPriorityQueue = computed<ActivityPriorityItem[]>(() => {
 })
 
 const summaryMeta = computed(() => [
-  { label: '推荐任务', value: `${upcomingCount.value} 场`, detail: '本周优先可参加' },
+  { label: '招募中', value: `${recruitingCount.value} 场`, detail: '当前仍在招募' },
   { label: '已报名', value: `${registeredCount.value} 场`, detail: '注意签到提醒' },
   { label: '分页进度', value: `${page.value}/${totalPages.value}`, detail: `共 ${total.value} 场活动` }
 ])
@@ -602,35 +610,22 @@ const loadActivities = async () => {
   loading.value = true
 
   try {
-    const [activitiesResponse, myActivitiesResponse] = await Promise.all([
-      activitiesApi.list({
-        page: page.value,
-        pageSize: pageSize.value,
-        keyword: searchQuery.value.trim() || undefined,
-        startFrom: startFrom.value || undefined,
-        startTo: endTo.value || undefined,
-        sortBy: 'start_time',
-        sortOrder: 'asc'
-      }),
-      activitiesApi.listRegisteredActivities({
-        page: 1,
-        pageSize: 100
-      })
-    ])
+    const request = buildVolunteerActivityListRequest({
+      tab: activeTab.value,
+      page: page.value,
+      pageSize: pageSize.value,
+      searchQuery: searchQuery.value,
+      startFrom: startFrom.value,
+      endTo: endTo.value
+    })
+    const response = await activitiesApi.list(request)
 
-    if (activitiesResponse.code !== 200) {
-      throw new Error(activitiesResponse.msg || '获取活动列表失败')
+    if (response.code !== 200) {
+      throw new Error(response.msg || '获取活动列表失败')
     }
 
-    if (myActivitiesResponse.code !== 200) {
-      throw new Error(myActivitiesResponse.msg || '获取我的活动失败')
-    }
-
-    activityRows.value = mergeVolunteerActivityRows(
-      activitiesResponse.data.list,
-      myActivitiesResponse.data.list
-    )
-    total.value = activitiesResponse.data.total || 0
+    activityRows.value = (response.data.list || []).map(mapActivityItemToVolunteerView)
+    total.value = response.data.total || 0
     syncSelectedActivity()
   } catch (error: any) {
     console.error('加载志愿者活动失败:', error)
@@ -663,8 +658,16 @@ const goToNextPage = async () => {
   await loadActivities()
 }
 
-const getStatusText = (status: VolunteerActivityViewItem['status']) => ({ upcoming: '可报名', registered: '已报名', completed: '已完成' }[status] || status)
-const getStatusTone = (status: VolunteerActivityViewItem['status']) => ({ upcoming: 'green', registered: 'blue', completed: 'slate' }[status] || 'slate') as 'green' | 'blue' | 'slate'
+const getStatusText = (status: VolunteerActivityViewItem['activityStatus']) => ({
+  [BACKEND_ACTIVITY_STATUS.RECRUITING]: '招募中',
+  [BACKEND_ACTIVITY_STATUS.FINISHED]: '已结束',
+  [BACKEND_ACTIVITY_STATUS.CANCELED]: '已取消'
+}[status] || String(status))
+const getStatusTone = (status: VolunteerActivityViewItem['activityStatus']) => ({
+  [BACKEND_ACTIVITY_STATUS.RECRUITING]: 'green',
+  [BACKEND_ACTIVITY_STATUS.FINISHED]: 'slate',
+  [BACKEND_ACTIVITY_STATUS.CANCELED]: 'rose'
+}[status] || 'slate') as 'green' | 'blue' | 'slate' | 'rose'
 
 const openActivityDrawer = (activity: Record<string, any>) => {
   const selected = activity as VolunteerActivityViewItem
@@ -727,6 +730,9 @@ watch(activityRows, () => {
 })
 
 watch([activeTab, searchQuery, startFrom, endTo, pageSize], () => {
+  if (!hasLoadedOnce.value) {
+    return
+  }
   page.value = 1
   void loadActivities()
 })
