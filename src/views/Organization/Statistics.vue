@@ -19,13 +19,6 @@
         >
           导出运营报表
         </button>
-        <button
-          class="org-toolbar-button"
-          :disabled="loading"
-          @click="loadAnalytics"
-        >
-          {{ loading ? '加载中...' : '刷新统计' }}
-        </button>
       </template>
     </OrganizationPageHeader>
 
@@ -35,20 +28,18 @@
       tone="soft"
     >
       <div class="grid gap-4 md:grid-cols-3">
-        <input
+        <DatePicker
           v-model="customStart"
-          type="date"
-          class="input"
           :disabled="selectedReportPeriod !== 'custom'"
           placeholder="自定义开始"
-        >
-        <input
+          mode="date"
+        />
+        <DatePicker
           v-model="customEnd"
-          type="date"
-          class="input"
           :disabled="selectedReportPeriod !== 'custom'"
           placeholder="自定义结束"
-        >
+          mode="date"
+        />
         <div class="rounded-[1.25rem] border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
           <p class="font-semibold text-slate-900">
             当前统计范围
@@ -100,7 +91,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
+import DatePicker from '@/components/ui/DatePicker.vue'
 import FilterSelect from '@/components/ui/FilterSelect.vue'
 import OrganizationPageHeader from '@/components/organization/OrganizationPageHeader.vue'
 import OrganizationMetricCard from '@/components/organization/OrganizationMetricCard.vue'
@@ -117,7 +109,6 @@ const organizationStore = useOrganizationStore()
 const messageStore = useMessageStore()
 const { ensureOrganizationId } = useOrganizationContext()
 
-const loading = computed(() => analyticsStore.loading)
 const funnel = computed(() => analyticsStore.funnel)
 const dashboard = computed(() => analyticsStore.dashboard)
 const selectedReportPeriod = ref<'last_7_days' | 'last_30_days' | 'custom'>('last_30_days')
@@ -227,6 +218,13 @@ const exportOpsReport = async () => {
 }
 
 onMounted(() => {
+  void loadAnalytics()
+})
+
+watch([selectedReportPeriod, customStart, customEnd], () => {
+  if (selectedReportPeriod.value === 'custom' && (!customStart.value || !customEnd.value)) {
+    return
+  }
   void loadAnalytics()
 })
 </script>

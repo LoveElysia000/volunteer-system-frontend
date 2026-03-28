@@ -82,7 +82,7 @@
       />
 
       <div class="flex min-w-0 flex-1 flex-col overflow-hidden">
-        <div class="border-b border-white/70 bg-white/75 px-4 py-3 backdrop-blur lg:hidden">
+        <div class="border-b border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.92),rgba(249,250,251,0.82))] px-4 py-3 backdrop-blur lg:hidden">
           <div class="flex items-center justify-between">
             <button
               class="rounded-full border border-slate-200 bg-white p-2 text-slate-600"
@@ -108,9 +108,9 @@
                 <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
                   组织工作台
                 </p>
-                <div class="mt-2 flex flex-wrap items-center gap-3">
+                <div class="mt-2 flex flex-wrap items-center gap-2.5">
                   <div class="space-y-1">
-                    <h2 class="text-xl font-black tracking-tight text-slate-900">
+                    <h2 class="text-lg font-black tracking-tight text-slate-900 lg:text-[1.35rem]">
                       {{ currentPage.title }}
                     </h2>
                     <p class="text-[11px] font-medium tracking-[0.18em] text-slate-400">
@@ -124,11 +124,11 @@
                 </div>
               </div>
 
-              <div class="flex flex-wrap items-center gap-3">
+              <div class="flex flex-wrap items-center gap-2.5">
                 <div
                   v-for="item in headerMeta"
                   :key="item.label"
-                  class="rounded-full border border-white/80 bg-white/90 px-3 py-2 text-xs text-slate-500 shadow-[0_10px_28px_-24px_rgba(15,23,42,0.3)]"
+                  class="rounded-full border border-white/80 bg-white/92 px-3 py-2 text-xs text-slate-500 shadow-[0_10px_22px_-20px_rgba(15,23,42,0.18)]"
                 >
                   <span class="font-semibold text-slate-700">{{ item.label }}</span>
                   <span class="mx-1 text-slate-300">/</span>

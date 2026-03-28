@@ -5,7 +5,39 @@
       title="维护你的志愿者档案"
       description="个人资料、服务偏好和通知方式会影响推荐任务与团队协作体验。"
       :meta-items="headerMeta"
-    />
+      layout="operations"
+    >
+      <template #summary>
+        <span class="rounded-full border border-emerald-100 bg-white/85 px-3 py-1.5 text-xs font-semibold text-slate-600">
+          账户资料 / {{ accountSummaryLabel }}
+        </span>
+        <span class="rounded-full border border-emerald-100 bg-white/85 px-3 py-1.5 text-xs font-semibold text-slate-600">
+          个人简介 / {{ bioSummaryLabel }}
+        </span>
+        <span class="rounded-full border border-emerald-100 bg-white/85 px-3 py-1.5 text-xs font-semibold text-slate-600">
+          实名认证 / {{ auditStatusLabel }}
+        </span>
+      </template>
+      <template #actions>
+        <div class="grid w-full gap-3 lg:grid-cols-[auto_auto] lg:justify-end">
+          <Button
+            variant="outline"
+            rounded
+            class="min-h-[48px]"
+            :disabled="accountSaving || profileSaving"
+            @click="syncForm"
+          >
+            恢复当前资料
+          </Button>
+          <RouterLink
+            to="/volunteer/organizations"
+            class="volunteer-toolbar-button volunteer-toolbar-button--soft min-h-[48px]"
+          >
+            前往我的组织
+          </RouterLink>
+        </div>
+      </template>
+    </VolunteerPageHeader>
 
     <div class="volunteer-profile-studio grid gap-6 xl:grid-cols-[0.92fr_1.08fr]">
       <div class="space-y-6">
@@ -38,7 +70,7 @@
               </div>
             </div>
 
-            <label class="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-semibold text-white">
+            <label class="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:border-white/30 hover:bg-white/15">
               <CameraIcon class="h-4 w-4" />
               更换头像
               <input
@@ -140,34 +172,38 @@
           <div class="grid gap-4 md:grid-cols-2">
             <label class="text-sm font-medium text-slate-600">
               用户名
-              <input
+              <Input
                 v-model="accountForm.username"
-                class="input mt-2 rounded-2xl border-slate-200 bg-slate-50 shadow-none"
-              >
+                class="mt-2"
+                theme="emerald"
+              />
             </label>
             <label class="text-sm font-medium text-slate-600">
               邮箱地址
-              <input
+              <Input
                 v-model="accountForm.email"
-                class="input mt-2 rounded-2xl border-slate-200 bg-slate-50 shadow-none"
-              >
+                class="mt-2"
+                theme="emerald"
+              />
             </label>
             <label class="text-sm font-medium text-slate-600">
               手机号码
-              <input
+              <Input
                 v-model="accountForm.phone"
-                class="input mt-2 rounded-2xl border-slate-200 bg-slate-50 shadow-none"
-              >
+                class="mt-2"
+                theme="emerald"
+              />
             </label>
           </div>
           <div class="mt-4 flex justify-end">
-            <button
-              class="rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-300"
-              :disabled="accountSaving"
+            <Button
+              variant="success"
+              rounded
+              :loading="accountSaving"
               @click="saveAccountChanges"
             >
-              {{ accountSaving ? '保存中...' : '保存账户信息' }}
-            </button>
+              保存账户信息
+            </Button>
           </div>
         </VolunteerSectionCard>
 
@@ -194,8 +230,8 @@
               <div class="mt-2">
                 <DatePicker
                   v-model="birthdayValue"
-                  format="yyyy-MM-dd"
                   placeholder="请选择生日"
+                  mode="date"
                   theme="emerald"
                 />
               </div>
@@ -215,13 +251,14 @@
             </label>
           </div>
           <div class="mt-4 flex justify-end">
-            <button
-              class="rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-300"
-              :disabled="profileSaving"
+            <Button
+              variant="success"
+              rounded
+              :loading="profileSaving"
               @click="saveProfileChanges"
             >
-              {{ profileSaving ? '保存中...' : '保存个人资料' }}
-            </button>
+              保存个人资料
+            </Button>
           </div>
         </VolunteerSectionCard>
 
@@ -257,19 +294,21 @@
             >
               <label class="text-sm font-medium text-slate-600">
                 真实姓名
-                <input
+                <Input
                   v-model="realNameForm.realName"
-                  class="input mt-2 rounded-2xl border-slate-200 bg-slate-50 shadow-none"
+                  class="mt-2"
                   placeholder="请输入身份证上的真实姓名"
-                >
+                  theme="emerald"
+                />
               </label>
               <label class="text-sm font-medium text-slate-600">
                 身份证号
-                <input
+                <Input
                   v-model="realNameForm.idCard"
-                  class="input mt-2 rounded-2xl border-slate-200 bg-slate-50 shadow-none"
+                  class="mt-2"
                   placeholder="请输入 18 位身份证号"
-                >
+                  theme="emerald"
+                />
               </label>
             </div>
 
@@ -277,13 +316,14 @@
               v-if="canSubmitRealName"
               class="flex justify-end"
             >
-              <button
-                class="rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-300"
-                :disabled="realNameSubmitting"
+              <Button
+                variant="success"
+                rounded
+                :loading="realNameSubmitting"
                 @click="submitRealName"
               >
-                {{ realNameSubmitting ? '提交中...' : '提交实名认证' }}
-              </button>
+                提交实名认证
+              </Button>
             </div>
           </div>
         </VolunteerSectionCard>
@@ -304,7 +344,7 @@
             </div>
             <RouterLink
               to="/volunteer/organizations"
-              class="inline-flex items-center justify-center rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700"
+              class="inline-flex w-fit items-center justify-center rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700"
             >
               前往我的组织
             </RouterLink>
@@ -318,6 +358,8 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
 import { RouterLink } from 'vue-router'
+import Button from '@/components/ui/Button.vue'
+import Input from '@/components/ui/Input.vue'
 import DatePicker from '@/components/ui/DatePicker.vue'
 import FilterSelect from '@/components/ui/FilterSelect.vue'
 import Textarea from '@/components/ui/Textarea.vue'
@@ -379,22 +421,10 @@ const userInitials = computed(() => displayName.value.charAt(0))
 const volunteerLevel = computed(() => Math.floor((user.value?.totalHours || 0) / 10) + 1)
 const serviceCountValue = computed(() => profile.value?.serviceCount || 0)
 const creditScoreValue = computed(() => profile.value?.creditScore || 0)
-const birthdayValue = computed<Date | null>({
-  get: () => {
-    if (!profileForm.birthday) return null
-    const match = profileForm.birthday.match(/^(\d{4})-(\d{2})-(\d{2})$/)
-    if (!match) return null
-    const [, year, month, day] = match
-    const parsed = new Date(Number(year), Number(month) - 1, Number(day))
-    return Number.isNaN(parsed.getTime()) ? null : parsed
-  },
+const birthdayValue = computed<string | null>({
+  get: () => profileForm.birthday || null,
   set: (value) => {
-    if (!value) {
-      profileForm.birthday = ''
-      return
-    }
-    const pad = (part: number) => `${part}`.padStart(2, '0')
-    profileForm.birthday = `${value.getFullYear()}-${pad(value.getMonth() + 1)}-${pad(value.getDate())}`
+    profileForm.birthday = value || ''
   }
 })
 
@@ -403,6 +433,17 @@ const headerMeta = computed(() => [
   { label: '实名认证', value: auditStatusLabel.value, detail: '审核状态来自实名信息' },
   { label: '服务次数', value: `${serviceCountValue.value} 次`, detail: `${creditScoreValue.value} 当前信用分` }
 ])
+
+const accountSummaryLabel = computed(() => {
+  const completedCount = [accountForm.username, accountForm.email, accountForm.phone]
+    .filter((value) => value.trim().length > 0)
+    .length
+  return `${completedCount}/3 已完善`
+})
+
+const bioSummaryLabel = computed(() => (
+  profileForm.introduction.trim().length >= 12 ? '已完善' : '待补充'
+))
 
 const profileHealthChecklist = computed(() => {
   const hasAccountInfo = Boolean(accountForm.username && accountForm.email && accountForm.phone)

@@ -6,14 +6,34 @@
         title="确认本周已预约任务"
         description="在同一页面里完成行前核对、优先排序和准备动作，避免临近活动时手忙脚乱。"
         :meta-items="headerMeta"
+        layout="operations"
       >
+        <template #summary>
+          <span class="rounded-full border border-emerald-100 bg-white/85 px-3 py-1.5 text-xs font-semibold text-slate-600">
+            当前状态 / {{ registrationStatusSummary }}
+          </span>
+          <span class="rounded-full border border-emerald-100 bg-white/85 px-3 py-1.5 text-xs font-semibold text-slate-600">
+            检索关键词 / {{ registrationKeywordSummary }}
+          </span>
+          <span class="rounded-full border border-emerald-100 bg-white/85 px-3 py-1.5 text-xs font-semibold text-slate-600">
+            列表规模 / {{ pageSize }} 条/页
+          </span>
+        </template>
         <template #actions>
-          <RouterLink
-            to="/volunteer/activities"
-            class="volunteer-toolbar-button volunteer-toolbar-button--soft"
-          >
-            继续报名活动
-          </RouterLink>
+          <div class="grid w-full gap-3 lg:grid-cols-[minmax(0,1fr)_auto]">
+            <Input
+              v-model.trim="keyword"
+              placeholder="搜索已报名活动名称"
+              allow-clear
+              theme="emerald"
+            />
+            <RouterLink
+              to="/volunteer/activities"
+              class="volunteer-toolbar-button volunteer-toolbar-button--soft min-h-[48px]"
+            >
+              继续报名活动
+            </RouterLink>
+          </div>
         </template>
       </VolunteerPageHeader>
     </template>
@@ -21,43 +41,21 @@
     <template #toolbar>
       <div class="flex flex-wrap items-center justify-between gap-3 rounded-[1.75rem] border border-slate-200/80 bg-white/90 px-4 py-4 shadow-[0_18px_42px_-34px_rgba(15,23,42,0.28)]">
         <div class="grid flex-1 gap-3 md:grid-cols-3">
-          <input
-            v-model.trim="keyword"
-            type="text"
-            class="input"
-            placeholder="搜索已报名活动名称"
-          >
-          <select
+          <div class="rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-sm text-slate-500">
+            建议先筛出本周内活动，再按时间顺序检查路线、签到和物资准备。
+          </div>
+          <FilterSelect
             v-model="statusFilter"
-            class="input"
-          >
-            <option value="">
-              全部活动状态
-            </option>
-            <option :value="ActivityStatus.OPEN">
-              待参加
-            </option>
-            <option :value="ActivityStatus.ENDED">
-              已结束
-            </option>
-            <option :value="ActivityStatus.CANCELLED">
-              已取消
-            </option>
-          </select>
-          <select
-            v-model.number="pageSize"
-            class="input"
-          >
-            <option :value="10">
-              每页 10 条
-            </option>
-            <option :value="20">
-              每页 20 条
-            </option>
-            <option :value="50">
-              每页 50 条
-            </option>
-          </select>
+            title="活动状态"
+            :options="statusOptions"
+            theme="emerald"
+          />
+          <FilterSelect
+            v-model="pageSize"
+            title="每页条数"
+            :options="pageSizeOptions"
+            theme="emerald"
+          />
         </div>
 
         <div class="flex flex-wrap items-center gap-2">
@@ -324,6 +322,8 @@ import DataListPage from '@/components/data-list/DataListPage.vue'
 import DataList from '@/components/data-list/DataList.vue'
 import DetailDrawer from '@/components/data-list/DetailDrawer.vue'
 import Button from '@/components/ui/Button.vue'
+import Input from '@/components/ui/Input.vue'
+import FilterSelect from '@/components/ui/FilterSelect.vue'
 import { RouterLink, useRouter } from 'vue-router'
 import VolunteerPageHeader from '@/components/volunteer/VolunteerPageHeader.vue'
 import VolunteerSectionCard from '@/components/volunteer/VolunteerSectionCard.vue'
@@ -350,6 +350,17 @@ const selectedRegistrationId = ref<number | null>(null)
 const selectedRegistrationSnapshot = ref<VolunteerActivityViewItem | null>(null)
 const drawerOpen = ref(false)
 const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pageSize.value)))
+const statusOptions = [
+  { key: 'registration-status-all', value: '', label: '全部活动状态', description: '查看所有报名记录' },
+  { key: 'registration-status-open', value: ActivityStatus.OPEN, label: '待参加', description: '活动尚未开始' },
+  { key: 'registration-status-ended', value: ActivityStatus.ENDED, label: '已结束', description: '活动已完成或结束' },
+  { key: 'registration-status-cancelled', value: ActivityStatus.CANCELLED, label: '已取消', description: '活动已取消或失效' }
+] as const
+const pageSizeOptions = [
+  { key: 'registration-page-10', value: 10, label: '每页 10 条', description: '紧凑浏览' },
+  { key: 'registration-page-20', value: 20, label: '每页 20 条', description: '默认密度' },
+  { key: 'registration-page-50', value: 50, label: '每页 50 条', description: '适合集中处理' }
+] as const
 const selectedStatuses = computed<ActivityStatus[] | undefined>(() => {
   if (statusFilter.value === '') {
     return [ActivityStatus.OPEN, ActivityStatus.ENDED, ActivityStatus.CANCELLED]
@@ -414,6 +425,14 @@ const headerMeta = computed(() => [
   { label: '近期优先', value: `${soonCount.value} 场`, detail: '建议提前确认路线' },
   { label: '分页进度', value: `${page.value}/${totalPages.value}`, detail: `共 ${total.value} 条报名记录` }
 ])
+
+const registrationStatusSummary = computed(() => (
+  statusOptions.find((option) => option.value === statusFilter.value)?.label || '全部活动状态'
+))
+
+const registrationKeywordSummary = computed(() => (
+  keyword.value.trim() ? `“${keyword.value.trim()}”` : '未设置'
+))
 
 const registrationChecklist = [
   { label: '确认签到时间', detail: '建议活动开始前 20 分钟到场，预留物资领取时间。', done: true },

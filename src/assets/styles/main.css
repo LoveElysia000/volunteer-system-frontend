@@ -927,7 +927,8 @@
 
 /* 消息容器 */
 .message-container {
-  @apply fixed z-50 p-4;
+  @apply fixed p-4;
+  z-index: 2000;
 }
 
 /* 消息容器内的消息应该可以接收点击事件 */
@@ -1292,7 +1293,7 @@
   }
 
   .volunteer-shell-panel {
-    @apply rounded-[2rem] border border-white/70 bg-white/80 shadow-[0_24px_80px_-50px_rgba(15,23,42,0.35)] backdrop-blur;
+    @apply rounded-[1.8rem] border border-white/75 bg-white/80 shadow-[0_24px_80px_-55px_rgba(5,150,105,0.22)] backdrop-blur;
   }
 
   .volunteer-nav-surface {
@@ -1326,11 +1327,11 @@
   }
 
   .volunteer-content-grid {
-    @apply flex w-full min-w-0 flex-col gap-6 px-4 py-4 lg:px-6 lg:py-6 2xl:px-8;
+    @apply mx-auto flex w-full max-w-[1580px] min-w-0 flex-col gap-5 px-4 py-4 lg:px-6 lg:py-5 2xl:px-8;
   }
 
   .volunteer-context-strip {
-    @apply flex flex-col gap-4 rounded-[1.5rem] border border-white/80 bg-white/55 px-4 py-4 shadow-[0_18px_52px_-42px_rgba(15,23,42,0.20)] backdrop-blur sm:flex-row sm:items-center sm:justify-between;
+    @apply flex flex-col gap-3 rounded-[1.35rem] border border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.92),rgba(240,253,250,0.84))] px-4 py-3.5 shadow-[0_16px_42px_-36px_rgba(5,150,105,0.16)] backdrop-blur sm:flex-row sm:items-center sm:justify-between;
   }
 
   .volunteer-page-stage {
@@ -1342,7 +1343,7 @@
   }
 
   .volunteer-toolbar-button {
-    @apply inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-200 hover:text-emerald-700;
+    @apply inline-flex min-h-[44px] items-center justify-center rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-[0_12px_26px_-22px_rgba(15,23,42,0.16)] transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-200 hover:text-emerald-700 hover:shadow-[0_18px_34px_-24px_rgba(5,150,105,0.18)];
   }
 
   .volunteer-toolbar-button--soft {
@@ -1465,11 +1466,11 @@
   }
 
   .org-content-grid {
-    @apply flex w-full min-w-0 flex-col gap-6 px-4 py-4 lg:px-6 lg:py-6 2xl:px-8;
+    @apply mx-auto flex w-full max-w-[1580px] min-w-0 flex-col gap-5 px-4 py-4 lg:px-6 lg:py-5 2xl:px-8;
   }
 
   .org-context-strip {
-    @apply flex flex-col gap-4 rounded-[1.5rem] border border-white/80 bg-white/70 px-4 py-4 shadow-[0_18px_52px_-42px_rgba(15,23,42,0.25)] backdrop-blur sm:flex-row sm:items-center sm:justify-between;
+    @apply flex flex-col gap-3 rounded-[1.35rem] border border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.92),rgba(249,250,251,0.86))] px-4 py-3.5 shadow-[0_16px_42px_-36px_rgba(15,23,42,0.22)] backdrop-blur sm:flex-row sm:items-center sm:justify-between;
   }
 
   .organization-page-stage {
@@ -1477,7 +1478,7 @@
   }
 
   .org-toolbar-button {
-    @apply inline-flex items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-all duration-200 hover:-translate-y-0.5 hover:border-[#ffd7c1] hover:text-[#ec5b13];
+    @apply inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-[0_12px_26px_-22px_rgba(15,23,42,0.18)] transition-all duration-200 hover:-translate-y-0.5 hover:border-[#ffd7c1] hover:text-[#ec5b13] hover:shadow-[0_18px_34px_-24px_rgba(120,53,15,0.22)];
   }
 
   .org-toolbar-button--soft {
@@ -1552,19 +1553,19 @@
 
 @layer components {
   .data-list-page {
-    @apply min-w-0;
+    @apply min-w-0 space-y-5;
   }
 
   .data-list-toolbar {
-    @apply flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between;
+    @apply flex flex-col gap-4 rounded-[1.5rem] border border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.95),rgba(248,250,252,0.92))] p-4 shadow-[0_18px_42px_-36px_rgba(15,23,42,0.24)] backdrop-blur-sm lg:flex-row lg:items-start lg:justify-between;
   }
 
   .data-list-toolbar-group {
-    @apply flex min-w-0 flex-1 flex-col gap-3;
+    @apply flex min-w-0 flex-1 flex-col gap-4;
   }
 
   .data-list-toolbar-actions {
-    @apply flex min-w-0 flex-col gap-3 lg:items-end;
+    @apply flex min-w-0 flex-col gap-3 lg:max-w-[30rem] lg:items-end lg:justify-between;
   }
 
   .data-list-filter-stack {

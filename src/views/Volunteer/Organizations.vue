@@ -5,7 +5,46 @@
       title="连接你参与的环保组织"
       description="在这里集中查看已加入组织、处理加入申请，并快速找到新的长期协作团队。"
       :meta-items="headerMeta"
-    />
+      layout="operations"
+    >
+      <template #summary>
+        <span class="rounded-full border border-emerald-100 bg-white/85 px-3 py-1.5 text-xs font-semibold text-slate-600">
+          关系状态 / {{ membershipFilterSummary }}
+        </span>
+        <span class="rounded-full border border-emerald-100 bg-white/85 px-3 py-1.5 text-xs font-semibold text-slate-600">
+          查找关键词 / {{ organizationKeywordSummary }}
+        </span>
+        <span class="rounded-full border border-emerald-100 bg-white/85 px-3 py-1.5 text-xs font-semibold text-slate-600">
+          组织范围 / {{ organizationRegionSummary }}
+        </span>
+      </template>
+      <template #actions>
+        <div class="grid w-full gap-3 lg:grid-cols-[minmax(0,1fr)_auto_auto]">
+          <Input
+            v-model="searchQuery"
+            placeholder="搜索组织名称、地区或类型"
+            :icon="SearchIcon"
+            allow-clear
+            theme="emerald"
+            @keyup.enter="reloadOrganizationsFromFirstPage"
+          />
+          <button
+            class="volunteer-toolbar-button volunteer-toolbar-button--ghost min-h-[48px]"
+            :disabled="organizationsLoading"
+            @click="refreshMemberships"
+          >
+            刷新关系
+          </button>
+          <button
+            class="volunteer-toolbar-button volunteer-toolbar-button--soft min-h-[48px]"
+            :disabled="organizationsLoading"
+            @click="reloadOrganizationsFromFirstPage"
+          >
+            {{ organizationsLoading ? '搜索中...' : '查找组织' }}
+          </button>
+        </div>
+      </template>
+    </VolunteerPageHeader>
 
     <div class="grid gap-6 xl:grid-cols-[0.88fr_1.12fr]">
       <div class="space-y-6">
@@ -39,40 +78,18 @@
           tone="soft"
         >
           <div class="mb-4 grid gap-3 md:grid-cols-3">
-            <select
-              v-model.number="membershipStatusFilter"
-              class="input"
-            >
-              <option :value="0">
-                全部关系状态
-              </option>
-              <option :value="MembershipStatus.PENDING">
-                待审核
-              </option>
-              <option :value="MembershipStatus.ACTIVE">
-                已加入
-              </option>
-              <option :value="MembershipStatus.REJECTED">
-                已驳回
-              </option>
-              <option :value="MembershipStatus.LEFT">
-                已退出
-              </option>
-            </select>
-            <select
-              v-model.number="membershipsPageSize"
-              class="input"
-            >
-              <option :value="10">
-                每页 10 条
-              </option>
-              <option :value="20">
-                每页 20 条
-              </option>
-              <option :value="50">
-                每页 50 条
-              </option>
-            </select>
+            <FilterSelect
+              v-model="membershipStatusFilter"
+              title="关系状态"
+              :options="membershipStatusOptions"
+              theme="emerald"
+            />
+            <FilterSelect
+              v-model="membershipsPageSize"
+              title="每页条数"
+              :options="membershipsPageSizeOptions"
+              theme="emerald"
+            />
             <div class="flex items-center justify-end gap-2 text-sm text-slate-500">
               <span>第 {{ membershipsPage }} / {{ membershipsTotalPages }} 页</span>
             </div>
@@ -165,45 +182,25 @@
           description="通过关键词筛选活跃组织，找到适合你长期参与的协作方向。"
         >
           <div class="space-y-5">
-            <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-              <div class="relative flex-1">
-                <SearchIcon class="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                <input
-                  v-model="searchQuery"
-                  type="text"
-                  placeholder="搜索组织名称、地区或组织类型"
-                  class="input h-12 rounded-2xl border-slate-200 bg-slate-50 pl-11 shadow-none"
-                  @keyup.enter="loadOrganizations"
-                >
-              </div>
-              <input
+            <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              <Input
                 v-model="organizationTypeFilter"
-                type="text"
-                class="input h-12 rounded-2xl border-slate-200 bg-slate-50 shadow-none"
                 placeholder="组织类型"
+                theme="emerald"
                 @keyup.enter="loadOrganizations"
-              >
-              <input
+              />
+              <Input
                 v-model="regionFilter"
-                type="text"
-                class="input h-12 rounded-2xl border-slate-200 bg-slate-50 shadow-none"
                 placeholder="地区"
+                theme="emerald"
                 @keyup.enter="loadOrganizations"
-              >
-              <select
-                v-model.number="organizationsPageSize"
-                class="input h-12 rounded-2xl border-slate-200 bg-slate-50 shadow-none"
-              >
-                <option :value="12">
-                  每页 12 条
-                </option>
-                <option :value="24">
-                  每页 24 条
-                </option>
-                <option :value="48">
-                  每页 48 条
-                </option>
-              </select>
+              />
+              <FilterSelect
+                v-model="organizationsPageSize"
+                title="每页条数"
+                :options="organizationsPageSizeOptions"
+                theme="emerald"
+              />
             </div>
             <div class="flex flex-col gap-3 md:flex-row md:justify-between md:items-center">
               <button
@@ -345,6 +342,8 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { SearchIcon } from 'lucide-vue-next'
+import FilterSelect from '@/components/ui/FilterSelect.vue'
+import Input from '@/components/ui/Input.vue'
 import VolunteerPageHeader from '@/components/volunteer/VolunteerPageHeader.vue'
 import VolunteerSectionCard from '@/components/volunteer/VolunteerSectionCard.vue'
 import VolunteerStatusBadge from '@/components/volunteer/VolunteerStatusBadge.vue'
@@ -376,6 +375,23 @@ const organizationsPageSize = ref(24)
 const membershipsPage = ref(1)
 const membershipsPageSize = ref(20)
 const membershipStatusFilter = ref(0)
+const membershipStatusOptions = [
+  { key: 'membership-status-all', value: 0, label: '全部关系状态', description: '查看全部组织关系' },
+  { key: 'membership-status-pending', value: MembershipStatus.PENDING, label: '待审核', description: '等待组织侧处理' },
+  { key: 'membership-status-active', value: MembershipStatus.ACTIVE, label: '已加入', description: '当前可参与协作' },
+  { key: 'membership-status-rejected', value: MembershipStatus.REJECTED, label: '已驳回', description: '可重新选择组织' },
+  { key: 'membership-status-left', value: MembershipStatus.LEFT, label: '已退出', description: '历史协作关系' }
+] as const
+const membershipsPageSizeOptions = [
+  { key: 'membership-page-10', value: 10, label: '每页 10 条', description: '紧凑列表' },
+  { key: 'membership-page-20', value: 20, label: '每页 20 条', description: '默认密度' },
+  { key: 'membership-page-50', value: 50, label: '每页 50 条', description: '适合集中查看' }
+] as const
+const organizationsPageSizeOptions = [
+  { key: 'organization-page-12', value: 12, label: '每页 12 条', description: '适合卡片浏览' },
+  { key: 'organization-page-24', value: 24, label: '每页 24 条', description: '默认密度' },
+  { key: 'organization-page-48', value: 48, label: '每页 48 条', description: '适合批量筛选' }
+] as const
 
 const membershipByOrganizationId = computed<Record<number, OrganizationMemberInfo>>(() => (
   membershipsStore.myOrganizations.reduce<Record<number, OrganizationMemberInfo>>((acc, item) => {
@@ -408,6 +424,23 @@ const headerMeta = computed(() => [
   { label: '待审核申请', value: `${pendingMembershipCount.value} 个`, detail: '等待组织侧处理' },
   { label: '公开组织', value: `${organizationsTotal.value} 个`, detail: '当前筛选条件下的公开组织总量' }
 ])
+
+const membershipFilterSummary = computed(() => (
+  membershipStatusOptions.find((option) => option.value === membershipStatusFilter.value)?.label || '全部关系状态'
+))
+
+const organizationKeywordSummary = computed(() => (
+  searchQuery.value.trim() ? `“${searchQuery.value.trim()}”` : '未设置'
+))
+
+const organizationRegionSummary = computed(() => {
+  if (organizationTypeFilter.value.trim() && regionFilter.value.trim()) {
+    return `${organizationTypeFilter.value.trim()} / ${regionFilter.value.trim()}`
+  }
+  if (regionFilter.value.trim()) return regionFilter.value.trim()
+  if (organizationTypeFilter.value.trim()) return organizationTypeFilter.value.trim()
+  return '全部公开组织'
+})
 
 const summaryCards = computed(() => [
   { label: '组织关系总数', value: `${membershipsStore.myOrganizationsTotal}`, detail: '含待审核与历史状态' },

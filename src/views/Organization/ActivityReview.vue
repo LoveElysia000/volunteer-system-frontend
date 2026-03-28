@@ -5,20 +5,54 @@
         eyebrow="审核队列"
         title="审核中心"
         description="集中处理实名认证、组织资料、活动等各类待办审批。"
+        layout="operations"
         :meta-items="headerMeta"
-      />
+      >
+        <template #summary>
+          <div
+            v-for="item in headerHighlights"
+            :key="item.label"
+            class="inline-flex items-center gap-2 rounded-full border px-3.5 py-2 text-sm font-semibold shadow-[0_12px_26px_-22px_rgba(15,23,42,0.25)]"
+            :class="item.tone === 'danger'
+              ? 'border-rose-200 bg-rose-50 text-rose-700'
+              : 'border-slate-200 bg-white/90 text-slate-600'"
+          >
+            <span class="text-xs uppercase tracking-[0.18em] text-slate-400">{{ item.label }}</span>
+            <span class="text-slate-900">{{ item.value }}</span>
+          </div>
+        </template>
+        <template #actions>
+          <Input
+            v-model.trim="searchQuery"
+            placeholder="搜索标题、说明或审核单号"
+            :icon="SearchIcon"
+            allow-clear
+            class="w-full xl:max-w-sm"
+          />
+          <Button
+            variant="success"
+            :loading="actionLoading"
+            :disabled="!filteredItems.length"
+            @click="batchApproveFiltered"
+          >
+            批量通过
+          </Button>
+          <Button
+            variant="danger"
+            :loading="actionLoading"
+            :disabled="!filteredItems.length"
+            @click="batchRejectFiltered"
+          >
+            批量驳回
+          </Button>
+        </template>
+      </OrganizationPageHeader>
     </template>
 
     <template #toolbar>
       <DataToolbar>
         <template #filters>
           <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
-            <input
-              v-model.trim="searchQuery"
-              type="text"
-              class="input"
-              placeholder="搜索标题、说明或审核单号"
-            >
             <FilterSelect
               v-model="targetTypeFilter"
               title="审核类型"
@@ -31,39 +65,27 @@
               :icon="TimerResetIcon"
               :options="queueFilterOptions"
             />
-            <input
+            <DatePicker
               v-model="createdFrom"
-              type="date"
-              class="input"
               placeholder="开始日期"
-            >
-            <input
+              mode="date"
+            />
+            <DatePicker
               v-model="createdTo"
-              type="date"
-              class="input"
               placeholder="结束日期"
-            >
-            <input
+              mode="date"
+            />
+            <Input
               v-model.number="slaHours"
               type="number"
               min="1"
-              class="input"
               placeholder="SLA 小时数"
-            >
-            <select
-              v-model.number="pageSize"
-              class="input"
-            >
-              <option :value="10">
-                每页 10 条
-              </option>
-              <option :value="20">
-                每页 20 条
-              </option>
-              <option :value="50">
-                每页 50 条
-              </option>
-            </select>
+            />
+            <FilterSelect
+              v-model="pageSize"
+              title="每页条数"
+              :options="pageSizeOptions"
+            />
           </div>
         </template>
 
@@ -76,29 +98,6 @@
         </template>
 
         <template #actions>
-          <Button
-            variant="success"
-            :loading="actionLoading"
-            :disabled="!filteredItems.length"
-            @click="batchApproveFiltered"
-          >
-            批量通过当前列表
-          </Button>
-          <Button
-            variant="danger"
-            :loading="actionLoading"
-            :disabled="!filteredItems.length"
-            @click="batchRejectFiltered"
-          >
-            批量驳回当前列表
-          </Button>
-          <Button
-            variant="outline"
-            :loading="loading"
-            @click="reloadFromFirstPage"
-          >
-            刷新审核队列
-          </Button>
           <Button
             variant="outline"
             :disabled="loading || page <= 1"
@@ -133,7 +132,7 @@
           open-style="text"
           density="compact"
           empty-title="当前没有待审核记录"
-          empty-description="切换筛选条件后再试，或刷新审核队列。"
+          empty-description="切换筛选条件后再试。"
           @row-click="openAuditDrawer"
         >
           <template #cell-identity="{ item }">
@@ -300,7 +299,9 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import Button from '@/components/ui/Button.vue'
+import DatePicker from '@/components/ui/DatePicker.vue'
 import FilterSelect from '@/components/ui/FilterSelect.vue'
+import Input from '@/components/ui/Input.vue'
 import Textarea from '@/components/ui/Textarea.vue'
 import DataListPage from '@/components/data-list/DataListPage.vue'
 import DataToolbar from '@/components/data-list/DataToolbar.vue'
@@ -312,7 +313,7 @@ import OrganizationSectionCard from '@/components/organization/OrganizationSecti
 import { useAuditsStore } from '@/store/modules/audits'
 import { useMessageStore } from '@/store/modules/messages'
 import { AuditDecisionAction, AuditStatus, AuditTargetType } from '@/types/audit'
-import { FoldersIcon, TimerResetIcon } from 'lucide-vue-next'
+import { FoldersIcon, SearchIcon, TimerResetIcon } from 'lucide-vue-next'
 
 const auditsStore = useAuditsStore()
 const messageStore = useMessageStore()
@@ -330,6 +331,11 @@ const createdTo = ref('')
 const slaHours = ref<number | undefined>()
 const page = ref(1)
 const pageSize = ref(20)
+const pageSizeOptions = [
+  { value: 10, label: '10 条', description: '适合逐条审核' },
+  { value: 20, label: '20 条', description: '默认处理密度' },
+  { value: 50, label: '50 条', description: '适合批量巡检' }
+] as const
 const queueFilterOptions = [
   { value: 'all', label: '全部队列', description: '查看所有待审核记录' },
   { value: 'overdue', label: '已超时', description: '优先处理超过时限的审核单' },
@@ -415,6 +421,33 @@ const headerMeta = computed(() => [
     label: '当前模块',
     value: targetTypeFilter.value === 'all' ? '综合审核' : targetTypeText(targetTypeFilter.value),
     detail: '覆盖实名、组织、成员与活动报名'
+  },
+  {
+    label: '已超时',
+    value: `${items.value.filter((item) => item.isOverdue).length}`,
+    detail: '当前待办中的超时记录'
+  },
+  {
+    label: '分页进度',
+    value: `${page.value}/${totalPages.value}`,
+    detail: `当前列表 ${filteredItems.value.length} 条`
+  }
+])
+const headerHighlights = computed(() => [
+  {
+    label: '审核队列',
+    value: queueFilterText(queueFilter.value),
+    tone: queueFilter.value === 'overdue' ? 'danger' : 'neutral'
+  },
+  {
+    label: '处理范围',
+    value: targetTypeFilter.value === 'all' ? '全部类型' : targetTypeText(targetTypeFilter.value),
+    tone: 'neutral'
+  },
+  {
+    label: '批量操作',
+    value: filteredItems.value.length ? `${filteredItems.value.length} 条可处理` : '当前无可处理项',
+    tone: 'neutral'
   }
 ])
 
@@ -438,11 +471,6 @@ const loadAudits = async () => {
     console.error('加载审核列表失败:', error)
     messageStore.error(error.message || '加载审核列表失败，请稍后重试')
   }
-}
-
-const reloadFromFirstPage = async () => {
-  page.value = 1
-  await loadAudits()
 }
 
 const goToPreviousPage = async () => {
@@ -552,11 +580,18 @@ const targetTypeText = (targetType: AuditTargetType) => ({
   [AuditTargetType.ACTIVITY_SIGNUP]: '活动报名'
 }[targetType] || '未知类型')
 
+const queueFilterText = (queue: 'all' | 'overdue' | 'pending') => ({
+  all: '全部队列',
+  overdue: '已超时',
+  pending: '正常待处理'
+}[queue] || '全部队列')
+
 onMounted(() => {
   void loadAudits()
 })
 
 watch([searchQuery, queueFilter, targetTypeFilter, createdFrom, createdTo, slaHours, pageSize], () => {
-  void reloadFromFirstPage()
+  page.value = 1
+  void loadAudits()
 })
 </script>

@@ -1,27 +1,29 @@
 <template>
-  <div
-    :class="[
-      'message-container',
-      `message-container-${position}`
-    ]"
-  >
-    <TransitionGroup
-      name="message"
-      tag="div"
-      class="message-stack"
+  <Teleport to="body">
+    <div
+      :class="[
+        'message-container',
+        `message-container-${position}`
+      ]"
     >
-      <Message
-        v-for="message in visibleMessages"
-        :key="message.id"
-        :type="message.type"
-        :title="message.title"
-        :message="message.message"
-        :duration="message.duration"
-        :dismissible="message.dismissible"
-        @close="() => removeMessage(message.id)"
-      />
-    </TransitionGroup>
-  </div>
+      <TransitionGroup
+        name="message"
+        tag="div"
+        class="message-stack"
+      >
+        <Message
+          v-for="message in visibleMessages"
+          :key="message.id"
+          :type="message.type"
+          :title="message.title"
+          :message="message.message"
+          :duration="message.duration"
+          :dismissible="message.dismissible"
+          @close="() => removeMessage(message.id)"
+        />
+      </TransitionGroup>
+    </div>
+  </Teleport>
 </template>
 
 <script setup lang="ts">
@@ -33,7 +35,7 @@ interface Props {
   position?: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left'
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   position: 'top-right'
 })
 

@@ -101,18 +101,18 @@ const mainClass = computed(() => {
   }
 
   if (isActive.value) {
-    return 'cursor-pointer bg-[#fff3ec] pl-6 text-[#8a3d14] shadow-[inset_0_0_0_1px_rgba(236,91,19,0.18)]'
+        return 'cursor-pointer bg-[linear-gradient(180deg,rgba(255,243,236,0.98),rgba(255,250,246,0.96))] pl-6 text-[#8a3d14] shadow-[inset_0_0_0_1px_rgba(236,91,19,0.18),0_12px_24px_-24px_rgba(120,53,15,0.32)]'
   }
 
-  return 'cursor-pointer text-slate-600 hover:bg-slate-50 hover:pl-5 hover:text-slate-900'
+  return 'cursor-pointer text-slate-600 hover:bg-white hover:pl-5 hover:text-slate-900 hover:shadow-[0_10px_22px_-22px_rgba(15,23,42,0.18)]'
 })
 
 const iconWrapClass = computed(() => {
   if (isActive.value) {
-    return 'bg-[#ffe8da] text-[#ec5b13]'
+    return 'bg-[#ffe8da] text-[#ec5b13] shadow-[inset_0_0_0_1px_rgba(236,91,19,0.08)]'
   }
 
-  return 'bg-slate-100 text-slate-500'
+  return 'bg-slate-100/90 text-slate-500'
 })
 
 const handleClick = () => {

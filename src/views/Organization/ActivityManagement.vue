@@ -15,26 +15,28 @@
             accept=".xlsx,.xls"
             @change="handleImport"
           >
-          <button
-            class="org-toolbar-button"
-            :disabled="importing"
+          <Button
+            variant="primary"
+            rounded
+            :loading="importing"
             @click="triggerImport"
           >
-            {{ importing ? '导入中...' : '导入活动' }}
-          </button>
-          <button
-            class="org-toolbar-button"
-            :disabled="exporting"
+            导入活动
+          </Button>
+          <Button
+            variant="outline"
+            rounded
+            :loading="exporting"
             @click="exportActivities"
           >
-            {{ exporting ? '导出中...' : '导出活动' }}
-          </button>
+            导出活动
+          </Button>
           <RouterLink
             to="/organization/activities/create"
             class="org-toolbar-button org-toolbar-button--soft"
           >
             <PlusIcon class="h-4 w-4" />
-            创建活动
+            新建活动
           </RouterLink>
         </template>
       </OrganizationPageHeader>
@@ -44,42 +46,33 @@
       <DataToolbar>
         <template #filters>
           <div class="grid gap-3 lg:grid-cols-[minmax(220px,320px)_180px_180px_180px_160px]">
-            <input
-              v-model.trim="search"
-              type="text"
-              class="input"
+            <Input
+              v-model="search"
               placeholder="搜索活动标题或地点"
-            >
+              allow-clear
+            />
             <FilterSelect
               v-model="filter"
               title="状态筛选"
               :icon="SlidersHorizontalIcon"
               :options="filterOptions"
             />
-            <input
+            <DatePicker
               v-model="startFrom"
-              type="date"
-              class="input"
-            >
-            <input
+              placeholder="开始日期"
+              mode="date"
+            />
+            <DatePicker
               v-model="endTo"
-              type="date"
-              class="input"
-            >
-            <select
-              v-model.number="pageSize"
-              class="input"
-            >
-              <option :value="10">
-                每页 10 条
-              </option>
-              <option :value="20">
-                每页 20 条
-              </option>
-              <option :value="50">
-                每页 50 条
-              </option>
-            </select>
+              placeholder="结束日期"
+              mode="date"
+            />
+            <FilterSelect
+              v-model="pageSize"
+              title="每页条数"
+              :icon="SlidersHorizontalIcon"
+              :options="pageSizeOptions"
+            />
           </div>
         </template>
 
@@ -91,13 +84,6 @@
         </template>
 
         <template #actions>
-          <Button
-            variant="outline"
-            :loading="loading"
-            @click="reloadFromFirstPage"
-          >
-            刷新活动列表
-          </Button>
           <Button
             variant="outline"
             :disabled="loading || page <= 1"
@@ -132,7 +118,7 @@
           open-style="text"
           density="compact"
           empty-title="当前没有可展示的活动"
-          empty-description="调整筛选条件后再试，或新建一场活动。"
+          empty-description="调整筛选条件后再试，或新建活动。"
           @row-click="openActivityDrawer"
         >
           <template #cell-identity="{ item }">
@@ -261,15 +247,14 @@
 
             <div class="grid gap-4 md:grid-cols-2">
               <div class="md:col-span-2">
-                <label class="mb-1 block text-sm font-medium text-gray-700">活动标题</label>
-                <input
+                <label class="mb-1 block text-sm font-medium text-slate-600">活动标题</label>
+                <Input
                   v-model="editForm.title"
-                  type="text"
-                  class="input"
-                >
+                  placeholder="请输入活动标题"
+                />
               </div>
               <div class="md:col-span-2">
-                <label class="mb-1 block text-sm font-medium text-gray-700">活动描述</label>
+                <label class="mb-1 block text-sm font-medium text-slate-600">活动描述</label>
                 <Textarea
                   v-model="editForm.description"
                   :min-rows="3"
@@ -280,58 +265,50 @@
                 />
               </div>
               <div>
-                <label class="mb-1 block text-sm font-medium text-gray-700">活动地点</label>
-                <input
+                <label class="mb-1 block text-sm font-medium text-slate-600">活动地点</label>
+                <Input
                   v-model="editForm.location"
-                  type="text"
-                  class="input"
-                >
+                  placeholder="请输入活动地点"
+                />
               </div>
               <div>
-                <label class="mb-1 block text-sm font-medium text-gray-700">详细地址</label>
-                <input
+                <label class="mb-1 block text-sm font-medium text-slate-600">详细地址</label>
+                <Input
                   v-model="editForm.address"
-                  type="text"
-                  class="input"
-                >
+                  placeholder="请输入详细地址"
+                />
               </div>
               <div>
-                <label class="mb-1 block text-sm font-medium text-gray-700">开始时间</label>
+                <label class="mb-1 block text-sm font-medium text-slate-600">开始时间</label>
                 <DatePicker
                   v-model="editStartTime"
-                  format="yyyy-MM-dd HH:mm"
                   placeholder="请选择开始时间"
-                  enable-time-picker
-                  :minutes-increment="1"
+                  mode="datetime"
                 />
               </div>
               <div>
-                <label class="mb-1 block text-sm font-medium text-gray-700">结束时间</label>
+                <label class="mb-1 block text-sm font-medium text-slate-600">结束时间</label>
                 <DatePicker
                   v-model="editEndTime"
-                  format="yyyy-MM-dd HH:mm"
                   placeholder="请选择结束时间"
-                  enable-time-picker
-                  :minutes-increment="1"
+                  mode="datetime"
                 />
               </div>
               <div>
-                <label class="mb-1 block text-sm font-medium text-gray-700">活动时长（小时）</label>
-                <input
-                  v-model.number="editForm.duration"
+                <label class="mb-1 block text-sm font-medium text-slate-600">活动时长（小时）</label>
+                <Input
+                  v-model="editDurationInput"
                   type="number"
-                  min="1"
-                  class="input"
-                >
+                  placeholder="请输入活动时长"
+                />
               </div>
               <div>
-                <label class="mb-1 block text-sm font-medium text-gray-700">人数上限</label>
-                <input
-                  v-model.number="editForm.maxPeople"
+                <label class="mb-1 block text-sm font-medium text-slate-600">人数上限</label>
+                <Input
+                  v-model="editMaxPeopleInput"
                   type="number"
-                  min="1"
-                  class="input"
-                >
+                  placeholder="请输入人数上限"
+                />
               </div>
             </div>
           </section>
@@ -358,24 +335,22 @@
               </div>
 
               <div class="grid gap-3 md:grid-cols-2">
-                <div>
-                  <label class="mb-1 block text-sm font-medium text-gray-700">签到码有效期（分钟）</label>
-                  <input
-                    v-model.number="attendanceForm.checkInValidMinutes"
+                <label class="text-sm font-medium text-slate-600">
+                  签到码有效期（分钟）
+                  <Input
+                    v-model="checkInValidMinutesInput"
+                    class="mt-2"
                     type="number"
-                    min="1"
-                    class="input"
-                  >
-                </div>
-                <div>
-                  <label class="mb-1 block text-sm font-medium text-gray-700">签退码有效期（分钟）</label>
-                  <input
-                    v-model.number="attendanceForm.checkOutValidMinutes"
+                  />
+                </label>
+                <label class="text-sm font-medium text-slate-600">
+                  签退码有效期（分钟）
+                  <Input
+                    v-model="checkOutValidMinutesInput"
+                    class="mt-2"
                     type="number"
-                    min="1"
-                    class="input"
-                  >
-                </div>
+                  />
+                </label>
               </div>
 
               <div class="flex flex-wrap gap-3">
@@ -422,38 +397,33 @@
                 </p>
               </div>
 
-              <div>
-                <label class="mb-1 block text-sm font-medium text-gray-700">志愿者 ID</label>
-                <input
-                  v-model.number="supplementForm.volunteerId"
+              <label class="text-sm font-medium text-slate-600">
+                志愿者 ID
+                <Input
+                  v-model="supplementVolunteerIdInput"
+                  class="mt-2"
                   type="number"
-                  min="1"
-                  class="input"
                   placeholder="请输入志愿者 ID"
-                >
-              </div>
+                />
+              </label>
               <div>
-                <label class="mb-1 block text-sm font-medium text-gray-700">签到时间</label>
+                <label class="mb-1 block text-sm font-medium text-slate-600">签到时间</label>
                 <DatePicker
                   v-model="supplementCheckInTime"
-                  format="yyyy-MM-dd HH:mm"
                   placeholder="请选择签到时间"
-                  enable-time-picker
-                  :minutes-increment="1"
+                  mode="datetime"
                 />
               </div>
               <div>
-                <label class="mb-1 block text-sm font-medium text-gray-700">签退时间</label>
+                <label class="mb-1 block text-sm font-medium text-slate-600">签退时间</label>
                 <DatePicker
                   v-model="supplementCheckOutTime"
-                  format="yyyy-MM-dd HH:mm"
                   placeholder="请选择签退时间"
-                  enable-time-picker
-                  :minutes-increment="1"
+                  mode="datetime"
                 />
               </div>
               <div>
-                <label class="mb-1 block text-sm font-medium text-gray-700">补录原因</label>
+                <label class="mb-1 block text-sm font-medium text-slate-600">补录原因</label>
                 <Textarea
                   v-model="supplementForm.reason"
                   placeholder="请输入补录原因"
@@ -488,7 +458,7 @@
 
             <div class="rounded-xl border border-slate-200 bg-slate-50/70 p-4 space-y-3">
               <div>
-                <label class="mb-1 block text-sm font-medium text-gray-700">取消原因</label>
+                <label class="mb-1 block text-sm font-medium text-slate-600">取消原因</label>
                 <Textarea
                   v-model="cancelReason"
                   placeholder="请输入取消活动的原因"
@@ -557,6 +527,7 @@ import { RouterLink } from 'vue-router'
 import Button from '@/components/ui/Button.vue'
 import DatePicker from '@/components/ui/DatePicker.vue'
 import FilterSelect from '@/components/ui/FilterSelect.vue'
+import Input from '@/components/ui/Input.vue'
 import Textarea from '@/components/ui/Textarea.vue'
 import DataListPage from '@/components/data-list/DataListPage.vue'
 import DataToolbar from '@/components/data-list/DataToolbar.vue'
@@ -586,6 +557,11 @@ const endTo = ref('')
 const page = ref(1)
 const pageSize = ref(20)
 const filter = ref<'all' | 'open' | 'ended' | 'cancelled'>('all')
+const pageSizeOptions = [
+  { value: 10, label: '10 条', description: '适合逐条查看活动' },
+  { value: 20, label: '20 条', description: '默认查看密度' },
+  { value: 50, label: '50 条', description: '适合批量浏览活动' }
+] as const
 const filterOptions = [
   { value: 'all', label: '全部状态', description: '查看所有活动' },
   { value: 'open', label: '进行中', description: '仅显示正在开放或执行中的活动' },
@@ -689,43 +665,82 @@ const statusTone = (statusClass: string) => {
   return 'slate'
 }
 
-const toDateValue = (value?: string) => {
+const stripSeconds = (value?: string) => {
   if (!value) return null
-  const parsed = new Date(value.replace(' ', 'T'))
-  return Number.isNaN(parsed.getTime()) ? null : parsed
+  const match = value.match(/^(\d{4}-\d{2}-\d{2} \d{2}:\d{2})/)
+  return match?.[1] || value.slice(0, 16) || null
 }
 
-const fromDateValue = (value: Date | null) => {
+const withZeroSeconds = (value: string | null) => {
   if (!value) return ''
-  const pad = (part: number) => `${part}`.padStart(2, '0')
-  return `${value.getFullYear()}-${pad(value.getMonth() + 1)}-${pad(value.getDate())} ${pad(value.getHours())}:${pad(value.getMinutes())}:00`
+  return `${value}:00`
 }
 
-const editStartTime = computed<Date | null>({
-  get: () => toDateValue(editForm.value.startTime),
+const editStartTime = computed<string | null>({
+  get: () => stripSeconds(editForm.value.startTime),
   set: (value) => {
-    editForm.value.startTime = fromDateValue(value)
+    editForm.value.startTime = withZeroSeconds(value)
   }
 })
 
-const editEndTime = computed<Date | null>({
-  get: () => toDateValue(editForm.value.endTime),
+const editEndTime = computed<string | null>({
+  get: () => stripSeconds(editForm.value.endTime),
   set: (value) => {
-    editForm.value.endTime = fromDateValue(value)
+    editForm.value.endTime = withZeroSeconds(value)
   }
 })
 
-const supplementCheckInTime = computed<Date | null>({
-  get: () => toDateValue(supplementForm.value.checkInTime),
+const supplementCheckInTime = computed<string | null>({
+  get: () => stripSeconds(supplementForm.value.checkInTime),
   set: (value) => {
-    supplementForm.value.checkInTime = fromDateValue(value)
+    supplementForm.value.checkInTime = withZeroSeconds(value)
   }
 })
 
-const supplementCheckOutTime = computed<Date | null>({
-  get: () => toDateValue(supplementForm.value.checkOutTime),
+const supplementCheckOutTime = computed<string | null>({
+  get: () => stripSeconds(supplementForm.value.checkOutTime),
   set: (value) => {
-    supplementForm.value.checkOutTime = fromDateValue(value)
+    supplementForm.value.checkOutTime = withZeroSeconds(value)
+  }
+})
+
+const editDurationInput = computed({
+  get: () => String(editForm.value.duration ?? ''),
+  set: (value: string | number) => {
+    const next = Number(value)
+    editForm.value.duration = Number.isFinite(next) ? next : 0
+  }
+})
+
+const editMaxPeopleInput = computed({
+  get: () => String(editForm.value.maxPeople ?? ''),
+  set: (value: string | number) => {
+    const next = Number(value)
+    editForm.value.maxPeople = Number.isFinite(next) ? next : 0
+  }
+})
+
+const checkInValidMinutesInput = computed({
+  get: () => String(attendanceForm.value.checkInValidMinutes ?? ''),
+  set: (value: string | number) => {
+    const next = Number(value)
+    attendanceForm.value.checkInValidMinutes = Number.isFinite(next) ? next : 0
+  }
+})
+
+const checkOutValidMinutesInput = computed({
+  get: () => String(attendanceForm.value.checkOutValidMinutes ?? ''),
+  set: (value: string | number) => {
+    const next = Number(value)
+    attendanceForm.value.checkOutValidMinutes = Number.isFinite(next) ? next : 0
+  }
+})
+
+const supplementVolunteerIdInput = computed({
+  get: () => supplementForm.value.volunteerId ? String(supplementForm.value.volunteerId) : '',
+  set: (value: string | number) => {
+    const next = Number(value)
+    supplementForm.value.volunteerId = Number.isFinite(next) ? next : 0
   }
 })
 
@@ -821,11 +836,6 @@ const loadActivities = async () => {
   } finally {
     loading.value = false
   }
-}
-
-const reloadFromFirstPage = async () => {
-  page.value = 1
-  await loadActivities()
 }
 
 const goToPreviousPage = async () => {

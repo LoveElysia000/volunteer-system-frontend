@@ -6,7 +6,7 @@
         :style="desktopSidebarStyle"
       >
         <div class="flex min-h-full flex-col gap-6 px-5 py-6">
-          <div class="rounded-[2rem] border border-emerald-100 bg-[linear-gradient(135deg,_rgba(16,185,129,0.08),_rgba(255,255,255,0.96))] p-5">
+          <div class="volunteer-shell-panel rounded-[1.9rem] border border-emerald-100/80 bg-[linear-gradient(135deg,_rgba(16,185,129,0.10),_rgba(255,255,255,0.96))] p-5">
             <div class="flex items-center gap-3">
               <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-700 text-white shadow-lg">
                 <LeafIcon class="h-6 w-6" />
@@ -15,7 +15,7 @@
                 <p class="text-lg font-black tracking-tight text-slate-900">
                   环保志愿者
                 </p>
-                <p class="text-xs font-medium uppercase tracking-[0.24em] text-emerald-700">
+                <p class="mt-1 text-[11px] font-medium uppercase tracking-[0.24em] text-emerald-700">
                   Volunteer Center
                 </p>
               </div>
@@ -33,6 +33,9 @@
                 </p>
                 <p class="text-sm text-slate-500">
                   志愿者工作台在线
+                </p>
+                <p class="mt-0.5 text-[11px] font-medium tracking-[0.18em] text-slate-400">
+                  Volunteer Workbench
                 </p>
                 <div class="mt-3 flex items-center gap-3">
                   <div class="h-2 flex-1 rounded-full bg-emerald-100">
@@ -93,9 +96,14 @@
               <div class="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-emerald-400 to-emerald-700 font-bold text-white">
                 {{ userInitials }}
               </div>
-              <p class="text-sm font-semibold text-slate-700">
-                {{ currentPage.title }}
-              </p>
+              <div>
+                <p class="text-sm font-semibold text-slate-700">
+                  {{ currentPage.title }}
+                </p>
+                <p class="text-[11px] font-medium tracking-[0.18em] text-slate-400">
+                  Volunteer Center
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -107,10 +115,15 @@
                 <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
                   志愿者中心
                 </p>
-                <div class="mt-2 flex flex-wrap items-center gap-3">
-                  <h2 class="text-xl font-black tracking-tight text-slate-900">
-                    {{ currentPage.title }}
-                  </h2>
+                <div class="mt-2 flex flex-wrap items-center gap-2.5">
+                  <div class="space-y-1">
+                    <h2 class="text-lg font-black tracking-tight text-slate-900 lg:text-[1.35rem]">
+                      {{ currentPage.title }}
+                    </h2>
+                    <p class="text-[11px] font-medium tracking-[0.18em] text-slate-400">
+                      {{ currentPage.caption }}
+                    </p>
+                  </div>
                   <span class="hidden h-1.5 w-1.5 rounded-full bg-emerald-500/60 sm:block" />
                   <p class="max-w-2xl text-sm text-slate-500">
                     {{ currentPage.description }}
@@ -118,11 +131,11 @@
                 </div>
               </div>
 
-              <div class="flex flex-wrap items-center gap-3">
+              <div class="flex flex-wrap items-center gap-2.5">
                 <div
                   v-for="item in headerMeta"
                   :key="item.label"
-                  class="rounded-full border border-white/80 bg-white/85 px-3 py-2 text-xs text-slate-500 shadow-[0_10px_28px_-24px_rgba(15,23,42,0.28)]"
+                  class="rounded-full border border-white/80 bg-white/92 px-3 py-2 text-xs text-slate-500 shadow-[0_10px_22px_-20px_rgba(15,23,42,0.18)]"
                 >
                   <span class="font-semibold text-slate-700">{{ item.label }}</span>
                   <span class="mx-1 text-slate-300">/</span>
@@ -178,8 +191,8 @@
                 <p class="text-base font-black text-slate-900">
                   志愿者中心
                 </p>
-                <p class="text-xs uppercase tracking-[0.2em] text-emerald-700">
-                  Workbench
+                <p class="mt-1 text-[11px] uppercase tracking-[0.2em] text-emerald-700">
+                  Mobile Workbench
                 </p>
               </div>
             </div>
@@ -203,6 +216,9 @@
                 <p class="text-sm text-slate-500">
                   Lv.{{ volunteerLevel }} 志愿者
                 </p>
+                <p class="mt-0.5 text-[11px] font-medium tracking-[0.18em] text-slate-400">
+                  Volunteer Profile
+                </p>
               </div>
             </div>
           </div>
@@ -214,7 +230,7 @@
           />
 
           <button
-            class="mt-auto flex items-center justify-center gap-2 rounded-full border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-600"
+            class="mt-auto flex items-center justify-center gap-2 rounded-full border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-600 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700"
             @click="handleLogout"
           >
             <LogOutIcon class="h-4 w-4" />
@@ -343,10 +359,20 @@ const pageDescriptions: Record<string, string> = {
   'volunteer-profile': '维护个人资料、服务偏好和志愿者展示信息。',
 }
 
+const pageCaptions: Record<string, string> = {
+  'volunteer-dashboard': 'Volunteer Dashboard',
+  'volunteer-activities': 'Activity Explorer',
+  'volunteer-activity-detail': 'Activity Detail',
+  'volunteer-my-registrations': 'My Registrations',
+  'volunteer-organizations': 'Organization Network',
+  'volunteer-profile': 'Volunteer Profile'
+}
+
 const currentPage = computed(() => {
   const routeName = String(route.name || 'volunteer-dashboard')
   return {
     title: String(route.meta.title || '志愿者中心'),
+    caption: pageCaptions[routeName] || 'Volunteer Center',
     description: pageDescriptions[routeName] || '统一管理你的志愿者任务、记录和成长信息。'
   }
 })

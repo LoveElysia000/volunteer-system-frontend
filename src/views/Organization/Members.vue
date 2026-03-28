@@ -5,15 +5,30 @@
         eyebrow="成员"
         title="成员管理"
         description="查看组织成员结构、审批状态和角色分布。"
+        layout="operations"
         :meta-items="headerMeta"
       >
-        <template #actions>
-          <input
-            v-model.trim="keyword"
-            type="text"
-            class="input max-w-xs"
-            placeholder="搜索成员姓名、编号"
+        <template #summary>
+          <div
+            v-for="item in headerHighlights"
+            :key="item.label"
+            class="inline-flex items-center gap-2 rounded-full border px-3.5 py-2 text-sm font-semibold shadow-[0_12px_26px_-22px_rgba(15,23,42,0.25)]"
+            :class="item.tone === 'accent'
+              ? 'border-[#ffd5bd] bg-[#fff6f0] text-[#b45309]'
+              : 'border-slate-200 bg-white/90 text-slate-600'"
           >
+            <span class="text-xs uppercase tracking-[0.18em] text-slate-400">{{ item.label }}</span>
+            <span class="text-slate-900">{{ item.value }}</span>
+          </div>
+        </template>
+        <template #actions>
+          <Input
+            v-model.trim="keyword"
+            placeholder="搜索成员姓名、编号"
+            :icon="SearchIcon"
+            allow-clear
+            class="w-full lg:max-w-md"
+          />
         </template>
       </OrganizationPageHeader>
     </template>
@@ -52,13 +67,6 @@
         </template>
 
         <template #actions>
-          <Button
-            variant="outline"
-            :loading="loading"
-            @click="reloadFromFirstPage"
-          >
-            刷新成员列表
-          </Button>
           <Button
             variant="outline"
             :disabled="loading || page <= 1"
@@ -273,6 +281,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import Button from '@/components/ui/Button.vue'
+import Input from '@/components/ui/Input.vue'
 import FilterSelect from '@/components/ui/FilterSelect.vue'
 import DataListPage from '@/components/data-list/DataListPage.vue'
 import DataToolbar from '@/components/data-list/DataToolbar.vue'
@@ -284,7 +293,7 @@ import { useMembershipsStore } from '@/store/modules/memberships'
 import { useMessageStore } from '@/store/modules/messages'
 import { useOrganizationContext } from '@/composables/useOrganizationContext'
 import { MembershipRole, MembershipStatus, type MemberInfo } from '@/types/membership'
-import { ShieldCheckIcon, UserRoundSearchIcon } from 'lucide-vue-next'
+import { SearchIcon, ShieldCheckIcon, UserRoundSearchIcon } from 'lucide-vue-next'
 
 const membershipsStore = useMembershipsStore()
 const messageStore = useMessageStore()
@@ -374,9 +383,24 @@ const headerMeta = computed(() => [
   { label: '成员总数', value: `${membershipsStore.stats?.totalCount ?? 0}`, detail: '来自成员统计接口' },
   { label: '待审核', value: `${membershipsStore.stats?.pendingCount ?? 0}`, detail: '可直接在本页处理' },
   { label: '正式成员', value: `${membershipsStore.stats?.activeCount ?? 0}`, detail: '当前组织稳定成员' },
-  { label: '未激活', value: `${membershipsStore.stats?.inactiveCount ?? 0}`, detail: '当前未激活成员数' },
-  { label: '已挂起', value: `${membershipsStore.stats?.suspendedCount ?? 0}`, detail: '当前挂起成员数' },
   { label: '分页进度', value: `${page.value}/${totalPages.value}`, detail: `每页 ${pageSize.value} 条` }
+])
+const headerHighlights = computed(() => [
+  {
+    label: '当前筛选',
+    value: optionLabel(statusFilterOptions, statusFilter.value, '全部状态'),
+    tone: 'accent'
+  },
+  {
+    label: '角色范围',
+    value: optionLabel(roleFilterOptions, roleFilter.value, '全部角色'),
+    tone: 'neutral'
+  },
+  {
+    label: '待处理',
+    value: `${membershipsStore.stats?.pendingCount ?? 0} 条申请`,
+    tone: 'neutral'
+  }
 ])
 
 const syncSelectedMember = () => {
@@ -423,11 +447,6 @@ const loadMembers = async () => {
     console.error('加载成员失败:', error)
     messageStore.error(error.message || '加载成员失败，请稍后重试')
   }
-}
-
-const reloadFromFirstPage = async () => {
-  page.value = 1
-  await loadMembers()
 }
 
 const goToPreviousPage = async () => {
@@ -515,6 +534,14 @@ const roleTone = (role: MembershipRole) => ({
   [MembershipRole.ADMIN]: 'blue',
   [MembershipRole.OWNER]: 'green'
 }[role] || 'slate')
+
+const optionLabel = <T,>(
+  options: readonly { value: T | undefined, label: string }[],
+  value: T | undefined,
+  fallback: string
+) => {
+  return options.find((item) => item.value === value)?.label ?? fallback
+}
 
 watch([keyword, statusFilter, roleFilter], () => {
   page.value = 1

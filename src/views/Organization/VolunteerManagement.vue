@@ -5,8 +5,22 @@
         eyebrow="志愿者"
         title="志愿者管理"
         description="集中管理志愿者档案、服务表现和导入导出。"
+        layout="operations"
         :meta-items="headerMeta"
       >
+        <template #summary>
+          <div
+            v-for="item in headerHighlights"
+            :key="item.label"
+            class="inline-flex items-center gap-2 rounded-full border px-3.5 py-2 text-sm font-semibold shadow-[0_12px_26px_-22px_rgba(15,23,42,0.25)]"
+            :class="item.tone === 'accent'
+              ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+              : 'border-slate-200 bg-white/90 text-slate-600'"
+          >
+            <span class="text-xs uppercase tracking-[0.18em] text-slate-400">{{ item.label }}</span>
+            <span class="text-slate-900">{{ item.value }}</span>
+          </div>
+        </template>
         <template #actions>
           <input
             ref="importInputRef"
@@ -15,6 +29,14 @@
             accept=".xlsx,.xls"
             @change="handleImport"
           >
+          <div class="relative w-full lg:max-w-sm">
+            <Input
+              v-model.trim="keyword"
+              placeholder="搜索志愿者姓名"
+              :icon="SearchIcon"
+              allow-clear
+            />
+          </div>
           <Button
             variant="primary"
             :loading="importing"
@@ -36,64 +58,22 @@
     <template #toolbar>
       <DataToolbar>
         <template #filters>
-          <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-            <input
-              v-model.trim="keyword"
-              type="text"
-              class="input"
-              placeholder="搜索志愿者姓名"
-            >
-            <select
+          <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            <FilterSelect
               v-model="auditStatusFilter"
-              class="input"
-            >
-              <option :value="undefined">
-                全部审核状态
-              </option>
-              <option :value="VolunteerAuditStatus.UNVERIFIED">
-                未认证
-              </option>
-              <option :value="VolunteerAuditStatus.PENDING">
-                审核中
-              </option>
-              <option :value="VolunteerAuditStatus.APPROVED">
-                已通过
-              </option>
-              <option :value="VolunteerAuditStatus.REJECTED">
-                已驳回
-              </option>
-            </select>
-            <select
+              title="审核状态"
+              :options="auditStatusOptions"
+            />
+            <FilterSelect
               v-model="statusFilter"
-              class="input"
-            >
-              <option :value="undefined">
-                全部账户状态
-              </option>
-              <option :value="VolunteerStatus.ACTIVE">
-                活跃
-              </option>
-              <option :value="VolunteerStatus.INACTIVE">
-                非活跃
-              </option>
-              <option :value="VolunteerStatus.OTHER">
-                其他
-              </option>
-            </select>
-            <select
-              v-model.number="pageSize"
-              class="input"
-            >
-              <option :value="10">
-                每页 10 条
-              </option>
-              <option :value="20">
-                每页 20 条
-              </option>
-              <option :value="50">
-                每页 50 条
-              </option>
-            </select>
+              title="账户状态"
+              :options="statusOptions"
+            />
+            <FilterSelect
+              v-model="pageSize"
+              title="每页条数"
+              :options="pageSizeOptions"
+            />
           </div>
         </template>
 
@@ -105,13 +85,6 @@
         </template>
 
         <template #actions>
-          <Button
-            variant="outline"
-            :loading="loading"
-            @click="reloadFromFirstPage"
-          >
-            刷新列表
-          </Button>
           <Button
             variant="outline"
             :disabled="loading || page <= 1"
@@ -329,6 +302,8 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import Button from '@/components/ui/Button.vue'
+import Input from '@/components/ui/Input.vue'
+import FilterSelect from '@/components/ui/FilterSelect.vue'
 import DataListPage from '@/components/data-list/DataListPage.vue'
 import DataToolbar from '@/components/data-list/DataToolbar.vue'
 import DataTable, { type DataTableColumn } from '@/components/data-list/DataTable.vue'
@@ -340,6 +315,7 @@ import { volunteerApi } from '@/api/volunteer'
 import { adminApi } from '@/api/admin'
 import { useMessageStore } from '@/store/modules/messages'
 import { VolunteerAuditStatus, VolunteerStatus, type VolunteerListItem, type VolunteerProfileInfo } from '@/types/volunteer'
+import { SearchIcon } from 'lucide-vue-next'
 
 const messageStore = useMessageStore()
 
@@ -349,6 +325,24 @@ const auditStatusFilter = ref<VolunteerAuditStatus | undefined>(undefined)
 const statusFilter = ref<VolunteerStatus | undefined>(undefined)
 const page = ref(1)
 const pageSize = ref(20)
+const auditStatusOptions = [
+  { value: undefined, label: '全部审核状态', description: '查看所有认证流程状态' },
+  { value: VolunteerAuditStatus.UNVERIFIED, label: '未认证', description: '还未进入认证流程的志愿者' },
+  { value: VolunteerAuditStatus.PENDING, label: '审核中', description: '正在等待处理的认证申请' },
+  { value: VolunteerAuditStatus.APPROVED, label: '已通过', description: '已完成认证的志愿者' },
+  { value: VolunteerAuditStatus.REJECTED, label: '已驳回', description: '认证未通过的志愿者' }
+] as const
+const statusOptions = [
+  { value: undefined, label: '全部账户状态', description: '查看所有账户状态' },
+  { value: VolunteerStatus.ACTIVE, label: '活跃', description: '当前可正常参与活动' },
+  { value: VolunteerStatus.INACTIVE, label: '非活跃', description: '最近未活跃或暂停参与' },
+  { value: VolunteerStatus.OTHER, label: '其他', description: '其他待归类状态' }
+] as const
+const pageSizeOptions = [
+  { value: 10, label: '10 条', description: '适合逐条核对' },
+  { value: 20, label: '20 条', description: '默认查看密度' },
+  { value: 50, label: '50 条', description: '适合批量浏览' }
+] as const
 const volunteers = ref<VolunteerListItem[]>([])
 const total = ref(0)
 const loading = ref(false)
@@ -378,6 +372,23 @@ const headerMeta = computed(() => {
     { label: '分页进度', value: `${page.value}/${totalPages.value}`, detail: `每页 ${pageSize.value} 条` }
   ]
 })
+const headerHighlights = computed(() => [
+  {
+    label: '审核状态',
+    value: auditStatusText(auditStatusFilter.value),
+    tone: 'accent'
+  },
+  {
+    label: '账户状态',
+    value: statusFilterText(statusFilter.value),
+    tone: 'neutral'
+  },
+  {
+    label: '当前页',
+    value: `${volunteers.value.length} / ${total.value}`,
+    tone: 'neutral'
+  }
+])
 
 const filteredVolunteers = computed(() => volunteers.value.filter((item) => {
   if (auditStatusFilter.value !== undefined && item.auditStatus !== auditStatusFilter.value) {
@@ -430,11 +441,6 @@ const loadVolunteers = async () => {
   } finally {
     loading.value = false
   }
-}
-
-const reloadFromFirstPage = async () => {
-  page.value = 1
-  await loadVolunteers()
 }
 
 const goToPreviousPage = async () => {
@@ -562,6 +568,16 @@ const auditTone = (status: VolunteerAuditStatus) => ({
   [VolunteerAuditStatus.APPROVED]: 'green',
   [VolunteerAuditStatus.REJECTED]: 'rose'
 }[status] || 'slate')
+
+const auditStatusText = (status?: VolunteerAuditStatus) => {
+  if (status === undefined) return '全部审核状态'
+  return auditText(status)
+}
+
+const statusFilterText = (status?: VolunteerStatus) => {
+  if (status === undefined) return '全部账户状态'
+  return statusText(status)
+}
 
 const genderText = (gender?: number) => {
   if (gender === 1) return '男'

@@ -4,44 +4,62 @@
       eyebrow="组织资料"
       title="组织信息管理"
       description="查看组织主体信息，并在需要时进入编辑模式。"
+      layout="operations"
       :meta-items="headerMeta"
-      mode="compact"
     >
+      <template #summary>
+        <div
+          v-for="item in headerHighlights"
+          :key="item.label"
+          class="inline-flex items-center gap-2 rounded-full border px-3.5 py-2 text-sm font-semibold shadow-[0_12px_26px_-22px_rgba(15,23,42,0.25)]"
+          :class="item.tone === 'accent'
+            ? 'border-[#ffd5bd] bg-[#fff6f0] text-[#b45309]'
+            : 'border-slate-200 bg-white/90 text-slate-600'"
+        >
+          <span class="text-xs uppercase tracking-[0.18em] text-slate-400">{{ item.label }}</span>
+          <span class="text-slate-900">{{ item.value }}</span>
+        </div>
+      </template>
       <template #actions>
-        <button
-          class="rounded-full bg-[#ec5b13] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#d04f14]"
+        <div class="relative w-full xl:max-w-sm">
+          <Input
+            v-model="listFilters.keyword"
+            placeholder="搜索组织名称或联系人"
+            :icon="SearchIcon"
+            allow-clear
+          />
+        </div>
+        <Button
+          variant="primary"
+          rounded
           @click="createDialogOpen = true"
         >
           新建组织
-        </button>
-        <button
-          class="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300"
+        </Button>
+        <Button
+          variant="outline"
+          rounded
           :disabled="organizationStore.loading || !organizationStore.organizations.length"
           @click="batchUpdateOrganizations('enable')"
         >
           批量启用当前列表
-        </button>
-        <button
-          class="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300"
+        </Button>
+        <Button
+          variant="outline"
+          rounded
           :disabled="organizationStore.loading || !organizationStore.organizations.length"
           @click="batchUpdateOrganizations('disable')"
         >
           批量停用当前列表
-        </button>
-        <button
-          class="rounded-full border border-rose-200 bg-white px-4 py-2 text-sm font-semibold text-rose-600 transition hover:border-rose-300 hover:bg-rose-50"
+        </Button>
+        <Button
+          variant="danger"
+          rounded
           :disabled="organizationStore.loading || !organizationStore.organizations.length"
           @click="batchDeleteOrganizations"
         >
           批量删除当前列表
-        </button>
-        <button
-          class="rounded-full border border-[#ffd7c2] bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#ffb78d] hover:text-[#ec5b13]"
-          :disabled="organizationStore.loading"
-          @click="loadOrganizations"
-        >
-          {{ organizationStore.loading ? '刷新中...' : '刷新列表' }}
-        </button>
+        </Button>
       </template>
     </OrganizationPageHeader>
 
@@ -52,16 +70,6 @@
     >
       <div class="space-y-4">
         <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div class="relative w-full md:max-w-md">
-            <SearchIcon class="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-            <input
-              v-model="listFilters.keyword"
-              type="text"
-              class="input !rounded-[1rem] !border-white/90 !bg-white pl-11"
-              placeholder="搜索组织名称或联系人"
-            >
-          </div>
-
           <div class="flex items-center gap-2 text-xs text-slate-400">
             <span>{{ organizationStore.total }} 条记录</span>
             <span class="text-slate-300">/</span>
@@ -70,46 +78,36 @@
         </div>
 
         <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-          <select
+          <FilterSelect
             v-model="listFilters.status"
-            class="input !rounded-[1rem] !border-white/90 !bg-white"
-          >
-            <option value="">
-              全部状态
-            </option>
-            <option value="1">
-              已启用
-            </option>
-            <option value="0">
-              已停用
-            </option>
-          </select>
+            title="组织状态"
+            :icon="ShieldCheckIcon"
+            :options="organizationStatusOptions"
+          />
 
-          <input
+          <Input
             v-model="listFilters.organizationType"
-            type="text"
-            class="input !rounded-[1rem] !border-white/90 !bg-white"
+            class="!rounded-[1rem] !border-white/90 !bg-white"
             placeholder="组织类型"
-          >
+          />
 
-          <input
+          <Input
             v-model="listFilters.region"
-            type="text"
-            class="input !rounded-[1rem] !border-white/90 !bg-white"
+            class="!rounded-[1rem] !border-white/90 !bg-white"
             placeholder="地区"
-          >
+          />
 
-          <input
+          <DatePicker
             v-model="listFilters.startDate"
-            type="date"
-            class="input !rounded-[1rem] !border-white/90 !bg-white"
-          >
+            placeholder="开始日期"
+            mode="date"
+          />
 
-          <input
+          <DatePicker
             v-model="listFilters.endDate"
-            type="date"
-            class="input !rounded-[1rem] !border-white/90 !bg-white"
-          >
+            placeholder="结束日期"
+            mode="date"
+          />
         </div>
 
         <div
@@ -238,41 +236,47 @@
                   </div>
 
                   <div class="flex items-center gap-2">
-                    <button
+                    <Button
                       v-if="drawerMode === 'view'"
-                      class="rounded-full border border-[#ffd7c2] bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#ffb78d] hover:text-[#ec5b13]"
+                      variant="outline"
+                      rounded
                       :disabled="drawerLoading || !currentOrganization"
                       @click="drawerMode = 'edit'"
                     >
                       编辑
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       v-else
-                      class="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300"
+                      variant="outline"
+                      rounded
                       @click="cancelEdit"
                     >
                       取消
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       v-if="drawerMode === 'view' && currentOrganization"
-                      class="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300"
+                      variant="outline"
+                      rounded
                       @click="toggleOrganizationStatus"
                     >
                       {{ currentOrganization.status === 1 ? '停用' : '启用' }}
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       v-if="drawerMode === 'view' && currentOrganization"
-                      class="rounded-full border border-rose-200 bg-white px-4 py-2 text-sm font-semibold text-rose-600 transition hover:border-rose-300 hover:bg-rose-50"
+                      variant="danger"
+                      rounded
                       @click="deleteCurrentOrganization"
                     >
                       删除
-                    </button>
-                    <button
-                      class="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:border-slate-300 hover:text-slate-900"
+                    </Button>
+                    <Button
+                      variant="outline"
+                      rounded
+                      class="!h-10 !w-10 !px-0"
                       @click="closeDrawer"
                     >
                       <XIcon class="h-5 w-5" />
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -320,19 +324,17 @@
                       <div class="grid gap-4 md:grid-cols-2">
                         <label class="drawer-edit-label">
                           组织名称
-                          <input
+                          <Input
                             v-model="organizationForm.name"
-                            type="text"
-                            class="input mt-2"
-                          >
+                            class="mt-2"
+                          />
                         </label>
                         <label class="drawer-edit-label">
                           组织编码
-                          <input
+                          <Input
                             v-model="organizationForm.organizationCode"
-                            type="text"
-                            class="input mt-2"
-                          >
+                            class="mt-2"
+                          />
                         </label>
                       </div>
                     </template>
@@ -366,27 +368,25 @@
                       <div class="grid gap-4 md:grid-cols-2">
                         <label class="drawer-edit-label">
                           联系人
-                          <input
+                          <Input
                             v-model="organizationForm.contactPerson"
-                            type="text"
-                            class="input mt-2"
-                          >
+                            class="mt-2"
+                          />
                         </label>
                         <label class="drawer-edit-label">
                           联系电话
-                          <input
+                          <Input
                             v-model="organizationForm.contactPhone"
                             type="tel"
-                            class="input mt-2"
-                          >
+                            class="mt-2"
+                          />
                         </label>
                         <label class="drawer-edit-label md:col-span-2">
                           地址
-                          <input
+                          <Input
                             v-model="organizationForm.address"
-                            type="text"
-                            class="input mt-2"
-                          >
+                            class="mt-2"
+                          />
                         </label>
                       </div>
                     </template>
@@ -432,19 +432,17 @@
                         </label>
                         <label class="drawer-edit-label">
                           Logo 地址
-                          <input
+                          <Input
                             v-model="organizationForm.logoUrl"
-                            type="text"
-                            class="input mt-2"
-                          >
+                            class="mt-2"
+                          />
                         </label>
                         <label class="drawer-edit-label">
                           官网地址
-                          <input
+                          <Input
                             v-model="organizationForm.websiteUrl"
-                            type="text"
-                            class="input mt-2"
-                          >
+                            class="mt-2"
+                          />
                         </label>
                       </div>
                     </template>
@@ -478,27 +476,26 @@
                       <div class="grid gap-4 md:grid-cols-2">
                         <label class="drawer-edit-label">
                           用户名
-                          <input
+                          <Input
                             v-model="accountForm.userName"
-                            type="text"
-                            class="input mt-2"
-                          >
+                            class="mt-2"
+                          />
                         </label>
                         <label class="drawer-edit-label">
                           邮箱
-                          <input
+                          <Input
                             v-model="accountForm.email"
                             type="email"
-                            class="input mt-2"
-                          >
+                            class="mt-2"
+                          />
                         </label>
                         <label class="drawer-edit-label md:col-span-2">
                           手机号
-                          <input
+                          <Input
                             v-model="accountForm.phone"
                             type="tel"
-                            class="input mt-2"
-                          >
+                            class="mt-2"
+                          />
                         </label>
                       </div>
                     </template>
@@ -511,26 +508,29 @@
                 class="border-t border-slate-200 bg-white/95 px-6 py-4"
               >
                 <div class="flex flex-wrap items-center justify-end gap-3">
-                  <button
-                    class="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300"
+                  <Button
+                    variant="outline"
+                    rounded
                     @click="cancelEdit"
                   >
                     取消
-                  </button>
-                  <button
-                    class="rounded-full border border-[#ffd7c2] bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#ffb78d] hover:text-[#ec5b13]"
-                    :disabled="accountSaving"
+                  </Button>
+                  <Button
+                    variant="outline"
+                    rounded
+                    :loading="accountSaving"
                     @click="saveAccountChanges"
                   >
-                    {{ accountSaving ? '保存账户中...' : '保存账户信息' }}
-                  </button>
-                  <button
-                    class="rounded-full bg-[#ec5b13] px-5 py-2 text-sm font-semibold text-white shadow-[0_16px_30px_-18px_rgba(236,91,19,0.7)] transition hover:bg-[#d04f14]"
-                    :disabled="organizationSaving"
+                    保存账户信息
+                  </Button>
+                  <Button
+                    variant="primary"
+                    rounded
+                    :loading="organizationSaving"
                     @click="saveOrganizationChanges"
                   >
-                    {{ organizationSaving ? '保存组织中...' : '保存组织资料' }}
-                  </button>
+                    保存组织资料
+                  </Button>
                 </div>
               </div>
             </aside>
@@ -548,67 +548,60 @@
       <div class="grid gap-4 md:grid-cols-2">
         <label class="drawer-edit-label">
           组织名称
-          <input
+          <Input
             v-model="createForm.name"
-            type="text"
-            class="input mt-2"
-          >
+            class="mt-2"
+          />
         </label>
         <label class="drawer-edit-label">
           组织编码
-          <input
+          <Input
             v-model="createForm.organizationCode"
-            type="text"
-            class="input mt-2"
-          >
+            class="mt-2"
+          />
         </label>
         <label class="drawer-edit-label">
           联系人
-          <input
+          <Input
             v-model="createForm.contactPerson"
-            type="text"
-            class="input mt-2"
-          >
+            class="mt-2"
+          />
         </label>
         <label class="drawer-edit-label">
           联系电话
-          <input
+          <Input
             v-model="createForm.contactPhone"
-            type="text"
-            class="input mt-2"
-          >
+            class="mt-2"
+          />
         </label>
         <label class="drawer-edit-label">
           邮箱
-          <input
+          <Input
             v-model="createForm.email"
             type="email"
-            class="input mt-2"
-          >
+            class="mt-2"
+          />
         </label>
         <label class="drawer-edit-label">
           组织类型
-          <input
+          <Input
             v-model="createForm.organizationType"
-            type="text"
-            class="input mt-2"
-          >
+            class="mt-2"
+          />
         </label>
         <label class="drawer-edit-label">
           区域
-          <input
+          <Input
             v-model="createForm.region"
-            type="text"
-            class="input mt-2"
-          >
+            class="mt-2"
+          />
         </label>
         <label class="drawer-edit-label md:col-span-2">
           地址
-          <input
+          <Input
             v-model="createForm.address"
-            type="text"
-            class="input mt-2"
-          >
+            class="mt-2"
+          />
         </label>
         <label class="drawer-edit-label md:col-span-2">
           描述
@@ -621,35 +614,35 @@
         </label>
         <label class="drawer-edit-label">
           官网地址
-          <input
+          <Input
             v-model="createForm.websiteUrl"
-            type="text"
-            class="input mt-2"
-          >
+            class="mt-2"
+          />
         </label>
         <label class="drawer-edit-label">
           Logo 地址
-          <input
+          <Input
             v-model="createForm.logoUrl"
-            type="text"
-            class="input mt-2"
-          >
+            class="mt-2"
+          />
         </label>
       </div>
       <div class="mt-4 flex justify-end gap-3">
-        <button
-          class="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700"
+        <Button
+          variant="outline"
+          rounded
           @click="createDialogOpen = false"
         >
           取消
-        </button>
-        <button
-          class="rounded-full bg-[#ec5b13] px-5 py-2 text-sm font-semibold text-white"
-          :disabled="createSaving"
+        </Button>
+        <Button
+          variant="primary"
+          rounded
+          :loading="createSaving"
           @click="createOrganization"
         >
-          {{ createSaving ? '创建中...' : '创建组织' }}
-        </button>
+          新建组织
+        </Button>
       </div>
     </Dialog>
   </div>
@@ -657,7 +650,11 @@
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
+import Button from '@/components/ui/Button.vue'
 import Dialog from '@/components/ui/Dialog.vue'
+import Input from '@/components/ui/Input.vue'
+import FilterSelect from '@/components/ui/FilterSelect.vue'
+import DatePicker from '@/components/ui/DatePicker.vue'
 import Textarea from '@/components/ui/Textarea.vue'
 import OrganizationPageHeader from '@/components/organization/OrganizationPageHeader.vue'
 import OrganizationSectionCard from '@/components/organization/OrganizationSectionCard.vue'
@@ -696,6 +693,11 @@ const listFilters = reactive({
   pageSize: 10
 })
 let keywordSearchTimer: ReturnType<typeof setTimeout> | null = null
+const organizationStatusOptions = [
+  { value: '', label: '全部状态', description: '查看所有组织状态' },
+  { value: '1', label: '已启用', description: '当前允许正常运营的组织' },
+  { value: '0', label: '已停用', description: '当前暂停运营的组织' }
+] as const
 
 const accountForm = reactive<Required<UpdateOrganizationAccountRequest>>({
   userName: '',
@@ -740,7 +742,26 @@ const activeOrganizationCode = computed(() => {
 
 const headerMeta = computed(() => [
   { label: '可管理组织', value: `${organizationStore.total}`, detail: '来自组织列表接口' },
-  { label: '当前查看', value: drawerOpen.value ? drawerOrganizationName.value : '未打开详情', detail: '详情在右侧抽屉查看' }
+  { label: '当前查看', value: drawerOpen.value ? drawerOrganizationName.value : '未打开详情', detail: '详情在右侧抽屉查看' },
+  { label: '当前筛选', value: statusFilterText(listFilters.status), detail: '按启用状态筛选组织列表' },
+  { label: '列表密度', value: `每页 ${listFilters.pageSize} 条`, detail: '当前列表分页设置' }
+])
+const headerHighlights = computed(() => [
+  {
+    label: '状态范围',
+    value: statusFilterText(listFilters.status),
+    tone: 'accent'
+  },
+  {
+    label: '地区',
+    value: listFilters.region.trim() || '全部地区',
+    tone: 'neutral'
+  },
+  {
+    label: '查看焦点',
+    value: drawerOpen.value ? drawerOrganizationName.value : '列表浏览',
+    tone: 'neutral'
+  }
 ])
 
 const syncAccountForm = () => {
@@ -1019,6 +1040,12 @@ const formatDate = (value?: string) => {
   const month = `${date.getMonth() + 1}`.padStart(2, '0')
   const day = `${date.getDate()}`.padStart(2, '0')
   return `${year}-${month}-${day}`
+}
+
+const statusFilterText = (status: string) => {
+  if (status === '1') return '已启用'
+  if (status === '0') return '已停用'
+  return '全部状态'
 }
 
 onMounted(() => {

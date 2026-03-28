@@ -5,28 +5,43 @@
         eyebrow="工时管理"
         title="工时流水"
         description="查看工时变动，并对指定报名执行作废或重算。"
+        layout="operations"
         :meta-items="headerMeta"
-      />
+      >
+        <template #summary>
+          <div
+            v-for="item in headerHighlights"
+            :key="item.label"
+            class="inline-flex items-center gap-2 rounded-full border px-3.5 py-2 text-sm font-semibold shadow-[0_12px_26px_-22px_rgba(15,23,42,0.25)]"
+            :class="item.tone === 'accent'
+              ? 'border-amber-200 bg-amber-50 text-amber-700'
+              : 'border-slate-200 bg-white/90 text-slate-600'"
+          >
+            <span class="text-xs uppercase tracking-[0.18em] text-slate-400">{{ item.label }}</span>
+            <span class="text-slate-900">{{ item.value }}</span>
+          </div>
+        </template>
+        <template #actions>
+          <div class="grid w-full gap-3 sm:grid-cols-2 xl:max-w-lg">
+            <Input
+              v-model="activityIdInput"
+              type="number"
+              placeholder="活动 ID"
+            />
+            <Input
+              v-model="signupIdInput"
+              type="number"
+              placeholder="报名 ID"
+            />
+          </div>
+        </template>
+      </OrganizationPageHeader>
     </template>
 
     <template #toolbar>
       <DataToolbar>
         <template #filters>
-          <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-            <input
-              v-model.number="activityId"
-              type="number"
-              min="1"
-              class="input"
-              placeholder="活动 ID"
-            >
-            <input
-              v-model.number="signupId"
-              type="number"
-              min="1"
-              class="input"
-              placeholder="报名 ID"
-            >
+          <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-2">
             <FilterSelect
               v-model="operationType"
               title="操作类型"
@@ -51,13 +66,6 @@
 
         <template #actions>
           <div class="flex flex-wrap gap-2">
-            <Button
-              variant="outline"
-              :loading="loading"
-              @click="reloadFromFirstPage"
-            >
-              刷新流水
-            </Button>
             <Button
               variant="outline"
               :disabled="loading || page <= 1"
@@ -129,29 +137,28 @@
           tone="soft"
         >
           <div class="space-y-4">
-            <div>
-              <label class="mb-1 block text-sm font-medium text-gray-700">报名 ID</label>
-              <input
-                v-model.number="actionForm.signupId"
-                type="number"
-                min="1"
-                class="input"
-                placeholder="请输入报名 ID"
-              >
+            <div class="grid gap-4 md:grid-cols-2">
+              <label class="text-sm font-medium text-slate-600">
+                报名 ID
+                <Input
+                  v-model="actionFormSignupIdInput"
+                  class="mt-2"
+                  type="number"
+                  placeholder="请输入报名 ID"
+                />
+              </label>
+              <label class="text-sm font-medium text-slate-600">
+                重算工时
+                <Input
+                  v-model="actionFormHoursInput"
+                  class="mt-2"
+                  type="number"
+                  placeholder="仅重算时填写"
+                />
+              </label>
             </div>
             <div>
-              <label class="mb-1 block text-sm font-medium text-gray-700">重算工时</label>
-              <input
-                v-model.number="actionForm.hours"
-                type="number"
-                min="0"
-                step="0.5"
-                class="input"
-                placeholder="仅重算时填写"
-              >
-            </div>
-            <div>
-              <label class="mb-1 block text-sm font-medium text-gray-700">原因</label>
+              <label class="mb-1 block text-sm font-medium text-slate-600">原因</label>
               <Textarea
                 v-model="actionForm.reason"
                 placeholder="请输入处理原因"
@@ -326,29 +333,26 @@
             </div>
 
             <div class="grid gap-4 md:grid-cols-2">
-              <div>
-                <label class="mb-1 block text-sm font-medium text-gray-700">报名 ID</label>
-                <input
-                  v-model.number="actionForm.signupId"
+              <label class="text-sm font-medium text-slate-600">
+                报名 ID
+                <Input
+                  v-model="actionFormSignupIdInput"
+                  class="mt-2"
                   type="number"
-                  min="1"
-                  class="input"
                   placeholder="报名 ID"
-                >
-              </div>
-              <div>
-                <label class="mb-1 block text-sm font-medium text-gray-700">重算工时</label>
-                <input
-                  v-model.number="actionForm.hours"
+                />
+              </label>
+              <label class="text-sm font-medium text-slate-600">
+                重算工时
+                <Input
+                  v-model="actionFormHoursInput"
+                  class="mt-2"
                   type="number"
-                  min="0"
-                  step="0.5"
-                  class="input"
                   placeholder="仅重算使用"
-                >
-              </div>
+                />
+              </label>
               <div class="md:col-span-2">
-                <label class="mb-1 block text-sm font-medium text-gray-700">原因</label>
+                <label class="mb-1 block text-sm font-medium text-slate-600">原因</label>
                 <Textarea
                   v-model="actionForm.reason"
                   placeholder="请输入原因"
@@ -411,9 +415,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import Button from '@/components/ui/Button.vue'
 import FilterSelect from '@/components/ui/FilterSelect.vue'
+import Input from '@/components/ui/Input.vue'
 import Textarea from '@/components/ui/Textarea.vue'
 import DataListPage from '@/components/data-list/DataListPage.vue'
 import DataToolbar from '@/components/data-list/DataToolbar.vue'
@@ -464,6 +469,34 @@ const actionForm = ref({
   hours: 0,
   reason: ''
 })
+const activityIdInput = computed({
+  get: () => activityId.value === undefined ? '' : String(activityId.value),
+  set: (value: string | number) => {
+    const next = Number(value)
+    activityId.value = Number.isFinite(next) && next > 0 ? next : undefined
+  }
+})
+const signupIdInput = computed({
+  get: () => signupId.value === undefined ? '' : String(signupId.value),
+  set: (value: string | number) => {
+    const next = Number(value)
+    signupId.value = Number.isFinite(next) && next > 0 ? next : undefined
+  }
+})
+const actionFormSignupIdInput = computed({
+  get: () => actionForm.value.signupId ? String(actionForm.value.signupId) : '',
+  set: (value: string | number) => {
+    const next = Number(value)
+    actionForm.value.signupId = Number.isFinite(next) && next > 0 ? next : 0
+  }
+})
+const actionFormHoursInput = computed({
+  get: () => actionForm.value.hours ? String(actionForm.value.hours) : '',
+  set: (value: string | number) => {
+    const next = Number(value)
+    actionForm.value.hours = Number.isFinite(next) && next >= 0 ? next : 0
+  }
+})
 const lastActionResult = ref<{
   actionLabel: string
   workHourLogId: number
@@ -477,6 +510,23 @@ const headerMeta = computed(() => [
   { label: '流水总数', value: `${total.value}`, detail: '当前记录数量' },
   { label: '当前筛选', value: operationType.value ? operationText(operationType.value) : '全部操作', detail: '支持发放 / 作废 / 重算' },
   { label: '分页进度', value: `${page.value}/${totalPages.value}`, detail: `每页 ${pageSize.value} 条` }
+])
+const headerHighlights = computed(() => [
+  {
+    label: '活动范围',
+    value: activityId.value ? `活动 #${activityId.value}` : '全部活动',
+    tone: 'accent'
+  },
+  {
+    label: '报名范围',
+    value: signupId.value ? `报名 #${signupId.value}` : '全部报名',
+    tone: 'neutral'
+  },
+  {
+    label: '最近处理',
+    value: lastActionResult.value ? `${lastActionResult.value.actionLabel} #${lastActionResult.value.workHourLogId}` : '暂无处理记录',
+    tone: 'neutral'
+  }
 ])
 
 const openLogDrawer = (item: Record<string, any>) => {
@@ -524,11 +574,6 @@ const makeIdempotencyKey = (prefix: string, targetSignupId: number) => {
     ? crypto.randomUUID()
     : `${Date.now()}-${Math.random().toString(16).slice(2)}`
   return `${prefix}-${targetSignupId}-${suffix}`
-}
-
-const reloadFromFirstPage = async () => {
-  page.value = 1
-  await loadLogs()
 }
 
 const goToPreviousPage = async () => {
@@ -620,6 +665,11 @@ const operationTone = (type: WorkHourOperationType) => ({
 }[type] || 'slate') as 'green' | 'rose' | 'amber' | 'slate'
 
 onMounted(() => {
+  void loadLogs()
+})
+
+watch([activityId, signupId, operationType, pageSize], () => {
+  page.value = 1
   void loadLogs()
 })
 </script>

@@ -1,5 +1,9 @@
 <template>
-  <div class="space-y-1.5">
+  <div
+    class="space-y-1.5"
+    :class="containerClassName"
+    :style="containerStyle"
+  >
     <div
       :class="[
         'group rounded-2xl border bg-white transition-all duration-200',
@@ -21,6 +25,7 @@
         </div>
 
         <input
+          v-bind="inputAttrs"
           :id="id"
           :type="type"
           :value="modelValue"
@@ -62,13 +67,21 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, useAttrs } from 'vue'
 import { XIcon } from 'lucide-vue-next'
+
+defineOptions({
+  inheritAttrs: false
+})
 
 interface Props {
   id?: string
   type?: string
   modelValue?: string | number
+  modelModifiers?: {
+    trim?: boolean
+    number?: boolean
+  }
   placeholder?: string
   disabled?: boolean
   required?: boolean
@@ -80,9 +93,16 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  id: undefined,
   type: 'text',
+  modelValue: '',
+  modelModifiers: () => ({}),
+  placeholder: '',
   disabled: false,
   required: false,
+  error: '',
+  helpText: '',
+  icon: undefined,
   allowClear: false,
   theme: 'orange'
 })
@@ -93,8 +113,18 @@ const emit = defineEmits<{
   focus: [event: FocusEvent]
 }>()
 
+const attrs = useAttrs()
 const hasIcon = computed(() => !!props.icon)
 const isFocused = ref(false)
+
+const containerClassName = computed(() => attrs.class)
+const containerStyle = computed(() => attrs.style)
+const inputAttrs = computed(() => {
+  const rest = { ...attrs }
+  delete rest.class
+  delete rest.style
+  return rest
+})
 
 const focusClassName = computed(() => (
   props.theme === 'emerald'
@@ -122,7 +152,22 @@ const clearButtonClassName = computed(() => (
 
 const handleInput = (event: Event) => {
   const target = event.target as HTMLInputElement
-  emit('update:modelValue', target.value)
+  let nextValue: string | number = target.value
+
+  if (props.modelModifiers.trim && typeof nextValue === 'string') {
+    nextValue = nextValue.trim()
+  }
+
+  if (props.modelModifiers.number) {
+    if (nextValue === '') {
+      nextValue = ''
+    } else {
+      const parsedValue = Number.parseFloat(String(nextValue))
+      nextValue = Number.isNaN(parsedValue) ? nextValue : parsedValue
+    }
+  }
+
+  emit('update:modelValue', nextValue)
 }
 
 const handleBlur = (event: FocusEvent) => {

@@ -59,22 +59,25 @@
             </div>
 
             <div class="flex flex-wrap gap-3 xl:justify-end">
-              <button
+              <Button
                 v-if="!detail.isRegistered && detail.status === ActivityStatus.OPEN"
-                class="rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
-                :disabled="actionLoading"
+                variant="success"
+                rounded
+                :loading="actionLoading"
                 @click="handleSignup"
               >
-                {{ actionLoading ? '处理中...' : '立即报名' }}
-              </button>
-              <button
+                立即报名
+              </Button>
+              <Button
                 v-else-if="detail.isRegistered"
-                class="volunteer-toolbar-button text-rose-600 hover:border-rose-200 hover:text-rose-700 disabled:cursor-not-allowed disabled:opacity-60"
-                :disabled="actionLoading"
+                variant="outline"
+                rounded
+                class="!border-rose-200 !text-rose-600 hover:!bg-rose-50 hover:!border-rose-300 hover:!text-rose-700"
+                :loading="actionLoading"
                 @click="handleCancel"
               >
-                {{ actionLoading ? '处理中...' : '取消报名' }}
-              </button>
+                取消报名
+              </Button>
             </div>
           </div>
         </div>
@@ -151,19 +154,19 @@
               签到
             </p>
             <div class="mt-3 flex flex-col gap-3">
-              <input
+              <Input
                 v-model.trim="checkInCode"
-                type="text"
-                class="input"
                 placeholder="请输入签到码"
-              >
-              <button
-                class="rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+                theme="emerald"
+              />
+              <Button
+                variant="success"
+                rounded
                 :disabled="actionLoading || !checkInCode || detail.checkInStatus === AttendanceStatus.CHECKED"
                 @click="handleCheckIn"
               >
-                {{ detail.checkInStatus === AttendanceStatus.CHECKED ? ATTENDANCE_STATUS_LABELS[AttendanceStatus.CHECKED] : actionLoading ? '处理中...' : '提交签到' }}
-              </button>
+                {{ detail.checkInStatus === AttendanceStatus.CHECKED ? ATTENDANCE_STATUS_LABELS[AttendanceStatus.CHECKED] : '提交签到' }}
+              </Button>
               <p
                 v-if="detail.checkInTime"
                 class="text-xs text-slate-500"
@@ -178,19 +181,19 @@
               签退
             </p>
             <div class="mt-3 flex flex-col gap-3">
-              <input
+              <Input
                 v-model.trim="checkOutCode"
-                type="text"
-                class="input"
                 placeholder="请输入签退码"
-              >
-              <button
-                class="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                theme="emerald"
+              />
+              <Button
+                variant="secondary"
+                rounded
                 :disabled="actionLoading || !checkOutCode || detail.checkOutStatus === AttendanceStatus.CHECKED || detail.checkInStatus !== AttendanceStatus.CHECKED"
                 @click="handleCheckOut"
               >
-                {{ detail.checkOutStatus === AttendanceStatus.CHECKED ? CHECK_OUT_STATUS_LABELS[AttendanceStatus.CHECKED] : actionLoading ? '处理中...' : '提交签退' }}
-              </button>
+                {{ detail.checkOutStatus === AttendanceStatus.CHECKED ? CHECK_OUT_STATUS_LABELS[AttendanceStatus.CHECKED] : '提交签退' }}
+              </Button>
               <p
                 v-if="detail.checkInStatus !== AttendanceStatus.CHECKED"
                 class="text-xs text-amber-600"
@@ -222,6 +225,8 @@
 import { computed, onMounted, ref } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import { activitiesApi } from '@/api/activities'
+import Button from '@/components/ui/Button.vue'
+import Input from '@/components/ui/Input.vue'
 import {
   ACTIVITY_STATUS_LABELS,
   ATTENDANCE_STATUS_LABELS,

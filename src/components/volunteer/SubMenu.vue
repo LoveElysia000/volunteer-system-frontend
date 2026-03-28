@@ -3,7 +3,7 @@
     class="sub-menu overflow-hidden transition-all duration-300"
     :class="expanded ? 'max-h-[720px] opacity-100' : 'max-h-0 opacity-0'"
   >
-    <div class="sub-menu-content ml-6 mt-2 space-y-2 border-l border-emerald-100 pl-3">
+    <div class="sub-menu-content ml-6 mt-2 space-y-2 border-l border-emerald-100/80 pl-3">
       <MenuItem
         v-for="childItem in items"
         :key="childItem.key"

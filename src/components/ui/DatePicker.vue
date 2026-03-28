@@ -2,7 +2,7 @@
   <VueDatePicker
     v-model="date"
     :locale="locale"
-    :format="format"
+    :format="resolvedFormat"
     :placeholder="placeholder"
     :disabled="disabled"
     :min-date="minDate"
@@ -10,8 +10,8 @@
     :range="range"
     :multi-dates="multiDates"
     :week-start="weekStart"
-    :enable-time-picker="enableTimePicker"
-    :enable-seconds="enableSeconds"
+    :enable-time-picker="resolvedEnableTimePicker"
+    :enable-seconds="resolvedEnableSeconds"
     :is24="is24"
     :minutes-increment="minutesIncrement"
     :hours-increment="hoursIncrement"
@@ -23,6 +23,7 @@
     :highlight="highlight"
     :auto-apply="autoApply"
     :close-on-auto-apply="closeOnAutoApply"
+    :model-type="resolvedModelType"
     :teleport="true"
     :class="['date-picker', `date-picker--${theme}`, { 'date-picker-error': error }]"
     @update:model-value="handleUpdate"
@@ -40,14 +41,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { VueDatePicker } from '@vuepic/vue-datepicker'
 import type { FilterConfig, HighlightConfig, HighlightFn } from '@vuepic/vue-datepicker'
 import type { Locale } from 'date-fns'
 import { zhCN } from 'date-fns/locale/zh-CN'
 import '@vuepic/vue-datepicker/dist/main.css'
 
-type DateValue = Date | Date[] | [Date, Date] | null
+type DateValue = string | string[] | [string, string] | null
 
 interface Props {
   modelValue?: DateValue
@@ -75,14 +76,17 @@ interface Props {
   closeOnAutoApply?: boolean
   error?: string
   theme?: 'orange' | 'emerald'
+  mode?: 'date' | 'datetime' | 'datetime-seconds'
 }
 
 const props = withDefaults(defineProps<Props>(), {
   modelValue: null,
   locale: () => zhCN,
-  format: 'yyyy-MM-dd',
+  format: '',
   placeholder: '请选择日期',
   disabled: false,
+  minDate: undefined,
+  maxDate: undefined,
   range: false,
   multiDates: false,
   weekStart: 1,
@@ -92,9 +96,16 @@ const props = withDefaults(defineProps<Props>(), {
   minutesIncrement: 1,
   hoursIncrement: 1,
   secondsIncrement: 1,
+  startTime: undefined,
+  presetDates: undefined,
+  filters: undefined,
+  disabledDates: undefined,
+  highlight: undefined,
   autoApply: true,
   closeOnAutoApply: true,
-  theme: 'orange'
+  error: '',
+  theme: 'orange',
+  mode: 'date'
 })
 
 const emit = defineEmits<{
@@ -105,6 +116,24 @@ const emit = defineEmits<{
 }>()
 
 const date = ref<DateValue>(props.modelValue)
+
+const resolvedFormat = computed(() => {
+  if (props.format) return props.format
+  if (props.mode === 'datetime-seconds') return 'yyyy-MM-dd HH:mm:ss'
+  if (props.mode === 'datetime') return 'yyyy-MM-dd HH:mm'
+  return 'yyyy-MM-dd'
+})
+
+const resolvedEnableTimePicker = computed(() => {
+  return props.mode !== 'date'
+})
+
+const resolvedEnableSeconds = computed(() => {
+  if (props.mode === 'datetime-seconds') return true
+  return false
+})
+
+const resolvedModelType = computed(() => 'format')
 
 watch(() => props.modelValue, (val) => {
   date.value = val

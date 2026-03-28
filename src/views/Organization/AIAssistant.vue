@@ -34,7 +34,7 @@
           v-if="!sessions.length"
           class="rounded-2xl border border-dashed border-slate-200 bg-white px-4 py-8 text-center text-sm text-slate-500"
         >
-          还没有会话，点击右上角新建即可开始。
+          当前还没有会话，点击右上角新建会话即可开始。
         </div>
 
         <div
@@ -154,13 +154,13 @@
               placeholder="例如：帮我写一份社区环保日活动方案，包含招募文案和执行提醒。"
             />
             <div class="mt-3 flex justify-end">
-              <button
-                class="rounded-full bg-[#ec5b13] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#d04f14] disabled:opacity-60"
+              <Button
+                variant="primary"
                 :disabled="assistantStore.sending || !prompt.trim()"
                 @click="sendPrompt"
               >
                 {{ assistantStore.sending ? '发送中...' : '发送' }}
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -199,19 +199,19 @@
           />
         </div>
         <div class="flex justify-end gap-3 pt-2">
-          <button
-            class="org-toolbar-button"
+          <Button
+            variant="outline"
             @click="draftDialogOpen = false"
           >
             取消
-          </button>
-          <button
-            class="rounded-full bg-[#ec5b13] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#d04f14] disabled:opacity-60"
+          </Button>
+          <Button
+            variant="primary"
             :disabled="assistantStore.sending || !draftForm.topic.trim()"
             @click="submitDraft"
           >
             {{ assistantStore.sending ? '生成中...' : '生成草案' }}
-          </button>
+          </Button>
         </div>
       </div>
     </Dialog>
@@ -220,6 +220,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
+import Button from '@/components/ui/Button.vue'
 import OrganizationPageHeader from '@/components/organization/OrganizationPageHeader.vue'
 import OrganizationSectionCard from '@/components/organization/OrganizationSectionCard.vue'
 import Dialog from '@/components/ui/Dialog.vue'

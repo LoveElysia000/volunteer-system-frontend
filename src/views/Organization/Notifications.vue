@@ -9,13 +9,14 @@
         mode="compact"
       >
         <template #actions>
-          <button
-            class="org-toolbar-button disabled:cursor-not-allowed disabled:opacity-60"
+          <Button
+            variant="outline"
+            rounded
             :disabled="markingRead || !filteredUnreadIds.length"
             @click="markAllAsRead"
           >
             {{ markingRead ? '处理中...' : '当前列表标记已读' }}
-          </button>
+          </Button>
         </template>
       </OrganizationPageHeader>
     </template>
@@ -24,35 +25,28 @@
       <DataToolbar>
         <template #filters>
           <div class="flex flex-wrap items-center gap-3">
-            <label class="data-list-checkbox-filter">
+            <label class="group inline-flex cursor-pointer items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-2 text-sm font-semibold text-slate-600 transition hover:border-[#ffcfb3] hover:text-[#ec5b13]">
               <input
                 v-model="unreadOnly"
                 type="checkbox"
                 class="h-4 w-4 rounded border-slate-300 text-[#ec5b13] focus:ring-[#ec5b13]"
               >
-              仅看未读
+              <span :class="unreadOnly ? 'text-[#ec5b13]' : ''">仅看未读</span>
             </label>
 
-            <input
+            <Input
               v-model.trim="searchQuery"
-              type="text"
-              class="input min-w-[240px]"
               placeholder="搜索通知标题、内容或业务类型"
-            >
-            <select
-              v-model.number="pageSize"
-              class="input min-w-[140px]"
-            >
-              <option :value="10">
-                每页 10 条
-              </option>
-              <option :value="20">
-                每页 20 条
-              </option>
-              <option :value="50">
-                每页 50 条
-              </option>
-            </select>
+              allow-clear
+              class="min-w-[240px]"
+            />
+            <div class="min-w-[180px]">
+              <FilterSelect
+                v-model="pageSize"
+                title="每页条数"
+                :options="pageSizeOptions"
+              />
+            </div>
           </div>
         </template>
 
@@ -64,13 +58,6 @@
         </template>
 
         <template #actions>
-          <Button
-            variant="outline"
-            :loading="loading"
-            @click="reloadFromFirstPage"
-          >
-            刷新通知
-          </Button>
           <Button
             variant="outline"
             :disabled="loading || page <= 1"
@@ -256,6 +243,8 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import Button from '@/components/ui/Button.vue'
+import Input from '@/components/ui/Input.vue'
+import FilterSelect from '@/components/ui/FilterSelect.vue'
 import DataListPage from '@/components/data-list/DataListPage.vue'
 import DataToolbar from '@/components/data-list/DataToolbar.vue'
 import DataTable, { type DataTableColumn } from '@/components/data-list/DataTable.vue'
@@ -275,6 +264,11 @@ const markingRead = ref(false)
 const searchQuery = ref('')
 const page = ref(1)
 const pageSize = ref(20)
+const pageSizeOptions = [
+  { value: 10, label: '10 条', description: '适合精读消息内容' },
+  { value: 20, label: '20 条', description: '默认浏览密度' },
+  { value: 50, label: '50 条', description: '适合快速批量处理' }
+] as const
 const selectedNotificationId = ref<number | null>(null)
 const drawerOpen = ref(false)
 
@@ -324,11 +318,6 @@ const loadNotifications = async () => {
     console.error('加载通知失败:', error)
     messageStore.error(error.message || '加载通知失败，请稍后重试')
   }
-}
-
-const reloadFromFirstPage = async () => {
-  page.value = 1
-  await loadNotifications()
 }
 
 const goToPreviousPage = async () => {

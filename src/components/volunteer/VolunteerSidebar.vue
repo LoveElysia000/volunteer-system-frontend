@@ -1,5 +1,5 @@
 <template>
-  <nav class="volunteer-sidebar rounded-[2rem] border border-white/70 bg-white/85 p-3 shadow-[0_20px_70px_-50px_rgba(15,23,42,0.35)] backdrop-blur">
+  <nav class="volunteer-sidebar rounded-[1.75rem] border border-emerald-100/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(240,253,250,0.92))] p-3 shadow-[0_18px_44px_-38px_rgba(5,150,105,0.22)] backdrop-blur">
     <div class="space-y-1.5 p-1">
       <MenuItem
         v-for="item in menuItems"

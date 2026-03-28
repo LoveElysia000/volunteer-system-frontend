@@ -6,21 +6,44 @@
         title="发现并安排本周任务"
         description="把筛选、报名和优先事项集中在一个视图内，减少页面切换和遗漏。"
         :meta-items="summaryMeta"
+        layout="operations"
       >
+        <template #summary>
+          <span class="rounded-full border border-emerald-100 bg-white/85 px-3 py-1.5 text-xs font-semibold text-slate-600">
+            当前视图 / {{ activeTabLabel }}
+          </span>
+          <span class="rounded-full border border-emerald-100 bg-white/85 px-3 py-1.5 text-xs font-semibold text-slate-600">
+            关键词 / {{ searchSummaryLabel }}
+          </span>
+          <span class="rounded-full border border-emerald-100 bg-white/85 px-3 py-1.5 text-xs font-semibold text-slate-600">
+            时间范围 / {{ dateRangeSummary }}
+          </span>
+        </template>
         <template #actions>
-          <Button
-            variant="outline"
-            rounded
-            @click="clearFilters"
-          >
-            重置筛选
-          </Button>
-          <RouterLink
-            to="/volunteer/activities/my-registrations"
-            class="volunteer-toolbar-button volunteer-toolbar-button--soft"
-          >
-            我的报名
-          </RouterLink>
+          <div class="grid w-full gap-3 lg:grid-cols-[minmax(0,1fr)_auto_auto]">
+            <Input
+              v-model="searchQuery"
+              placeholder="搜索活动名称、地点或描述"
+              :icon="SearchIcon"
+              allow-clear
+              theme="emerald"
+              class="lg:min-w-[240px]"
+            />
+            <Button
+              variant="outline"
+              rounded
+              class="h-full min-h-[48px]"
+              @click="clearFilters"
+            >
+              重置筛选
+            </Button>
+            <RouterLink
+              to="/volunteer/activities/my-registrations"
+              class="volunteer-toolbar-button volunteer-toolbar-button--soft min-h-[48px]"
+            >
+              我的报名
+            </RouterLink>
+          </div>
         </template>
       </VolunteerPageHeader>
     </template>
@@ -60,40 +83,25 @@
             </template>
 
             <template #actions>
-              <div class="grid gap-3 lg:grid-cols-[minmax(240px,300px)_180px_180px_160px]">
-                <div class="data-list-search lg:min-w-[240px]">
-                  <SearchIcon class="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                  <input
-                    v-model="searchQuery"
-                    type="text"
-                    placeholder="搜索活动名称、地点或描述"
-                    class="data-list-search-input"
-                  >
-                </div>
-                <input
+              <div class="grid gap-3 lg:grid-cols-[200px_200px_220px]">
+                <DatePicker
                   v-model="startFrom"
-                  type="date"
-                  class="input"
-                >
-                <input
+                  placeholder="开始日期"
+                  mode="date"
+                  theme="emerald"
+                />
+                <DatePicker
                   v-model="endTo"
-                  type="date"
-                  class="input"
-                >
-                <select
-                  v-model.number="pageSize"
-                  class="input"
-                >
-                  <option :value="10">
-                    每页 10 条
-                  </option>
-                  <option :value="20">
-                    每页 20 条
-                  </option>
-                  <option :value="50">
-                    每页 50 条
-                  </option>
-                </select>
+                  placeholder="结束日期"
+                  mode="date"
+                  theme="emerald"
+                />
+                <FilterSelect
+                  v-model="pageSize"
+                  title="每页条数"
+                  :options="pageSizeOptions"
+                  theme="emerald"
+                />
               </div>
             </template>
           </DataToolbar>
@@ -372,6 +380,9 @@ import { computed, ref, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { SearchIcon } from 'lucide-vue-next'
 import Button from '@/components/ui/Button.vue'
+import Input from '@/components/ui/Input.vue'
+import DatePicker from '@/components/ui/DatePicker.vue'
+import FilterSelect from '@/components/ui/FilterSelect.vue'
 import DataListPage from '@/components/data-list/DataListPage.vue'
 import DataToolbar from '@/components/data-list/DataToolbar.vue'
 import DataList from '@/components/data-list/DataList.vue'
@@ -423,6 +434,11 @@ const selectedActivityId = ref<number | null>(null)
 const selectedActivitySnapshot = ref<VolunteerActivityViewItem | null>(null)
 const drawerOpen = ref(false)
 const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pageSize.value)))
+const pageSizeOptions = [
+  { key: 'activities-page-10', value: 10, label: '每页 10 条', description: '适合快速浏览' },
+  { key: 'activities-page-20', value: 20, label: '每页 20 条', description: '默认密度' },
+  { key: 'activities-page-50', value: 50, label: '每页 50 条', description: '适合批量查看' }
+] as const
 
 const filterTabs: FilterTab[] = [
   { id: 'all', label: '全部' },
@@ -552,6 +568,21 @@ const summaryMeta = computed(() => [
   { label: '分页进度', value: `${page.value}/${totalPages.value}`, detail: `共 ${total.value} 场活动` }
 ])
 
+const activeTabLabel = computed(() => (
+  filterTabs.find((tab) => tab.id === activeTab.value)?.label || '全部'
+))
+
+const searchSummaryLabel = computed(() => (
+  searchQuery.value.trim() ? `“${searchQuery.value.trim()}”` : '未设置'
+))
+
+const dateRangeSummary = computed(() => {
+  if (startFrom.value && endTo.value) return `${startFrom.value} 至 ${endTo.value}`
+  if (startFrom.value) return `${startFrom.value} 起`
+  if (endTo.value) return `截止 ${endTo.value}`
+  return '全部时间'
+})
+
 const setActiveTab = (tab: ActivityTab) => {
   activeTab.value = tab
 }
@@ -635,7 +666,7 @@ const goToNextPage = async () => {
 const getStatusText = (status: VolunteerActivityViewItem['status']) => ({ upcoming: '可报名', registered: '已报名', completed: '已完成' }[status] || status)
 const getStatusTone = (status: VolunteerActivityViewItem['status']) => ({ upcoming: 'green', registered: 'blue', completed: 'slate' }[status] || 'slate') as 'green' | 'blue' | 'slate'
 
-const openActivityDrawer = (activity: Record<string, any>, _index?: number) => {
+const openActivityDrawer = (activity: Record<string, any>) => {
   const selected = activity as VolunteerActivityViewItem
 
   selectedActivityId.value = selected.id

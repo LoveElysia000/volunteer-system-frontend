@@ -1,5 +1,5 @@
 <template>
-  <nav class="organization-sidebar organization-sidebar-shell rounded-[1.8rem] border border-[#ffd8c2]/70 bg-white/90 p-3 shadow-[0_22px_70px_-54px_rgba(120,53,15,0.4)] backdrop-blur">
+  <nav class="organization-sidebar organization-sidebar-shell rounded-[1.7rem] border border-[#ffd8c2]/65 bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(255,249,245,0.92))] p-3 shadow-[0_18px_44px_-38px_rgba(120,53,15,0.28)] backdrop-blur">
     <div class="space-y-1.5 p-1">
       <MenuItem
         v-for="item in menuItems"
@@ -86,7 +86,7 @@ const menuItems = computed<SidebarMenuItem[]>(() => [
     children: [
       {
         key: 'create-activity',
-        label: '创建活动',
+        label: '新建活动',
         icon: CalendarIcon,
         to: '/organization/activities/create',
         badge: '新',

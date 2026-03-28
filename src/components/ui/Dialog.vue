@@ -235,32 +235,34 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
-  padding: 16px;
+  background: rgba(15, 23, 42, 0.28);
+  backdrop-filter: blur(8px);
+  padding: 20px;
 }
 
 .dialog {
-  background: white;
-  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.96));
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 24px;
   width: v-bind(width);
   max-width: calc(100vw - 32px);
   max-height: calc(100vh - 32px);
   overflow: auto;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 32px 80px -36px rgba(15, 23, 42, 0.42);
 }
 
 .dialog-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 20px 0;
+  padding: 24px 24px 0;
 }
 
 .dialog-title {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: #111827;
+  font-size: 1.375rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #0f172a;
   margin: 0;
 }
 
@@ -268,22 +270,25 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  color: #6b7280;
-  transition: all 0.2s;
+  width: 38px;
+  height: 38px;
+  border-radius: 9999px;
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  background: rgba(255, 255, 255, 0.92);
+  color: #64748b;
+  transition: all 0.2s ease;
 }
 
 .dialog-close:hover {
-  background: #f3f4f6;
-  color: #111827;
+  border-color: rgba(203, 213, 225, 1);
+  background: rgba(248, 250, 252, 1);
+  color: #0f172a;
 }
 
 .dialog-body {
-  padding: 20px;
+  padding: 20px 24px 24px;
   font-size: 0.9375rem;
-  color: #4b5563;
+  color: #475569;
   line-height: 1.6;
 }
 
@@ -292,7 +297,7 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: flex-end;
   gap: 12px;
-  padding: 0 20px 20px;
+  padding: 0 24px 24px;
 }
 
 /* 动画 */

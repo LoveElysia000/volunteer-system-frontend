@@ -1,6 +1,6 @@
 <template>
   <section
-    class="organization-section-card rounded-[1.6rem] border p-5 shadow-[0_18px_58px_-46px_rgba(15,23,42,0.35)] lg:p-6"
+    class="organization-section-card rounded-[1.55rem] border p-5 shadow-[0_18px_46px_-38px_rgba(15,23,42,0.24)] lg:p-6"
     :class="toneClass"
   >
     <div

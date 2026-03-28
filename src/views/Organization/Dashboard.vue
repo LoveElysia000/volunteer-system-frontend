@@ -1,48 +1,139 @@
 <template>
   <div class="space-y-6">
-    <OrganizationPageHeader
-      eyebrow="运营驾驶台"
-      title="组织管理总览"
-      caption="Organization Overview"
-      description="集中查看组织运行节奏、关键审批与重点活动进展，把核心运营信息放在一个视图里。"
-      :meta-items="headerMeta"
-    >
-      <template #actions>
-        <label class="hidden items-center gap-2 rounded-full border border-[#ffd9c4] bg-white px-4 py-2 text-sm text-slate-500 xl:flex">
-          <SearchIcon class="h-4 w-4 text-slate-400" />
-          <input
-            v-model.trim="searchKeyword"
-            type="text"
-            class="w-56 border-none bg-transparent p-0 text-sm text-slate-700 outline-none"
-            placeholder="搜索活动名称、志愿者姓名..."
-          >
-        </label>
+    <section class="overflow-hidden rounded-[2rem] border border-[#ffd8c2] bg-[radial-gradient(circle_at_top_left,rgba(255,244,236,0.98),rgba(255,255,255,0.97)_45%,rgba(255,248,243,0.98)_100%)] p-6 shadow-[0_28px_70px_-54px_rgba(120,53,15,0.42)] lg:p-8">
+      <div class="grid gap-5 xl:grid-cols-[minmax(0,1.05fr)_minmax(360px,0.95fr)] xl:items-start">
+        <div class="space-y-5">
+          <div class="space-y-3">
+            <span class="inline-flex items-center rounded-full bg-[#fff1ea] px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-[#ec5b13]">
+              运营驾驶台
+            </span>
+            <div class="space-y-2">
+              <h1 class="text-3xl font-black tracking-tight text-slate-900 lg:text-[2.35rem]">
+                组织管理总览
+              </h1>
+              <p class="text-sm font-medium tracking-[0.22em] text-slate-400">
+                Organization Overview
+              </p>
+              <p class="max-w-2xl text-sm leading-6 text-slate-600">
+                集中查看组织运行节奏、关键审批与重点活动进展，把核心运营信息放在一个工作台视图里。
+              </p>
+            </div>
+          </div>
 
-        <button
-          class="org-toolbar-button disabled:cursor-not-allowed disabled:opacity-60"
-          :disabled="isExporting"
-          @click="handleExport"
-        >
-          <DownloadIcon class="h-4 w-4" />
-          {{ isExporting ? '导出中...' : '导出报表' }}
-        </button>
+          <div class="flex flex-wrap gap-3">
+            <div
+              v-for="item in workbenchHighlights"
+              :key="item.label"
+              class="rounded-full border px-4 py-2.5 text-sm font-semibold shadow-[0_12px_26px_-22px_rgba(15,23,42,0.22)]"
+              :class="item.tone === 'accent'
+                ? 'border-[#ffd7bf] bg-[#fff6f0] text-[#b45309]'
+                : 'border-slate-200 bg-white/92 text-slate-600'"
+            >
+              <span class="mr-2 text-xs uppercase tracking-[0.18em] text-slate-400">{{ item.label }}</span>
+              <span class="text-slate-900">{{ item.value }}</span>
+            </div>
+          </div>
 
-        <FilterSelect
-          v-model="selectedReportPeriod"
-          :options="reportPeriodOptions"
-          :icon="CalendarRangeIcon"
-          compact
-        />
+          <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            <article
+              v-for="item in quickPanels"
+              :key="item.label"
+              class="rounded-2xl border px-4 py-4"
+              :class="item.tone === 'soft'
+                ? 'border-[#ffe1d0] bg-[#fff8f4]'
+                : 'border-slate-200 bg-white/92'"
+            >
+              <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                {{ item.label }}
+              </p>
+              <p class="mt-2 text-lg font-bold text-slate-900">
+                {{ item.value }}
+              </p>
+              <p class="mt-1 text-xs text-slate-500">
+                {{ item.detail }}
+              </p>
+            </article>
+          </div>
+        </div>
 
-        <RouterLink
-          to="/organization/activities/create"
-          class="org-toolbar-button org-toolbar-button--soft"
-        >
-          <PlusIcon class="h-4 w-4" />
-          新建活动
-        </RouterLink>
-      </template>
-    </OrganizationPageHeader>
+        <div class="rounded-[1.75rem] border border-white/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(255,247,242,0.98))] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.7),0_22px_52px_-42px_rgba(120,53,15,0.45)] lg:p-5">
+          <div class="flex flex-col gap-3">
+            <Input
+              v-model.trim="searchKeyword"
+              placeholder="搜索活动名称、志愿者姓名..."
+              :icon="SearchIcon"
+              allow-clear
+              class="!border-[#ffd9c4] !bg-white"
+            />
+
+            <div class="grid gap-3 sm:grid-cols-2">
+              <button
+                class="org-toolbar-button justify-center disabled:cursor-not-allowed disabled:opacity-60"
+                :disabled="isExporting"
+                @click="handleExport"
+              >
+                <DownloadIcon class="h-4 w-4" />
+                {{ isExporting ? '导出中...' : '导出报表' }}
+              </button>
+
+              <RouterLink
+                to="/organization/activities/create"
+                class="org-toolbar-button org-toolbar-button--soft justify-center"
+              >
+                <PlusIcon class="h-4 w-4" />
+                新建活动
+              </RouterLink>
+            </div>
+
+            <div class="grid gap-3 sm:grid-cols-2">
+              <div class="rounded-2xl border border-slate-200 bg-white/92 px-4 py-3">
+                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                  报表周期
+                </p>
+                <div class="mt-2">
+                  <FilterSelect
+                    v-model="selectedReportPeriod"
+                    :options="reportPeriodOptions"
+                    :icon="CalendarRangeIcon"
+                    compact
+                  />
+                </div>
+              </div>
+
+              <div class="rounded-2xl border border-slate-200 bg-white/92 px-4 py-3">
+                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                  当前范围
+                </p>
+                <p class="mt-2 text-sm font-semibold text-slate-900">
+                  {{ resolvedRange.start }} ~ {{ resolvedRange.end }}
+                </p>
+                <p class="mt-1 text-xs text-slate-500">
+                  用于当前看板统计与导出报表
+                </p>
+              </div>
+            </div>
+
+            <div class="grid gap-3 sm:grid-cols-3">
+              <article
+                v-for="item in headerMeta"
+                :key="item.label"
+                class="rounded-2xl border border-[#ffd8c2] bg-[#fff8f4] px-4 py-3"
+              >
+                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                  {{ item.label }}
+                </p>
+                <p class="mt-2 text-base font-bold text-slate-900">
+                  {{ item.value }}
+                </p>
+                <p class="mt-1 text-xs text-slate-500">
+                  {{ item.detail }}
+                </p>
+              </article>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
 
     <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
       <OrganizationMetricCard
@@ -85,20 +176,18 @@
       tone="soft"
     >
       <div class="grid gap-4 md:grid-cols-3">
-        <input
+        <DatePicker
           v-model="customStart"
-          type="date"
-          class="input"
           :disabled="selectedReportPeriod !== 'custom'"
           placeholder="自定义开始"
-        >
-        <input
+          mode="date"
+        />
+        <DatePicker
           v-model="customEnd"
-          type="date"
-          class="input"
           :disabled="selectedReportPeriod !== 'custom'"
           placeholder="自定义结束"
-        >
+          mode="date"
+        />
         <div class="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
           <p class="font-semibold text-slate-900">
             当前导出范围
@@ -321,8 +410,9 @@ import {
   TrendingUpIcon,
   UsersIcon
 } from 'lucide-vue-next'
+import Input from '@/components/ui/Input.vue'
 import FilterSelect from '@/components/ui/FilterSelect.vue'
-import OrganizationPageHeader from '@/components/organization/OrganizationPageHeader.vue'
+import DatePicker from '@/components/ui/DatePicker.vue'
 import OrganizationSectionCard from '@/components/organization/OrganizationSectionCard.vue'
 import OrganizationMetricCard from '@/components/organization/OrganizationMetricCard.vue'
 import { useOrganizationDashboardMetrics } from '@/composables/useOrganizationDashboardMetrics'
@@ -411,6 +501,43 @@ const headerMeta = computed(() => [
   { label: '当前管理员', value: user.value?.realName || '组织管理员', detail: '当前在线' },
   { label: '当前日期', value: currentDateLabel.value, detail: '本地工作区时间' },
   { label: '统计范围', value: `${resolvedRange.value.start} ~ ${resolvedRange.value.end}`, detail: '用于看板和报表导出' }
+])
+const workbenchHighlights = computed(() => [
+  {
+    label: '搜索结果',
+    value: searchKeyword.value ? `${filteredTopProjectRows.value.length + filteredCriticalTaskRows.value.length} 项` : '全部内容',
+    tone: 'accent'
+  },
+  {
+    label: '关键任务',
+    value: `${filteredCriticalTaskRows.value.length} 条待跟进`,
+    tone: 'neutral'
+  },
+  {
+    label: '重点活动',
+    value: `${filteredTopProjectRows.value.length} 个项目`,
+    tone: 'neutral'
+  }
+])
+const quickPanels = computed(() => [
+  {
+    label: '活跃项目',
+    value: organizationKpiMetrics.value[0]?.value || '0',
+    detail: '当前运营周期内保持推进的活动数量',
+    tone: 'soft'
+  },
+  {
+    label: '参与成员',
+    value: organizationKpiMetrics.value[1]?.value || '0',
+    detail: '当前周期内有实际参与动作的成员规模',
+    tone: 'neutral'
+  },
+  {
+    label: '工时沉淀',
+    value: organizationKpiMetrics.value[3]?.value || '0',
+    detail: '当前周期内已结算并沉淀的服务产出',
+    tone: 'neutral'
+  }
 ])
 
 const metricIconMap: Record<string, any> = {

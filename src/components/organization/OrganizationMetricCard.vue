@@ -1,5 +1,5 @@
 <template>
-  <article class="organization-metric-card rounded-[1.4rem] border border-[#ffe2d1] bg-white p-5 shadow-[0_18px_40px_-34px_rgba(120,53,15,0.28)]">
+  <article class="organization-metric-card rounded-[1.35rem] border border-[#ffe2d1] bg-white p-5 shadow-[0_16px_34px_-28px_rgba(120,53,15,0.22)]">
     <div class="flex items-start justify-between gap-4">
       <div>
         <p

@@ -1,8 +1,13 @@
 <template>
   <div class="menu-item w-full">
-    <div
-      class="menu-item-main relative flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-200"
+    <button
+      type="button"
+      class="menu-item-main relative flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium transition-all duration-200"
       :class="mainClass"
+      :disabled="item.disabled"
+      :aria-current="!hasChildren && isActive ? 'page' : undefined"
+      :aria-expanded="hasChildren ? String(isExpanded) : undefined"
+      :aria-disabled="item.disabled ? 'true' : undefined"
       @click="handleClick"
     >
       <span
@@ -42,7 +47,7 @@
         class="h-4 w-4 shrink-0 transition-transform duration-200"
         :class="isExpanded ? 'rotate-90 text-emerald-700' : 'text-slate-400'"
       />
-    </div>
+    </button>
 
     <SubMenu
       v-if="hasChildren"
@@ -101,18 +106,18 @@ const mainClass = computed(() => {
   }
 
   if (isActive.value) {
-    return 'cursor-pointer bg-emerald-50/90 pl-6 text-emerald-800 shadow-[inset_0_0_0_1px_rgba(16,185,129,0.15)]'
+    return 'cursor-pointer bg-[linear-gradient(180deg,rgba(236,253,245,0.98),rgba(255,255,255,0.96))] pl-6 text-emerald-800 shadow-[inset_0_0_0_1px_rgba(16,185,129,0.18),0_12px_24px_-24px_rgba(5,150,105,0.24)]'
   }
 
-  return 'cursor-pointer text-slate-600 hover:bg-slate-50 hover:pl-5 hover:text-slate-900'
+  return 'cursor-pointer text-slate-600 hover:bg-white hover:pl-5 hover:text-slate-900 hover:shadow-[0_10px_22px_-22px_rgba(15,23,42,0.16)]'
 })
 
 const iconWrapClass = computed(() => {
   if (isActive.value) {
-    return 'bg-emerald-100 text-emerald-700'
+    return 'bg-emerald-100/90 text-emerald-700 shadow-[inset_0_0_0_1px_rgba(16,185,129,0.08)]'
   }
 
-  return 'bg-slate-100 text-slate-500'
+  return 'bg-slate-100/90 text-slate-500'
 })
 
 const handleClick = () => {

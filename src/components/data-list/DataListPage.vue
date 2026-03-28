@@ -1,5 +1,5 @@
 <template>
-  <div class="data-list-page space-y-6">
+  <div class="data-list-page">
     <header v-if="$slots.header">
       <slot name="header" />
     </header>
