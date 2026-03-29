@@ -1,5 +1,8 @@
 <template>
-  <div class="menu-item relative w-full">
+  <div
+    class="menu-item relative w-full"
+    :class="isCompactSidebar && isExpanded ? 'z-40' : ''"
+  >
     <button
       type="button"
       class="menu-item-main relative flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium transition-all duration-200"
@@ -8,6 +11,7 @@
       :aria-current="!hasChildren && isActive ? 'page' : undefined"
       :aria-expanded="hasChildren ? String(isExpanded) : undefined"
       :aria-disabled="item.disabled ? 'true' : undefined"
+      :title="item.label"
       @click="handleClick"
     >
       <span

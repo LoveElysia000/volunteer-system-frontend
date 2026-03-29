@@ -21,8 +21,10 @@
 import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
+  BellIcon,
   HomeIcon,
   CalendarIcon,
+  HistoryIcon,
   UserIcon,
   UsersIcon,
   Building2Icon
@@ -63,7 +65,7 @@ const menuItems = computed<SidebarMenuItem[]>(() => [
   },
   {
     key: 'activities',
-    label: '活动管理',
+    label: '活动与记录',
     icon: CalendarIcon,
     children: [
       {
@@ -79,8 +81,24 @@ const menuItems = computed<SidebarMenuItem[]>(() => [
         label: '我的报名',
         icon: UsersIcon,
         to: '/volunteer/activities/my-registrations'
+      },
+      {
+        key: 'my-work-hours',
+        label: '我的工时',
+        icon: HistoryIcon,
+        to: '/volunteer/work-hours',
+        badge: '新增',
+        badgeClass: 'bg-sky-100 text-sky-700'
       }
     ]
+  },
+  {
+    key: 'notifications',
+    label: '通知中心',
+    icon: BellIcon,
+    to: '/volunteer/notifications',
+    badge: '新',
+    badgeClass: 'bg-emerald-100 text-emerald-700'
   },
   {
     key: 'organizations',

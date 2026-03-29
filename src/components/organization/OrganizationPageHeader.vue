@@ -6,7 +6,7 @@
     <div
       class="grid gap-5"
       :class="layout === 'operations'
-        ? 'xl:grid-cols-[minmax(0,0.92fr)_minmax(340px,1.08fr)] xl:items-stretch'
+        ? '2xl:grid-cols-[minmax(0,0.92fr)_minmax(340px,1.08fr)] 2xl:items-stretch'
         : (mode === 'hero' ? 'lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.9fr)] lg:items-end' : 'lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.9fr)] lg:items-start')"
     >
       <div

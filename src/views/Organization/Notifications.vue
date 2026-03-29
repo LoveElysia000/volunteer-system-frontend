@@ -4,7 +4,7 @@
       <OrganizationPageHeader
         eyebrow="通知中心"
         title="通知中心"
-        description="集中处理系统消息、审核提醒和活动通知。"
+        description="集中查看当前账号收到的活动、成员和工时通知。"
         :meta-items="headerMeta"
         mode="compact"
       >
@@ -15,7 +15,7 @@
             :disabled="markingRead || !filteredUnreadIds.length"
             @click="markAllAsRead"
           >
-            {{ markingRead ? '处理中...' : '当前列表标记已读' }}
+            {{ markingRead ? '处理中...' : '当前列表全部已读' }}
           </Button>
         </template>
       </OrganizationPageHeader>
@@ -36,11 +36,11 @@
 
             <Input
               v-model.trim="searchQuery"
-              placeholder="搜索通知标题、内容或业务类型"
+              placeholder="搜索通知标题、内容、事件或业务类型"
               allow-clear
-              class="min-w-[240px]"
+              class="w-full min-w-0 sm:min-w-[240px] sm:flex-1"
             />
-            <div class="min-w-[180px]">
+            <div class="w-full min-w-0 sm:w-auto sm:min-w-[180px]">
               <FilterSelect
                 v-model="pageSize"
                 title="每页条数"
@@ -54,6 +54,7 @@
           <div class="flex flex-wrap items-center gap-3 text-sm text-slate-500">
             <span>第 {{ page }} / {{ totalPages }} 页</span>
             <span>当前筛选 {{ filteredNotifications.length }} 条，共 {{ notificationsStore.total }} 条</span>
+            <span>未读 {{ unreadCount }} 条</span>
           </div>
         </template>
 
@@ -79,7 +80,7 @@
     <template #body>
       <OrganizationSectionCard
         title="消息列表"
-        description="点击一条通知，在右侧查看详情并处理已读状态。"
+        description="点击通知查看详情，必要时继续跳转到相关业务页。"
       >
         <DataTable
           :columns="columns"
@@ -107,7 +108,14 @@
           </template>
 
           <template #cell-type="{ item }">
-            {{ item.bizType || item.eventType || '-' }}
+            <div class="space-y-1">
+              <p class="text-sm font-semibold text-slate-900">
+                {{ getNotificationEventLabel(item.eventType) }}
+              </p>
+              <p class="text-xs text-slate-500">
+                {{ item.bizType || item.eventType || '-' }}
+              </p>
+            </div>
           </template>
 
           <template #cell-status="{ item }">
@@ -165,6 +173,10 @@
                 :tone="selectedNotification.readStatus === NotificationReadStatus.READ ? 'slate' : 'amber'"
               />
               <StatusBadge
+                :label="getNotificationEventLabel(selectedNotification.eventType)"
+                tone="blue"
+              />
+              <StatusBadge
                 v-if="selectedNotification.bizType"
                 :label="selectedNotification.bizType"
                 tone="blue"
@@ -184,6 +196,9 @@
                   事件类型
                 </p>
                 <p class="mt-1 text-sm font-semibold text-slate-900">
+                  {{ getNotificationEventLabel(selectedNotification.eventType) }}
+                </p>
+                <p class="mt-1 text-xs text-slate-500">
                   {{ selectedNotification.eventType || '未标记' }}
                 </p>
               </div>
@@ -197,10 +212,18 @@
               </div>
               <div>
                 <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                  已读时间
+                </p>
+                <p class="mt-1 text-sm font-semibold text-slate-900">
+                  {{ selectedNotification.readAt ? formatDate(selectedNotification.readAt) : '尚未阅读' }}
+                </p>
+              </div>
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
                   业务 ID
                 </p>
                 <p class="mt-1 text-sm font-semibold text-slate-900">
-                  {{ selectedNotification.bizId || '-' }}
+                  {{ typeof selectedNotification.bizId === 'number' ? selectedNotification.bizId : '-' }}
                 </p>
               </div>
             </div>
@@ -226,6 +249,14 @@
         <template #footer>
           <div class="flex flex-col gap-3 sm:flex-row sm:justify-end">
             <Button
+              v-if="selectedNotificationTarget"
+              variant="outline"
+              :disabled="selectedNotificationTarget.disabled"
+              @click="goToRelatedPage"
+            >
+              {{ selectedNotificationTarget.label }}
+            </Button>
+            <Button
               v-if="selectedNotification && selectedNotification.readStatus !== NotificationReadStatus.READ"
               variant="primary"
               :loading="markingRead"
@@ -234,6 +265,12 @@
               标记已读
             </Button>
           </div>
+          <p
+            v-if="selectedNotificationTarget?.disabled"
+            class="text-xs leading-5 text-slate-500"
+          >
+            这类通知暂时没有更精确的落点，继续留在通知中心查看即可。
+          </p>
         </template>
       </DetailDrawer>
     </template>
@@ -242,6 +279,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import Button from '@/components/ui/Button.vue'
 import Input from '@/components/ui/Input.vue'
 import FilterSelect from '@/components/ui/FilterSelect.vue'
@@ -251,12 +289,14 @@ import DataTable, { type DataTableColumn } from '@/components/data-list/DataTabl
 import DetailDrawer from '@/components/data-list/DetailDrawer.vue'
 import StatusBadge from '@/components/data-list/StatusBadge.vue'
 import { NOTIFICATION_READ_STATUS_LABELS } from '@/constants/status'
-import { useNotificationsStore } from '@/store/modules/notifications'
+import { getNotificationEventLabel, useNotificationsStore } from '@/store/modules/notifications'
 import { useMessageStore } from '@/store/modules/messages'
 import { NotificationReadStatus } from '@/types/notification'
 import OrganizationPageHeader from '@/components/organization/OrganizationPageHeader.vue'
 import OrganizationSectionCard from '@/components/organization/OrganizationSectionCard.vue'
+import { resolveNotificationTarget } from '@/utils/notificationNavigation'
 
+const router = useRouter()
 const notificationsStore = useNotificationsStore()
 const messageStore = useMessageStore()
 const unreadOnly = ref(false)
@@ -299,6 +339,11 @@ const selectedNotification = computed(() => (
   || notifications.value.find((item) => item.inboxId === selectedNotificationId.value)
   || null
 ))
+const selectedNotificationTarget = computed(() => (
+  selectedNotification.value
+    ? resolveNotificationTarget(selectedNotification.value, 'organization')
+    : null
+))
 
 const headerMeta = computed(() => [
   { label: '消息总数', value: `${notificationsStore.total}`, detail: '来自通知中心接口' },
@@ -339,6 +384,16 @@ const openNotificationDrawer = (item: Record<string, any>) => {
 
 const closeNotificationDrawer = () => {
   drawerOpen.value = false
+}
+
+const goToRelatedPage = async () => {
+  if (!selectedNotificationTarget.value) return
+  if (selectedNotificationTarget.value.disabled) {
+    messageStore.info('暂未配置对应页面')
+    return
+  }
+
+  await router.push(selectedNotificationTarget.value.to)
 }
 
 const markSingleAsRead = async (id: number) => {
@@ -394,6 +449,19 @@ watch(searchQuery, () => {
   page.value = 1
   void loadNotifications()
 })
+
+watch(notifications, (items) => {
+  if (!items.length) {
+    selectedNotificationId.value = null
+    drawerOpen.value = false
+    return
+  }
+
+  const hasSelected = items.some((item) => item.inboxId === selectedNotificationId.value)
+  if (!hasSelected) {
+    selectedNotificationId.value = items[0].inboxId
+  }
+}, { immediate: true })
 
 onMounted(() => {
   void loadNotifications()

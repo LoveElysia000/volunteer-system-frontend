@@ -1,14 +1,28 @@
-export enum NotificationReadStatus {
-  UNREAD = 0,
-  READ = 1
+export const NotificationReadStatus = {
+  UNREAD: 0,
+  READ: 1
+} as const
+
+export type NotificationReadStatus =
+  (typeof NotificationReadStatus)[keyof typeof NotificationReadStatus]
+
+export type NotificationAudience = 'volunteer' | 'organization'
+
+export interface NotificationTarget {
+  to: string
+  disabled: boolean
+  label: string
 }
 
+export type NotificationInboxId = number
+export type NotificationInboxIdList = NotificationInboxId[]
+
 export interface NotificationItem {
-  inboxId: number
+  inboxId: NotificationInboxId
   notificationId: number
   eventType: string
-  bizType: string
-  bizId: number
+  bizType?: string
+  bizId?: number
   title: string
   content: string
   readStatus: NotificationReadStatus

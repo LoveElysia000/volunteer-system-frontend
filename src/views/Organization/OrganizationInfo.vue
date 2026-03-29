@@ -21,7 +21,7 @@
         </div>
       </template>
       <template #actions>
-        <div class="relative w-full xl:max-w-sm">
+        <div class="relative w-full 2xl:max-w-sm">
           <Input
             v-model="listFilters.keyword"
             placeholder="搜索组织名称或联系人"

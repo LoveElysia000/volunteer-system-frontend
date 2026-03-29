@@ -20,7 +20,7 @@
           </span>
         </template>
         <template #actions>
-          <div class="grid w-full gap-3 xl:grid-cols-[minmax(0,1fr)_auto]">
+          <div class="grid w-full gap-3 2xl:grid-cols-[minmax(0,1fr)_auto]">
             <Input
               v-model.trim="keyword"
               placeholder="搜索报名记录或活动名称"
@@ -29,7 +29,7 @@
             />
             <RouterLink
               to="/volunteer/activities"
-              class="volunteer-toolbar-button volunteer-toolbar-button--soft min-h-[48px] w-full xl:w-auto"
+              class="volunteer-toolbar-button volunteer-toolbar-button--soft min-h-[48px] w-full 2xl:w-auto"
             >
               继续报名活动
             </RouterLink>
@@ -39,43 +39,50 @@
     </template>
 
     <template #toolbar>
-      <div class="flex flex-wrap items-center justify-between gap-3 rounded-[1.75rem] border border-slate-200/80 bg-white/90 px-4 py-4 shadow-[0_18px_42px_-34px_rgba(15,23,42,0.28)]">
-        <div class="grid flex-1 gap-3 md:grid-cols-3">
-          <div class="rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-sm text-slate-500">
-            建议先筛出本周内活动，再按时间顺序检查路线、签到和物资准备。
+      <DataToolbar>
+        <template #filters>
+          <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            <div class="rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-sm text-slate-500">
+              建议先筛出本周内活动，再按时间顺序检查路线、签到和物资准备。
+            </div>
+            <FilterSelect
+              v-model="statusFilter"
+              title="报名状态"
+              :options="statusOptions"
+              theme="emerald"
+            />
+            <FilterSelect
+              v-model="pageSize"
+              title="每页条数"
+              :options="pageSizeOptions"
+              theme="emerald"
+            />
           </div>
-          <FilterSelect
-            v-model="statusFilter"
-            title="报名状态"
-            :options="statusOptions"
-            theme="emerald"
-          />
-          <FilterSelect
-            v-model="pageSize"
-            title="每页条数"
-            :options="pageSizeOptions"
-            theme="emerald"
-          />
-        </div>
+        </template>
 
-        <div class="flex flex-wrap items-center gap-2">
+        <template #summary>
           <span class="text-sm text-slate-500">第 {{ page }} / {{ totalPages }} 页</span>
-          <Button
-            variant="outline"
-            :disabled="loading || page <= 1"
-            @click="goToPreviousPage"
-          >
-            上一页
-          </Button>
-          <Button
-            variant="outline"
-            :disabled="loading || page >= totalPages"
-            @click="goToNextPage"
-          >
-            下一页
-          </Button>
-        </div>
-      </div>
+        </template>
+
+        <template #actions>
+          <div class="flex flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              :disabled="loading || page <= 1"
+              @click="goToPreviousPage"
+            >
+              上一页
+            </Button>
+            <Button
+              variant="outline"
+              :disabled="loading || page >= totalPages"
+              @click="goToNextPage"
+            >
+              下一页
+            </Button>
+          </div>
+        </template>
+      </DataToolbar>
     </template>
 
     <template #body>
@@ -141,7 +148,7 @@
                     <p>地点：{{ item.location }}</p>
                     <p>报名进度：{{ registrationProgressText(item) }}</p>
                     <p>预计服务：{{ item.duration }} 小时</p>
-                    <p class="font-semibold text-emerald-700 sm:col-span-2 xl:col-span-1">
+                    <p class="font-semibold text-emerald-700 sm:col-span-2 2xl:col-span-1">
                       {{ item.orgName || '所属组织待确认' }}
                     </p>
                   </div>
@@ -320,6 +327,7 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import DataListPage from '@/components/data-list/DataListPage.vue'
 import DataList from '@/components/data-list/DataList.vue'
+import DataToolbar from '@/components/data-list/DataToolbar.vue'
 import DetailDrawer from '@/components/data-list/DetailDrawer.vue'
 import Button from '@/components/ui/Button.vue'
 import Input from '@/components/ui/Input.vue'

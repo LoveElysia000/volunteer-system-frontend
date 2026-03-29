@@ -7,18 +7,20 @@
       :meta-items="headerMeta"
     >
       <template #actions>
-        <FilterSelect
-          v-model="selectedReportPeriod"
-          :options="reportPeriodOptions"
-          :icon="CalendarRangeIcon"
-          compact
-        />
-        <button
-          class="org-toolbar-button org-toolbar-button--soft w-full sm:w-auto"
-          @click="exportOpsReport"
-        >
-          导出运营报表
-        </button>
+        <div class="grid w-full gap-3 2xl:grid-cols-[minmax(0,220px)_auto] 2xl:items-center 2xl:justify-end">
+          <FilterSelect
+            v-model="selectedReportPeriod"
+            :options="reportPeriodOptions"
+            :icon="CalendarRangeIcon"
+            compact
+          />
+          <button
+            class="org-toolbar-button org-toolbar-button--soft w-full 2xl:w-auto"
+            @click="exportOpsReport"
+          >
+            导出运营报表
+          </button>
+        </div>
       </template>
     </OrganizationPageHeader>
 
@@ -27,7 +29,7 @@
       description="选择统计查询与运营报表导出的时间区间。"
       tone="soft"
     >
-      <div class="grid gap-4 md:grid-cols-3">
+      <div class="grid gap-4 xl:grid-cols-3">
         <DatePicker
           v-model="customStart"
           :disabled="selectedReportPeriod !== 'custom'"

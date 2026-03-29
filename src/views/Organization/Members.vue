@@ -27,7 +27,7 @@
             placeholder="搜索成员姓名、编号"
             :icon="SearchIcon"
             allow-clear
-            class="w-full xl:max-w-md"
+            class="w-full 2xl:max-w-md"
           />
         </template>
       </OrganizationPageHeader>

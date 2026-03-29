@@ -37,6 +37,30 @@ export interface WorkHourListData {
   list: WorkHourLogItem[]
 }
 
+export interface VolunteerWorkHoursRequest {
+  page?: number
+  pageSize?: number
+  activityId?: number
+  operationTypes?: WorkHourOperationType[]
+}
+
+export interface VolunteerWorkHourItem {
+  id: number
+  activityId: number
+  signupId: number
+  operationType: WorkHourOperationType
+  hoursDelta: number
+  beforeTotalHours: number
+  afterTotalHours: number
+  reason: string
+  createdAt: string
+}
+
+export interface VolunteerWorkHoursData {
+  total: number
+  list: VolunteerWorkHourItem[]
+}
+
 export interface VoidWorkHourRequest {
   signupId: number
   reason: string

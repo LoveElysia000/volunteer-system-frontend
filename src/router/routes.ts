@@ -66,6 +66,18 @@ export const routes = [
         meta: { title: '我的报名' }
       },
       {
+        path: 'work-hours',
+        name: 'volunteer-work-hours',
+        component: () => import('@/views/Volunteer/WorkHours.vue'),
+        meta: { title: '我的工时' }
+      },
+      {
+        path: 'notifications',
+        name: 'volunteer-notifications',
+        component: () => import('@/views/Volunteer/Notifications.vue'),
+        meta: { title: '通知中心' }
+      },
+      {
         path: 'activities/:id',
         name: 'volunteer-activity-detail',
         component: () => import('@/views/Volunteer/ActivityDetail.vue'),

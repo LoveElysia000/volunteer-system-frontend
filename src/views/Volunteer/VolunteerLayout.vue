@@ -175,10 +175,16 @@
                   <span>{{ item.value }}</span>
                 </div>
                 <RouterLink
-                  to="/volunteer/activities"
+                  :to="route.name === 'volunteer-work-hours'
+                    ? '/volunteer/activities/my-registrations'
+                    : (route.name === 'volunteer-notifications' ? '/volunteer/activities/my-registrations' : '/volunteer/activities')"
                   class="volunteer-toolbar-button volunteer-toolbar-button--soft"
                 >
-                  查看活动
+                  {{
+                    route.name === 'volunteer-work-hours'
+                      ? '查看我的报名'
+                      : (route.name === 'volunteer-notifications' ? '查看我的报名' : '查看活动')
+                  }}
                 </RouterLink>
               </div>
             </section>
@@ -382,7 +388,9 @@ const setSidebarToMax = () => {
 
 const cachedComponents = [
   'VolunteerActivities',
-  'VolunteerMyRegistrations'
+  'VolunteerMyRegistrations',
+  'VolunteerWorkHours',
+  'VolunteerNotifications'
 ]
 
 const pageDescriptions: Record<string, string> = {
@@ -390,6 +398,8 @@ const pageDescriptions: Record<string, string> = {
   'volunteer-activities': '浏览推荐项目、管理报名状态，并快速筛选适合你的环保活动。',
   'volunteer-activity-detail': '查看单个活动的时间、地点、报名状态和服务信息。',
   'volunteer-my-registrations': '查看已经预约的活动，关注时间、地点和行前提醒。',
+  'volunteer-work-hours': '查看自己的工时发放、作废与重算记录，快速核对服务时长变化。',
+  'volunteer-notifications': '统一查看报名结果、活动变更和工时提醒，避免错过关键服务动态。',
   'volunteer-organizations': '查看你已加入的组织，并直接完成加入申请或退出操作。',
   'volunteer-profile': '维护个人资料、服务偏好和志愿者展示信息。',
 }
@@ -399,6 +409,8 @@ const pageCaptions: Record<string, string> = {
   'volunteer-activities': 'Activity Explorer',
   'volunteer-activity-detail': 'Activity Detail',
   'volunteer-my-registrations': 'My Registrations',
+  'volunteer-work-hours': 'My Work Hours',
+  'volunteer-notifications': 'Notification Center',
   'volunteer-organizations': 'Organization Network',
   'volunteer-profile': 'Volunteer Profile'
 }

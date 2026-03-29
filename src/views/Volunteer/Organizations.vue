@@ -19,7 +19,7 @@
         </span>
       </template>
       <template #actions>
-        <div class="grid w-full gap-3 xl:grid-cols-[minmax(0,1fr)_auto_auto]">
+        <div class="grid w-full gap-3 2xl:grid-cols-[minmax(0,1fr)_auto_auto]">
           <Input
             v-model="searchQuery"
             placeholder="搜索组织名称、地区或类型"
@@ -29,14 +29,14 @@
             @keyup.enter="reloadOrganizationsFromFirstPage"
           />
           <button
-            class="volunteer-toolbar-button volunteer-toolbar-button--ghost min-h-[48px] w-full xl:w-auto"
+            class="volunteer-toolbar-button volunteer-toolbar-button--ghost min-h-[48px] w-full 2xl:w-auto"
             :disabled="organizationsLoading"
             @click="refreshMemberships"
           >
             刷新关系
           </button>
           <button
-            class="volunteer-toolbar-button volunteer-toolbar-button--soft min-h-[48px] w-full xl:w-auto"
+            class="volunteer-toolbar-button volunteer-toolbar-button--soft min-h-[48px] w-full 2xl:w-auto"
             :disabled="organizationsLoading"
             @click="reloadOrganizationsFromFirstPage"
           >

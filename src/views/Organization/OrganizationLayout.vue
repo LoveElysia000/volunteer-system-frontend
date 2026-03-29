@@ -4,22 +4,16 @@
       <aside
         v-if="!isMobile"
         class="org-nav-surface shrink-0 overflow-y-auto"
-        :class="isCompact ? 'org-nav-surface--compact' : 'org-nav-surface--expanded'"
+        :class="'org-nav-surface--expanded'"
         :style="desktopSidebarStyle"
       >
         <div class="flex min-h-full flex-col gap-6 px-5 py-6">
-          <div
-            class="org-shell-panel rounded-[1.9rem] border border-[#ffd9c4] bg-[linear-gradient(135deg,rgba(236,91,19,0.10),rgba(255,255,255,0.96))] p-5"
-            :class="isCompact ? 'px-3 py-4' : ''"
-          >
-            <div
-              class="flex items-center gap-3"
-              :class="isCompact ? 'justify-center' : ''"
-            >
+          <div class="org-shell-panel rounded-[1.9rem] border border-[#ffd9c4] bg-[linear-gradient(135deg,rgba(236,91,19,0.10),rgba(255,255,255,0.96))] p-5">
+            <div class="flex items-center gap-3">
               <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#ec5b13] to-[#c9470c] text-white shadow-lg">
                 <Building2Icon class="h-6 w-6" />
               </div>
-              <div v-if="!isCompact">
+              <div>
                 <p class="text-lg font-black tracking-tight text-slate-900">
                   组织管理中心
                 </p>
@@ -30,21 +24,12 @@
             </div>
           </div>
 
-          <div
-            class="org-shell-panel p-5"
-            :class="isCompact ? 'px-3 py-4' : ''"
-          >
-            <div
-              class="flex items-center gap-4"
-              :class="isCompact ? 'flex-col justify-center gap-3 text-center' : ''"
-            >
+          <div class="org-shell-panel p-5">
+            <div class="flex items-center gap-4">
               <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#f08b53] to-[#ec5b13] text-xl font-black text-white">
                 {{ userInitials }}
               </div>
-              <div
-                v-if="!isCompact"
-                class="min-w-0 flex-1"
-              >
+              <div class="min-w-0 flex-1">
                 <p class="truncate text-base font-bold text-slate-900">
                   {{ user?.realName || '组织管理者' }}
                 </p>
@@ -64,23 +49,12 @@
                   <span class="text-xs font-semibold text-slate-500">已认证</span>
                 </div>
               </div>
-              <div
-                v-else
-                class="space-y-1"
-              >
-                <p class="text-sm font-bold text-slate-900">
-                  {{ userInitials }}
-                </p>
-                <p class="text-[11px] font-medium uppercase tracking-[0.18em] text-slate-400">
-                  已认证
-                </p>
-              </div>
             </div>
           </div>
 
           <OrganizationSidebar
             :sidebar-width="sidebarWidth"
-            :enable-compact="isCompact"
+            :enable-compact="false"
           />
 
           <div class="mt-auto org-shell-panel p-4">
@@ -96,7 +70,7 @@
       </aside>
 
       <div
-        v-if="isExpanded"
+        v-if="!isMobile"
         class="organization-resize-handle"
         aria-label="调整组织导航宽度"
         aria-orientation="vertical"
@@ -281,7 +255,7 @@ const authStore = useAuthStore()
 
 const user = computed(() => authStore.user)
 const isMobileSidebarOpen = ref(false)
-const { isMobile, isCompact, isExpanded } = useResponsiveWorkbench()
+const { isMobile } = useResponsiveWorkbench()
 const SIDEBAR_STORAGE_KEY = 'organization_center_sidebar_width'
 const SIDEBAR_DEFAULT_WIDTH = 304
 const SIDEBAR_MIN_WIDTH = 256
@@ -302,7 +276,7 @@ let dragStartX = 0
 let dragStartWidth = sidebarWidth.value
 
 const desktopSidebarStyle = computed(() => ({
-  width: isCompact.value ? '92px' : `${sidebarWidth.value}px`
+  width: `${sidebarWidth.value}px`
 }))
 
 const clampSidebarWidth = (value: number) => Math.min(SIDEBAR_MAX_WIDTH, Math.max(SIDEBAR_MIN_WIDTH, value))

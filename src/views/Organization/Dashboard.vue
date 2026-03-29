@@ -175,7 +175,7 @@
       description="控制看板统计与运营报表导出的时间范围。"
       tone="soft"
     >
-      <div class="grid gap-4 md:grid-cols-3">
+      <div class="grid gap-4 xl:grid-cols-3">
         <DatePicker
           v-model="customStart"
           :disabled="selectedReportPeriod !== 'custom'"
@@ -218,7 +218,7 @@
           />
         </template>
 
-        <div class="flex min-h-[280px] items-end gap-3 border-b border-slate-100 pb-5">
+        <div class="flex min-h-[clamp(14rem,32vh,17.5rem)] items-end gap-3 border-b border-slate-100 pb-5">
           <div
             v-for="row in trendRowsForView"
             :key="`${selectedTrendRange}-${row.month}`"

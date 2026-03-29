@@ -45,7 +45,7 @@
     <template #toolbar>
       <DataToolbar>
         <template #filters>
-          <div class="grid gap-3 2xl:grid-cols-[minmax(220px,320px)_180px_180px_180px_160px]">
+          <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-[minmax(220px,320px)_180px_180px_180px_160px]">
             <Input
               v-model="search"
               placeholder="搜索活动标题或地点"

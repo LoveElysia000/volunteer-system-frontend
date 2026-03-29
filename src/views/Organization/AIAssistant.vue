@@ -62,7 +62,7 @@
         title="聊天工作区"
         description="可以直接提问，也可以生成活动草案。"
       >
-        <div class="flex h-[560px] flex-col">
+        <div class="flex h-[clamp(26rem,70vh,35rem)] flex-col">
           <div class="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-[1.2rem] border border-slate-200 bg-slate-50/80 px-4 py-3">
             <div>
               <p class="text-sm font-semibold text-slate-900">

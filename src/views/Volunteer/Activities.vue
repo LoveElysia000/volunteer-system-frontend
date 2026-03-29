@@ -20,26 +20,26 @@
           </span>
         </template>
         <template #actions>
-          <div class="grid w-full gap-3 xl:grid-cols-[minmax(0,1fr)_auto_auto]">
+          <div class="grid w-full gap-3 2xl:grid-cols-[minmax(0,1fr)_auto_auto]">
             <Input
               v-model="searchQuery"
               placeholder="搜索活动名称、地点或描述"
               :icon="SearchIcon"
               allow-clear
               theme="emerald"
-              class="min-w-0 xl:min-w-[240px]"
+              class="min-w-0 2xl:min-w-[240px]"
             />
             <Button
               variant="outline"
               rounded
-              class="min-h-[48px] w-full xl:w-auto"
+              class="min-h-[48px] w-full 2xl:w-auto"
               @click="clearFilters"
             >
               重置筛选
             </Button>
             <RouterLink
               to="/volunteer/activities/my-registrations"
-              class="volunteer-toolbar-button volunteer-toolbar-button--soft min-h-[48px] w-full xl:w-auto"
+              class="volunteer-toolbar-button volunteer-toolbar-button--soft min-h-[48px] w-full 2xl:w-auto"
             >
               我的报名
             </RouterLink>
@@ -83,7 +83,7 @@
             </template>
 
             <template #actions>
-              <div class="grid gap-3 xl:grid-cols-[200px_200px_220px]">
+              <div class="grid gap-3 2xl:grid-cols-[200px_200px_220px]">
                 <DatePicker
                   v-model="startFrom"
                   placeholder="开始日期"

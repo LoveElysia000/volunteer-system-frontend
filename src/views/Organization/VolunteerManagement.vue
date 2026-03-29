@@ -29,7 +29,7 @@
             accept=".xlsx,.xls"
             @change="handleImport"
           >
-          <div class="relative w-full lg:max-w-sm">
+          <div class="relative w-full 2xl:max-w-sm">
             <Input
               v-model.trim="keyword"
               placeholder="搜索志愿者姓名"
