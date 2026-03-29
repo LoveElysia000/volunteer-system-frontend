@@ -23,7 +23,7 @@
     :highlight="highlight"
     :auto-apply="autoApply"
     :close-on-auto-apply="closeOnAutoApply"
-    :model-type="resolvedModelType"
+    model-type="format"
     :teleport="true"
     :class="['date-picker', `date-picker--${theme}`, { 'date-picker-error': error }]"
     @update:model-value="handleUpdate"
@@ -46,12 +46,15 @@ import { VueDatePicker } from '@vuepic/vue-datepicker'
 import type { FilterConfig, HighlightConfig, HighlightFn } from '@vuepic/vue-datepicker'
 import type { Locale } from 'date-fns'
 import { zhCN } from 'date-fns/locale/zh-CN'
+import {
+  normalizeDatePickerValue,
+  type DatePickerMode,
+  type DatePickerValue
+} from './datePickerValue'
 import '@vuepic/vue-datepicker/dist/main.css'
 
-type DateValue = string | string[] | [string, string] | null
-
 interface Props {
-  modelValue?: DateValue
+  modelValue?: DatePickerValue
   locale?: Locale
   format?: string
   placeholder?: string
@@ -76,7 +79,7 @@ interface Props {
   closeOnAutoApply?: boolean
   error?: string
   theme?: 'orange' | 'emerald'
-  mode?: 'date' | 'datetime' | 'datetime-seconds'
+  mode?: DatePickerMode
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -109,13 +112,13 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  'update:modelValue': [value: DateValue]
+  'update:modelValue': [value: DatePickerValue]
   open: []
   closed: []
-  change: [value: DateValue]
+  change: [value: DatePickerValue]
 }>()
 
-const date = ref<DateValue>(props.modelValue)
+const date = ref<DatePickerValue>(props.modelValue)
 
 const resolvedFormat = computed(() => {
   if (props.format) return props.format
@@ -133,15 +136,15 @@ const resolvedEnableSeconds = computed(() => {
   return false
 })
 
-const resolvedModelType = computed(() => 'format')
-
 watch(() => props.modelValue, (val) => {
   date.value = val
 })
 
-const handleUpdate = (val: DateValue) => {
-  emit('update:modelValue', val)
-  emit('change', val)
+const handleUpdate = (val: DatePickerValue) => {
+  const normalizedValue = normalizeDatePickerValue(val, props.mode)
+  date.value = normalizedValue
+  emit('update:modelValue', normalizedValue)
+  emit('change', normalizedValue)
 }
 </script>
 

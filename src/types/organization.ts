@@ -1,3 +1,5 @@
+import type { DateOnlyString } from './datetime'
+
 export enum OrganizationStatus {
   DISABLED = 0,
   ACTIVE = 1
@@ -56,8 +58,8 @@ export interface OrganizationListData {
 }
 
 export interface OrganizationSearchRequest extends OrganizationListRequest {
-  startDate?: string
-  endDate?: string
+  startDate?: DateOnlyString
+  endDate?: DateOnlyString
 }
 
 export interface CreateOrganizationRequest {

@@ -1,3 +1,5 @@
+import type { DateOnlyString } from '@/types/datetime'
+
 type OrganizationsHttpClient = {
   post: <T = unknown>(url: string, data?: unknown) => Promise<T>
   get: <T = unknown>(url: string, params?: unknown) => Promise<T>
@@ -15,8 +17,8 @@ type OrganizationListRequest = {
 }
 
 type OrganizationSearchRequest = OrganizationListRequest & {
-  startDate?: string
-  endDate?: string
+  startDate?: DateOnlyString
+  endDate?: DateOnlyString
 }
 
 export const createOrganizationsApi = (http: OrganizationsHttpClient) => ({
