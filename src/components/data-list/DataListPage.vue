@@ -1,35 +1,39 @@
 <template>
-  <div class="data-list-page min-w-0">
-    <header
+  <WorkbenchPage class="data-list-page">
+    <template
       v-if="$slots.header"
-      class="min-w-0"
+      #header
     >
       <slot name="header" />
-    </header>
+    </template>
 
-    <section
+    <template
       v-if="$slots.toolbar"
-      class="min-w-0"
+      #toolbar
     >
       <slot name="toolbar" />
-    </section>
+    </template>
 
-    <div
-      v-if="$slots.body || $slots.default"
-      class="min-w-0"
-    >
-      <slot name="body">
-        <slot />
-      </slot>
-    </div>
+    <slot name="body">
+      <slot />
+    </slot>
 
-    <footer
+    <template
       v-if="$slots.footer"
-      class="min-w-0"
+      #footer
     >
       <slot name="footer" />
-    </footer>
+    </template>
 
-    <slot name="drawer" />
-  </div>
+    <template
+      v-if="$slots.drawer"
+      #overlay
+    >
+      <slot name="drawer" />
+    </template>
+  </WorkbenchPage>
 </template>
+
+<script setup lang="ts">
+import WorkbenchPage from '@/components/workbench/WorkbenchPage.vue'
+</script>

@@ -299,12 +299,9 @@
           </section>
         </div>
 
-        <div
-          v-else
-          class="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500"
-        >
+        <WorkbenchEmptyPanel v-else>
           点击报名记录查看详情和后续提醒。
-        </div>
+        </WorkbenchEmptyPanel>
 
         <template #footer>
           <div class="flex flex-col gap-3 sm:flex-row sm:justify-end">
@@ -332,6 +329,7 @@ import DetailDrawer from '@/components/data-list/DetailDrawer.vue'
 import Button from '@/components/ui/Button.vue'
 import Input from '@/components/ui/Input.vue'
 import FilterSelect from '@/components/ui/FilterSelect.vue'
+import WorkbenchEmptyPanel from '@/components/workbench/WorkbenchEmptyPanel.vue'
 import { RouterLink, useRouter } from 'vue-router'
 import VolunteerPageHeader from '@/components/volunteer/VolunteerPageHeader.vue'
 import VolunteerSectionCard from '@/components/volunteer/VolunteerSectionCard.vue'

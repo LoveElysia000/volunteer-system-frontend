@@ -1,12 +1,12 @@
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { WORKBENCH_BREAKPOINTS } from '@/constants/workbench'
 
 export type WorkbenchMode = 'expanded' | 'compact' | 'mobile'
 
-const MOBILE_MAX_WIDTH = 1023
-const COMPACT_MAX_WIDTH = 1439
-
 export const useResponsiveWorkbench = () => {
-  const viewportWidth = ref(typeof window === 'undefined' ? COMPACT_MAX_WIDTH + 1 : window.innerWidth)
+  const viewportWidth = ref(
+    typeof window === 'undefined' ? WORKBENCH_BREAKPOINTS.compactMax + 1 : window.innerWidth
+  )
 
   const syncViewportWidth = () => {
     viewportWidth.value = window.innerWidth
@@ -22,8 +22,8 @@ export const useResponsiveWorkbench = () => {
   })
 
   const mode = computed<WorkbenchMode>(() => {
-    if (viewportWidth.value <= MOBILE_MAX_WIDTH) return 'mobile'
-    if (viewportWidth.value <= COMPACT_MAX_WIDTH) return 'compact'
+    if (viewportWidth.value <= WORKBENCH_BREAKPOINTS.mobileMax) return 'mobile'
+    if (viewportWidth.value <= WORKBENCH_BREAKPOINTS.compactMax) return 'compact'
     return 'expanded'
   })
 

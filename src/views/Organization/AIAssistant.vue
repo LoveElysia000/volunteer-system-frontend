@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-6">
+  <WorkbenchPage>
     <OrganizationPageHeader
       eyebrow="智能助手"
       title="AI 助手"
@@ -24,18 +24,19 @@
       </template>
     </OrganizationPageHeader>
 
-    <div class="grid gap-6 2xl:grid-cols-[280px_minmax(0,1fr)]">
-      <OrganizationSectionCard
-        title="会话列表"
-        description="查看最近会话，快速切换上下文。"
-        tone="soft"
-      >
-        <div
+    <WorkbenchSplitLayout variant="assistant">
+      <template #main>
+        <OrganizationSectionCard
+          title="会话列表"
+          description="查看最近会话，快速切换上下文。"
+          tone="soft"
+        >
+        <WorkbenchEmptyPanel
           v-if="!sessions.length"
-          class="rounded-2xl border border-dashed border-slate-200 bg-white px-4 py-8 text-center text-sm text-slate-500"
+          tone="plain"
         >
           当前还没有会话，点击右上角新建会话即可开始。
-        </div>
+        </WorkbenchEmptyPanel>
 
         <div
           v-else
@@ -56,12 +57,14 @@
             </p>
           </button>
         </div>
-      </OrganizationSectionCard>
+        </OrganizationSectionCard>
+      </template>
 
-      <OrganizationSectionCard
-        title="聊天工作区"
-        description="可以直接提问，也可以生成活动草案。"
-      >
+      <template #aside>
+        <OrganizationSectionCard
+          title="聊天工作区"
+          description="可以直接提问，也可以生成活动草案。"
+        >
         <div class="flex h-[clamp(26rem,70vh,35rem)] flex-col">
           <div class="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-[1.2rem] border border-slate-200 bg-slate-50/80 px-4 py-3">
             <div>
@@ -91,19 +94,13 @@
           </div>
 
           <div class="flex-1 space-y-4 overflow-y-auto pr-1">
-            <div
-              v-if="assistantStore.loading"
-              class="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500"
-            >
+            <WorkbenchEmptyPanel v-if="assistantStore.loading">
               正在加载会话消息...
-            </div>
+            </WorkbenchEmptyPanel>
 
-            <div
-              v-else-if="!messages.length"
-              class="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500"
-            >
+            <WorkbenchEmptyPanel v-else-if="!messages.length">
               输入你的问题，或点击“生成活动草案”快速开始。
-            </div>
+            </WorkbenchEmptyPanel>
 
             <article
               v-for="message in messages"
@@ -164,8 +161,9 @@
             </div>
           </div>
         </div>
-      </OrganizationSectionCard>
-    </div>
+        </OrganizationSectionCard>
+      </template>
+    </WorkbenchSplitLayout>
 
     <Dialog
       v-model="draftDialogOpen"
@@ -215,12 +213,15 @@
         </div>
       </div>
     </Dialog>
-  </div>
+  </WorkbenchPage>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
 import Button from '@/components/ui/Button.vue'
+import WorkbenchEmptyPanel from '@/components/workbench/WorkbenchEmptyPanel.vue'
+import WorkbenchPage from '@/components/workbench/WorkbenchPage.vue'
+import WorkbenchSplitLayout from '@/components/workbench/WorkbenchSplitLayout.vue'
 import OrganizationPageHeader from '@/components/organization/OrganizationPageHeader.vue'
 import OrganizationSectionCard from '@/components/organization/OrganizationSectionCard.vue'
 import Dialog from '@/components/ui/Dialog.vue'

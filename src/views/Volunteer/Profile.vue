@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-6">
+  <WorkbenchPage>
     <VolunteerPageHeader
       eyebrow="个人信息"
       title="维护你的志愿者档案"
@@ -39,8 +39,12 @@
       </template>
     </VolunteerPageHeader>
 
-    <div class="volunteer-profile-studio grid gap-6 2xl:grid-cols-[0.92fr_1.08fr]">
-      <div class="space-y-6">
+    <WorkbenchSplitLayout
+      variant="studio"
+      class="volunteer-profile-studio"
+    >
+      <template #main>
+        <div class="space-y-6">
         <VolunteerSectionCard
           title="志愿者名片"
           description="你的身份展示、等级和近期状态。"
@@ -162,9 +166,11 @@
             </li>
           </ul>
         </VolunteerSectionCard>
-      </div>
+        </div>
+      </template>
 
-      <div class="space-y-6">
+      <template #aside>
+        <div class="space-y-6">
         <VolunteerSectionCard
           title="账户信息"
           description="单独通过账户信息接口维护用户名、邮箱和手机号。"
@@ -350,9 +356,10 @@
             </RouterLink>
           </div>
         </VolunteerSectionCard>
-      </div>
-    </div>
-  </div>
+        </div>
+      </template>
+    </WorkbenchSplitLayout>
+  </WorkbenchPage>
 </template>
 
 <script setup lang="ts">
@@ -363,6 +370,8 @@ import Input from '@/components/ui/Input.vue'
 import DatePicker from '@/components/ui/DatePicker.vue'
 import FilterSelect from '@/components/ui/FilterSelect.vue'
 import Textarea from '@/components/ui/Textarea.vue'
+import WorkbenchPage from '@/components/workbench/WorkbenchPage.vue'
+import WorkbenchSplitLayout from '@/components/workbench/WorkbenchSplitLayout.vue'
 import { VOLUNTEER_AUDIT_STATUS_LABELS } from '@/constants/status'
 import { useAuthStore } from '@/store/modules/auth'
 import { useVolunteerStore } from '@/store/modules/volunteer'

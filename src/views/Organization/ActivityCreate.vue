@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-6">
+  <WorkbenchPage>
     <OrganizationPageHeader
       eyebrow="活动创建"
       title="新建活动"
@@ -37,8 +37,9 @@
       </template>
     </OrganizationPageHeader>
 
-    <div class="grid gap-6 2xl:grid-cols-[minmax(0,1.3fr)_minmax(320px,0.7fr)]">
-      <div class="space-y-6">
+    <WorkbenchSplitLayout variant="form">
+      <template #main>
+        <div class="space-y-6">
         <OrganizationSectionCard
           title="基础信息"
           caption="Basic Setup"
@@ -133,9 +134,11 @@
             </label>
           </div>
         </OrganizationSectionCard>
-      </div>
+        </div>
+      </template>
 
-      <div class="space-y-6">
+      <template #aside>
+        <div class="space-y-6">
         <OrganizationSectionCard
           title="封面与提示"
           caption="Preview"
@@ -205,9 +208,10 @@
             </li>
           </ul>
         </OrganizationSectionCard>
-      </div>
-    </div>
-  </div>
+        </div>
+      </template>
+    </WorkbenchSplitLayout>
+  </WorkbenchPage>
 </template>
 
 <script setup lang="ts">
@@ -218,6 +222,8 @@ import Button from '@/components/ui/Button.vue'
 import DatePicker from '@/components/ui/DatePicker.vue'
 import Input from '@/components/ui/Input.vue'
 import Textarea from '@/components/ui/Textarea.vue'
+import WorkbenchPage from '@/components/workbench/WorkbenchPage.vue'
+import WorkbenchSplitLayout from '@/components/workbench/WorkbenchSplitLayout.vue'
 import OrganizationPageHeader from '@/components/organization/OrganizationPageHeader.vue'
 import OrganizationSectionCard from '@/components/organization/OrganizationSectionCard.vue'
 import { useMessageStore } from '@/store/modules/messages'

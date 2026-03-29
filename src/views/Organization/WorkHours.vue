@@ -382,12 +382,9 @@
           </section>
         </div>
 
-        <div
-          v-else
-          class="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500"
-        >
+        <WorkbenchEmptyPanel v-else>
           点击流水记录查看详情并执行处理。
-        </div>
+        </WorkbenchEmptyPanel>
 
         <template #footer>
           <div class="flex flex-col gap-3 sm:flex-row sm:justify-end">
@@ -420,6 +417,7 @@ import Button from '@/components/ui/Button.vue'
 import FilterSelect from '@/components/ui/FilterSelect.vue'
 import Input from '@/components/ui/Input.vue'
 import Textarea from '@/components/ui/Textarea.vue'
+import WorkbenchEmptyPanel from '@/components/workbench/WorkbenchEmptyPanel.vue'
 import DataListPage from '@/components/data-list/DataListPage.vue'
 import DataToolbar from '@/components/data-list/DataToolbar.vue'
 import DataTable, { type DataTableColumn } from '@/components/data-list/DataTable.vue'

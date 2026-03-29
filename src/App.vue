@@ -58,25 +58,14 @@ onMounted(() => {
 })
 
 const hideGlobalChrome = computed(() => {
-  const routeName = route.name as string
-
-  // 登录注册页面
-  if (['login', 'register'].includes(routeName)) {
-    return true
-  }
-
   return Boolean(route.meta.hideGlobalChrome)
 })
 
 const showHeader = computed(() => !hideGlobalChrome.value)
 const showFooter = computed(() => !hideGlobalChrome.value)
 
-// 防御性兜底：即使 route meta 被误改，about 仍按全宽页面渲染
-const fullWidthRouteNames = new Set(['about'])
-
 const isFullWidthPage = computed(() => {
-  const routeName = typeof route.name === 'string' ? route.name : ''
-  return Boolean(route.meta.fullWidth) || fullWidthRouteNames.has(routeName)
+  return Boolean(route.meta.fullWidth)
 })
 </script>
 

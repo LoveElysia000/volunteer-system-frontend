@@ -1,6 +1,6 @@
 <template>
-  <div class="space-y-6">
-    <section class="overflow-hidden rounded-[2rem] border border-[#d5e8df] bg-[radial-gradient(circle_at_top_left,rgba(239,251,245,0.98),rgba(255,255,255,0.97)_45%,rgba(247,252,249,0.98)_100%)] p-6 shadow-[0_28px_70px_-54px_rgba(21,128,61,0.28)] lg:p-8">
+  <WorkbenchPage>
+    <WorkbenchHeroPanel tone="organization-emerald">
       <div class="grid gap-5 2xl:grid-cols-[minmax(0,0.95fr)_minmax(360px,1.05fr)] 2xl:items-start">
         <div class="space-y-5">
           <div class="space-y-3">
@@ -75,7 +75,7 @@
           </div>
         </div>
       </div>
-    </section>
+    </WorkbenchHeroPanel>
 
     <OrganizationSectionCard
       title="志愿者转化指标"
@@ -126,11 +126,13 @@
         </article>
       </div>
     </OrganizationSectionCard>
-  </div>
+  </WorkbenchPage>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
+import WorkbenchHeroPanel from '@/components/workbench/WorkbenchHeroPanel.vue'
+import WorkbenchPage from '@/components/workbench/WorkbenchPage.vue'
 import OrganizationSectionCard from '@/components/organization/OrganizationSectionCard.vue'
 import { useAnalyticsStore } from '@/store/modules/analytics'
 import { useMessageStore } from '@/store/modules/messages'

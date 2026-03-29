@@ -1301,11 +1301,11 @@
   }
 
   .volunteer-nav-surface--expanded {
-    width: var(--volunteer-sidebar-width, 296px);
+    width: var(--volunteer-sidebar-expanded-width, 296px);
   }
 
   .volunteer-nav-surface--compact {
-    width: 92px;
+    width: var(--volunteer-sidebar-compact-width, 92px);
     position: relative;
     z-index: 30;
     overflow: visible;

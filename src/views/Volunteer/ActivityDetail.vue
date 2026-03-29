@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-6">
+  <WorkbenchPage>
     <VolunteerPageHeader
       eyebrow="活动详情"
       :title="detailTitle"
@@ -20,16 +20,16 @@
       title="活动信息"
       description="当前页展示后端真实返回的活动详情字段。"
     >
-      <div
+      <WorkbenchEmptyPanel
         v-if="loading"
-        class="rounded-[1.5rem] border border-dashed border-slate-200 bg-slate-50/80 px-4 py-8 text-center text-sm text-slate-500"
+        class="rounded-[1.5rem] px-4 py-8"
+        tone="muted"
       >
         正在加载活动详情...
-      </div>
+      </WorkbenchEmptyPanel>
 
-      <div
+      <WorkbenchDetailPanel
         v-else-if="detail"
-        class="space-y-5"
       >
         <div class="rounded-[1.5rem] border border-slate-200 bg-slate-50/80 p-5">
           <div class="flex flex-col gap-5 2xl:flex-row 2xl:items-start 2xl:justify-between">
@@ -209,16 +209,17 @@
             </div>
           </div>
         </div>
-      </div>
+      </WorkbenchDetailPanel>
 
-      <div
+      <WorkbenchEmptyPanel
         v-else
-        class="rounded-[1.5rem] border border-dashed border-slate-200 bg-slate-50/80 px-4 py-8 text-center text-sm text-slate-500"
+        class="rounded-[1.5rem] px-4 py-8"
+        tone="muted"
       >
         暂未获取到活动详情
-      </div>
+      </WorkbenchEmptyPanel>
     </VolunteerSectionCard>
-  </div>
+  </WorkbenchPage>
 </template>
 
 <script setup lang="ts">
@@ -227,6 +228,9 @@ import { RouterLink, useRoute } from 'vue-router'
 import { activitiesApi } from '@/api/activities'
 import Button from '@/components/ui/Button.vue'
 import Input from '@/components/ui/Input.vue'
+import WorkbenchDetailPanel from '@/components/workbench/WorkbenchDetailPanel.vue'
+import WorkbenchEmptyPanel from '@/components/workbench/WorkbenchEmptyPanel.vue'
+import WorkbenchPage from '@/components/workbench/WorkbenchPage.vue'
 import {
   ACTIVITY_STATUS_LABELS,
   ATTENDANCE_STATUS_LABELS,

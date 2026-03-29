@@ -1,34 +1,40 @@
 <template>
-  <div class="space-y-6">
-    <VolunteerHeroPanel />
+  <WorkbenchPage>
+    <WorkbenchHeroPanel>
+      <VolunteerHeroPanel />
+    </WorkbenchHeroPanel>
 
     <StatsOverview />
 
-    <div class="grid gap-6 2xl:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.9fr)]">
-      <VolunteerSectionCard
-        title="推荐活动"
-        description="结合你的近期参与偏好和距离，优先展示适合本周报名的任务。"
-      >
-        <VolunteerRecommendedActivities />
-      </VolunteerSectionCard>
-
-      <div class="space-y-6">
+    <WorkbenchSplitLayout variant="dashboard-wide">
+      <template #main>
         <VolunteerSectionCard
-          title="近期成就动态"
-          description="用最近的反馈和团队动态提醒你保持参与节奏。"
-          tone="soft"
+          title="推荐活动"
+          description="结合你的近期参与偏好和距离，优先展示适合本周报名的任务。"
         >
-          <VolunteerAchievementFeed />
+          <VolunteerRecommendedActivities />
         </VolunteerSectionCard>
+      </template>
 
-        <VolunteerSectionCard
-          title="即将开始"
-          description="已报名任务和近期开启项目统一查看，避免错过签到。"
-        >
-          <UpcomingActivities />
-        </VolunteerSectionCard>
-      </div>
-    </div>
+      <template #aside>
+        <div class="space-y-6">
+          <VolunteerSectionCard
+            title="近期成就动态"
+            description="用最近的反馈和团队动态提醒你保持参与节奏。"
+            tone="soft"
+          >
+            <VolunteerAchievementFeed />
+          </VolunteerSectionCard>
+
+          <VolunteerSectionCard
+            title="即将开始"
+            description="已报名任务和近期开启项目统一查看，避免错过签到。"
+          >
+            <UpcomingActivities />
+          </VolunteerSectionCard>
+        </div>
+      </template>
+    </WorkbenchSplitLayout>
 
     <VolunteerSectionCard
       title="本月节奏"
@@ -57,11 +63,14 @@
         </div>
       </div>
     </VolunteerSectionCard>
-  </div>
+  </WorkbenchPage>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import WorkbenchHeroPanel from '@/components/workbench/WorkbenchHeroPanel.vue'
+import WorkbenchPage from '@/components/workbench/WorkbenchPage.vue'
+import WorkbenchSplitLayout from '@/components/workbench/WorkbenchSplitLayout.vue'
 import VolunteerHeroPanel from '@/components/volunteer/VolunteerHeroPanel.vue'
 import VolunteerSectionCard from '@/components/volunteer/VolunteerSectionCard.vue'
 import VolunteerRecommendedActivities from '@/components/volunteer/VolunteerRecommendedActivities.vue'

@@ -9,13 +9,13 @@ export const routes = [
     path: '/login',
     name: 'login',
     component: () => import('@/views/Auth/Login.vue'),
-    meta: { title: '登录' }
+    meta: { title: '登录', hideGlobalChrome: true, fullWidth: true }
   },
   {
     path: '/register',
     name: 'register',
     component: () => import('@/views/Auth/Register.vue'),
-    meta: { title: '注册' }
+    meta: { title: '注册', hideGlobalChrome: true, fullWidth: true }
   },
   {
     path: '/activities',

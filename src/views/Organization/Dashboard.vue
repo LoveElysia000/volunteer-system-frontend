@@ -1,6 +1,6 @@
 <template>
-  <div class="space-y-6">
-    <section class="overflow-hidden rounded-[2rem] border border-[#ffd8c2] bg-[radial-gradient(circle_at_top_left,rgba(255,244,236,0.98),rgba(255,255,255,0.97)_45%,rgba(255,248,243,0.98)_100%)] p-6 shadow-[0_28px_70px_-54px_rgba(120,53,15,0.42)] lg:p-8">
+  <WorkbenchPage>
+    <WorkbenchHeroPanel tone="organization-amber">
       <div class="grid gap-5 2xl:grid-cols-[minmax(0,1.05fr)_minmax(360px,0.95fr)] 2xl:items-start">
         <div class="space-y-5">
           <div class="space-y-3">
@@ -133,7 +133,7 @@
           </div>
         </div>
       </div>
-    </section>
+    </WorkbenchHeroPanel>
 
     <div class="grid gap-4 md:grid-cols-2 2xl:grid-cols-4">
       <OrganizationMetricCard
@@ -390,7 +390,7 @@
         当前搜索条件下没有匹配的重点活动。
       </p>
     </OrganizationSectionCard>
-  </div>
+  </WorkbenchPage>
 </template>
 
 <script setup lang="ts">
@@ -413,6 +413,8 @@ import {
 import Input from '@/components/ui/Input.vue'
 import FilterSelect from '@/components/ui/FilterSelect.vue'
 import DatePicker from '@/components/ui/DatePicker.vue'
+import WorkbenchHeroPanel from '@/components/workbench/WorkbenchHeroPanel.vue'
+import WorkbenchPage from '@/components/workbench/WorkbenchPage.vue'
 import OrganizationSectionCard from '@/components/organization/OrganizationSectionCard.vue'
 import OrganizationMetricCard from '@/components/organization/OrganizationMetricCard.vue'
 import { useOrganizationDashboardMetrics } from '@/composables/useOrganizationDashboardMetrics'

@@ -3,7 +3,7 @@
     <div class="volunteer-shell-main flex h-screen">
       <aside
         v-if="!isMobile"
-        class="volunteer-nav-surface shrink-0 overflow-y-auto"
+        class="volunteer-nav-surface shrink-0"
         :class="isCompact ? 'volunteer-nav-surface--compact' : 'volunteer-nav-surface--expanded'"
         :style="desktopSidebarStyle"
       >
@@ -79,7 +79,6 @@
           </div>
 
           <VolunteerSidebar
-            :sidebar-width="sidebarWidth"
             :enable-compact="isCompact"
           />
 
@@ -99,8 +98,8 @@
         class="volunteer-resize-handle"
         aria-label="调整导航宽度"
         aria-orientation="vertical"
-        aria-valuemax="420"
-        aria-valuemin="256"
+        :aria-valuemax="VOLUNTEER_SIDEBAR.maxWidth"
+        :aria-valuemin="VOLUNTEER_SIDEBAR.minWidth"
         :aria-valuenow="sidebarWidth"
         role="separator"
         tabindex="0"
@@ -218,7 +217,8 @@
     <transition name="volunteer-mobile-drawer">
       <aside
         v-if="isMobileSidebarOpen"
-        class="volunteer-mobile-drawer-panel fixed inset-y-0 left-0 z-50 w-[302px] max-w-[85vw] overflow-y-auto bg-white/95 px-5 py-6 backdrop-blur"
+        class="volunteer-mobile-drawer-panel fixed inset-y-0 left-0 z-50 max-w-[85vw] overflow-y-auto bg-white/95 px-5 py-6 backdrop-blur"
+        :style="mobileSidebarStyle"
       >
         <div class="flex min-h-full flex-col gap-6">
           <div class="flex items-center justify-between">
@@ -263,7 +263,6 @@
           </div>
 
           <VolunteerSidebar
-            :sidebar-width="302"
             :enable-compact="false"
             @close="isMobileSidebarOpen = false"
           />
@@ -290,6 +289,7 @@ import { useVolunteerMetrics } from '@/composables/useVolunteerMetrics'
 import { useResponsiveWorkbench } from '@/composables/useResponsiveWorkbench'
 import { LeafIcon, LogOutIcon, MenuIcon, XIcon } from 'lucide-vue-next'
 import VolunteerSidebar from '@/components/volunteer/VolunteerSidebar.vue'
+import { VOLUNTEER_SIDEBAR } from '@/constants/workbench'
 
 const route = useRoute()
 const router = useRouter()
@@ -298,18 +298,13 @@ const volunteerStore = useVolunteerStore()
 const { user, points, volunteerLevel, levelProgressPercentage } = useVolunteerMetrics()
 const isMobileSidebarOpen = ref(false)
 const { isMobile, isCompact, isExpanded } = useResponsiveWorkbench()
-const SIDEBAR_STORAGE_KEY = 'volunteer_center_sidebar_width'
-const SIDEBAR_DEFAULT_WIDTH = 296
-const SIDEBAR_MIN_WIDTH = 256
-const SIDEBAR_MAX_WIDTH = 420
-const SIDEBAR_KEYBOARD_STEP = 16
 
 const getInitialSidebarWidth = () => {
-  if (typeof window === 'undefined') return SIDEBAR_DEFAULT_WIDTH
-  const raw = window.localStorage.getItem(SIDEBAR_STORAGE_KEY)
+  if (typeof window === 'undefined') return VOLUNTEER_SIDEBAR.defaultWidth
+  const raw = window.localStorage.getItem(VOLUNTEER_SIDEBAR.storageKey)
   const value = Number(raw)
-  if (!Number.isFinite(value)) return SIDEBAR_DEFAULT_WIDTH
-  return Math.min(SIDEBAR_MAX_WIDTH, Math.max(SIDEBAR_MIN_WIDTH, value))
+  if (!Number.isFinite(value)) return VOLUNTEER_SIDEBAR.defaultWidth
+  return Math.min(VOLUNTEER_SIDEBAR.maxWidth, Math.max(VOLUNTEER_SIDEBAR.minWidth, value))
 }
 
 const sidebarWidth = ref(getInitialSidebarWidth())
@@ -317,16 +312,21 @@ const isResizingSidebar = ref(false)
 let dragStartX = 0
 let dragStartWidth = sidebarWidth.value
 
-const desktopSidebarStyle = computed(() => ({
-  width: isCompact.value ? '92px' : `${sidebarWidth.value}px`
+const desktopSidebarStyle = computed<Record<string, string>>(() => ({
+  '--volunteer-sidebar-expanded-width': `${sidebarWidth.value}px`,
+  '--volunteer-sidebar-compact-width': `${VOLUNTEER_SIDEBAR.compactWidth}px`
 }))
 
-const clampSidebarWidth = (value: number) => Math.min(SIDEBAR_MAX_WIDTH, Math.max(SIDEBAR_MIN_WIDTH, value))
+const mobileSidebarStyle = computed<Record<string, string>>(() => ({
+  width: `${VOLUNTEER_SIDEBAR.mobileDrawerWidth}px`
+}))
+
+const clampSidebarWidth = (value: number) => Math.min(VOLUNTEER_SIDEBAR.maxWidth, Math.max(VOLUNTEER_SIDEBAR.minWidth, value))
 
 const persistSidebarWidth = () => {
   if (typeof window === 'undefined') return
   try {
-    window.localStorage.setItem(SIDEBAR_STORAGE_KEY, String(sidebarWidth.value))
+    window.localStorage.setItem(VOLUNTEER_SIDEBAR.storageKey, String(sidebarWidth.value))
   } catch (error) {
     console.warn('无法持久化侧栏宽度', error)
   }
@@ -359,7 +359,7 @@ const startSidebarResize = (event: MouseEvent) => {
 }
 
 const resetSidebarWidth = () => {
-  sidebarWidth.value = SIDEBAR_DEFAULT_WIDTH
+  sidebarWidth.value = VOLUNTEER_SIDEBAR.defaultWidth
   persistSidebarWidth()
 }
 
@@ -369,20 +369,20 @@ const resizeSidebarBy = (delta: number) => {
 }
 
 const shrinkSidebar = () => {
-  resizeSidebarBy(-SIDEBAR_KEYBOARD_STEP)
+  resizeSidebarBy(-VOLUNTEER_SIDEBAR.keyboardStep)
 }
 
 const expandSidebar = () => {
-  resizeSidebarBy(SIDEBAR_KEYBOARD_STEP)
+  resizeSidebarBy(VOLUNTEER_SIDEBAR.keyboardStep)
 }
 
 const setSidebarToMin = () => {
-  sidebarWidth.value = SIDEBAR_MIN_WIDTH
+  sidebarWidth.value = VOLUNTEER_SIDEBAR.minWidth
   persistSidebarWidth()
 }
 
 const setSidebarToMax = () => {
-  sidebarWidth.value = SIDEBAR_MAX_WIDTH
+  sidebarWidth.value = VOLUNTEER_SIDEBAR.maxWidth
   persistSidebarWidth()
 }
 

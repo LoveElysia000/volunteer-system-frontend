@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-6">
+  <WorkbenchPage>
     <OrganizationPageHeader
       eyebrow="组织资料"
       title="组织信息管理"
@@ -63,11 +63,12 @@
       </template>
     </OrganizationPageHeader>
 
-    <OrganizationSectionCard
-      title="组织列表"
-      description="点击一条组织记录，在右侧查看完整信息。"
-      tone="soft"
-    >
+    <WorkbenchDetailPanel>
+      <OrganizationSectionCard
+        title="组织列表"
+        description="点击一条组织记录，在右侧查看完整信息。"
+        tone="soft"
+      >
       <div class="space-y-4">
         <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div class="flex items-center gap-2 text-xs text-slate-400">
@@ -175,14 +176,18 @@
           </button>
         </div>
 
-        <div
+        <WorkbenchEmptyPanel
           v-else
-          class="rounded-[1.2rem] border border-dashed border-slate-200 bg-white px-5 py-12 text-center text-sm text-slate-500"
+          class="py-12"
+          tone="plain"
+          size="lg"
+          rounded="soft"
         >
           暂无可管理组织数据
-        </div>
+        </WorkbenchEmptyPanel>
       </div>
-    </OrganizationSectionCard>
+      </OrganizationSectionCard>
+    </WorkbenchDetailPanel>
 
     <Teleport to="body">
       <Transition
@@ -282,19 +287,25 @@
               </div>
 
               <div class="flex-1 overflow-y-auto px-6 py-6">
-                <div
+                <WorkbenchEmptyPanel
                   v-if="drawerLoading"
-                  class="rounded-[1.2rem] border border-dashed border-slate-200 bg-white px-5 py-10 text-center text-sm text-slate-500"
+                  class="py-10"
+                  tone="plain"
+                  size="lg"
+                  rounded="soft"
                 >
                   正在加载组织详情...
-                </div>
+                </WorkbenchEmptyPanel>
 
-                <div
+                <WorkbenchEmptyPanel
                   v-else-if="!currentOrganization"
-                  class="rounded-[1.2rem] border border-dashed border-slate-200 bg-white px-5 py-10 text-center text-sm text-slate-500"
+                  class="py-10"
+                  tone="plain"
+                  size="lg"
+                  rounded="soft"
                 >
                   暂无详情数据
-                </div>
+                </WorkbenchEmptyPanel>
 
                 <div
                   v-else
@@ -645,7 +656,7 @@
         </Button>
       </div>
     </Dialog>
-  </div>
+  </WorkbenchPage>
 </template>
 
 <script setup lang="ts">
@@ -656,6 +667,9 @@ import Input from '@/components/ui/Input.vue'
 import FilterSelect from '@/components/ui/FilterSelect.vue'
 import DatePicker from '@/components/ui/DatePicker.vue'
 import Textarea from '@/components/ui/Textarea.vue'
+import WorkbenchDetailPanel from '@/components/workbench/WorkbenchDetailPanel.vue'
+import WorkbenchEmptyPanel from '@/components/workbench/WorkbenchEmptyPanel.vue'
+import WorkbenchPage from '@/components/workbench/WorkbenchPage.vue'
 import OrganizationPageHeader from '@/components/organization/OrganizationPageHeader.vue'
 import OrganizationSectionCard from '@/components/organization/OrganizationSectionCard.vue'
 import { useMessageStore } from '@/store/modules/messages'

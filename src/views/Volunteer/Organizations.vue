@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-6">
+  <WorkbenchPage>
     <VolunteerPageHeader
       eyebrow="组织管理"
       title="连接你参与的环保组织"
@@ -46,8 +46,9 @@
       </template>
     </VolunteerPageHeader>
 
-    <div class="grid gap-6 2xl:grid-cols-[0.88fr_1.12fr]">
-      <div class="space-y-6">
+    <WorkbenchSplitLayout variant="studio">
+      <template #main>
+        <div class="space-y-6">
         <VolunteerSectionCard
           title="我的组织概览"
           description="先确认当前组织关系，再决定是否加入新组织或退出现有组织。"
@@ -95,19 +96,13 @@
             </div>
           </div>
 
-          <div
-            v-if="membershipsStore.myOrganizationsLoading"
-            class="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500"
-          >
+          <WorkbenchEmptyPanel v-if="membershipsStore.myOrganizationsLoading">
             正在加载组织关系...
-          </div>
+          </WorkbenchEmptyPanel>
 
-          <div
-            v-else-if="!membershipsStore.myOrganizations.length"
-            class="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500"
-          >
+          <WorkbenchEmptyPanel v-else-if="!membershipsStore.myOrganizations.length">
             你暂时还没有加入任何组织，可以直接从右侧发起申请。
-          </div>
+          </WorkbenchEmptyPanel>
 
           <div
             v-else
@@ -174,9 +169,11 @@
             </div>
           </div>
         </VolunteerSectionCard>
-      </div>
+        </div>
+      </template>
 
-      <div class="space-y-6">
+      <template #aside>
+        <div class="space-y-6">
         <VolunteerSectionCard
           title="查找组织"
           description="通过关键词筛选活跃组织，找到适合你长期参与的协作方向。"
@@ -254,19 +251,13 @@
           description="已加入或待审核的组织会直接标记，避免重复申请。"
           tone="soft"
         >
-          <div
-            v-if="organizationsLoading"
-            class="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500"
-          >
+          <WorkbenchEmptyPanel v-if="organizationsLoading">
             正在加载组织列表...
-          </div>
+          </WorkbenchEmptyPanel>
 
-          <div
-            v-else-if="!organizations.length"
-            class="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500"
-          >
+          <WorkbenchEmptyPanel v-else-if="!organizations.length">
             没有找到匹配的组织，换个关键词再试试。
-          </div>
+          </WorkbenchEmptyPanel>
 
           <div
             v-else
@@ -334,9 +325,10 @@
             </article>
           </div>
         </VolunteerSectionCard>
-      </div>
-    </div>
-  </div>
+        </div>
+      </template>
+    </WorkbenchSplitLayout>
+  </WorkbenchPage>
 </template>
 
 <script setup lang="ts">
@@ -344,6 +336,9 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { SearchIcon } from 'lucide-vue-next'
 import FilterSelect from '@/components/ui/FilterSelect.vue'
 import Input from '@/components/ui/Input.vue'
+import WorkbenchEmptyPanel from '@/components/workbench/WorkbenchEmptyPanel.vue'
+import WorkbenchPage from '@/components/workbench/WorkbenchPage.vue'
+import WorkbenchSplitLayout from '@/components/workbench/WorkbenchSplitLayout.vue'
 import VolunteerPageHeader from '@/components/volunteer/VolunteerPageHeader.vue'
 import VolunteerSectionCard from '@/components/volunteer/VolunteerSectionCard.vue'
 import VolunteerStatusBadge from '@/components/volunteer/VolunteerStatusBadge.vue'

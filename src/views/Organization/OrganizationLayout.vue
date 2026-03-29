@@ -53,7 +53,6 @@
           </div>
 
           <OrganizationSidebar
-            :sidebar-width="sidebarWidth"
             :enable-compact="false"
           />
 
@@ -74,8 +73,8 @@
         class="organization-resize-handle"
         aria-label="调整组织导航宽度"
         aria-orientation="vertical"
-        aria-valuemax="420"
-        aria-valuemin="256"
+        :aria-valuemax="ORGANIZATION_SIDEBAR.maxWidth"
+        :aria-valuemin="ORGANIZATION_SIDEBAR.minWidth"
         :aria-valuenow="sidebarWidth"
         role="separator"
         tabindex="0"
@@ -182,7 +181,8 @@
     <transition name="organization-mobile-drawer">
       <aside
         v-if="isMobileSidebarOpen"
-        class="organization-mobile-drawer-panel fixed inset-y-0 left-0 z-50 w-[304px] max-w-[85vw] overflow-y-auto bg-white/95 px-5 py-6 backdrop-blur"
+        class="organization-mobile-drawer-panel fixed inset-y-0 left-0 z-50 max-w-[85vw] overflow-y-auto bg-white/95 px-5 py-6 backdrop-blur"
+        :style="mobileSidebarStyle"
       >
         <div class="flex min-h-full flex-col gap-6">
           <div class="flex items-center justify-between">
@@ -248,6 +248,7 @@ import { useAuthStore } from '@/store/modules/auth'
 import { Building2Icon, LogOutIcon, MenuIcon, XIcon } from 'lucide-vue-next'
 import OrganizationSidebar from '@/components/organization/OrganizationSidebar.vue'
 import { useResponsiveWorkbench } from '@/composables/useResponsiveWorkbench'
+import { ORGANIZATION_SIDEBAR } from '@/constants/workbench'
 
 const route = useRoute()
 const router = useRouter()
@@ -256,18 +257,13 @@ const authStore = useAuthStore()
 const user = computed(() => authStore.user)
 const isMobileSidebarOpen = ref(false)
 const { isMobile } = useResponsiveWorkbench()
-const SIDEBAR_STORAGE_KEY = 'organization_center_sidebar_width'
-const SIDEBAR_DEFAULT_WIDTH = 304
-const SIDEBAR_MIN_WIDTH = 256
-const SIDEBAR_MAX_WIDTH = 420
-const SIDEBAR_KEYBOARD_STEP = 16
 
 const getInitialSidebarWidth = () => {
-  if (typeof window === 'undefined') return SIDEBAR_DEFAULT_WIDTH
-  const raw = window.localStorage.getItem(SIDEBAR_STORAGE_KEY)
+  if (typeof window === 'undefined') return ORGANIZATION_SIDEBAR.defaultWidth
+  const raw = window.localStorage.getItem(ORGANIZATION_SIDEBAR.storageKey)
   const value = Number(raw)
-  if (!Number.isFinite(value)) return SIDEBAR_DEFAULT_WIDTH
-  return Math.min(SIDEBAR_MAX_WIDTH, Math.max(SIDEBAR_MIN_WIDTH, value))
+  if (!Number.isFinite(value)) return ORGANIZATION_SIDEBAR.defaultWidth
+  return Math.min(ORGANIZATION_SIDEBAR.maxWidth, Math.max(ORGANIZATION_SIDEBAR.minWidth, value))
 }
 
 const sidebarWidth = ref(getInitialSidebarWidth())
@@ -275,16 +271,20 @@ const isResizingSidebar = ref(false)
 let dragStartX = 0
 let dragStartWidth = sidebarWidth.value
 
-const desktopSidebarStyle = computed(() => ({
-  width: `${sidebarWidth.value}px`
+const desktopSidebarStyle = computed<Record<string, string>>(() => ({
+  '--organization-sidebar-width': `${sidebarWidth.value}px`
 }))
 
-const clampSidebarWidth = (value: number) => Math.min(SIDEBAR_MAX_WIDTH, Math.max(SIDEBAR_MIN_WIDTH, value))
+const mobileSidebarStyle = computed<Record<string, string>>(() => ({
+  width: `${ORGANIZATION_SIDEBAR.mobileDrawerWidth}px`
+}))
+
+const clampSidebarWidth = (value: number) => Math.min(ORGANIZATION_SIDEBAR.maxWidth, Math.max(ORGANIZATION_SIDEBAR.minWidth, value))
 
 const persistSidebarWidth = () => {
   if (typeof window === 'undefined') return
   try {
-    window.localStorage.setItem(SIDEBAR_STORAGE_KEY, String(sidebarWidth.value))
+    window.localStorage.setItem(ORGANIZATION_SIDEBAR.storageKey, String(sidebarWidth.value))
   } catch (error) {
     console.warn('无法持久化组织侧栏宽度', error)
   }
@@ -317,7 +317,7 @@ const startSidebarResize = (event: MouseEvent) => {
 }
 
 const resetSidebarWidth = () => {
-  sidebarWidth.value = SIDEBAR_DEFAULT_WIDTH
+  sidebarWidth.value = ORGANIZATION_SIDEBAR.defaultWidth
   persistSidebarWidth()
 }
 
@@ -327,20 +327,20 @@ const resizeSidebarBy = (delta: number) => {
 }
 
 const shrinkSidebar = () => {
-  resizeSidebarBy(-SIDEBAR_KEYBOARD_STEP)
+  resizeSidebarBy(-ORGANIZATION_SIDEBAR.keyboardStep)
 }
 
 const expandSidebar = () => {
-  resizeSidebarBy(SIDEBAR_KEYBOARD_STEP)
+  resizeSidebarBy(ORGANIZATION_SIDEBAR.keyboardStep)
 }
 
 const setSidebarToMin = () => {
-  sidebarWidth.value = SIDEBAR_MIN_WIDTH
+  sidebarWidth.value = ORGANIZATION_SIDEBAR.minWidth
   persistSidebarWidth()
 }
 
 const setSidebarToMax = () => {
-  sidebarWidth.value = SIDEBAR_MAX_WIDTH
+  sidebarWidth.value = ORGANIZATION_SIDEBAR.maxWidth
   persistSidebarWidth()
 }
 

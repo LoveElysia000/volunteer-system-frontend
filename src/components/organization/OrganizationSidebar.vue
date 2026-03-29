@@ -52,10 +52,8 @@ const emit = defineEmits<{
 }>()
 
 const props = withDefaults(defineProps<{
-  sidebarWidth?: number
   enableCompact?: boolean
 }>(), {
-  sidebarWidth: 304,
   enableCompact: false
 })
 

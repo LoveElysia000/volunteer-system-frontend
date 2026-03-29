@@ -45,10 +45,8 @@ interface SidebarMenuItem {
 
 const emit = defineEmits<{ close: [] }>()
 const props = withDefaults(defineProps<{
-  sidebarWidth?: number
   enableCompact?: boolean
 }>(), {
-  sidebarWidth: 296,
   enableCompact: true
 })
 const route = useRoute()

@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-6">
+  <WorkbenchPage>
     <OrganizationPageHeader
       eyebrow="数据统计"
       title="数据统计"
@@ -89,13 +89,14 @@
         </article>
       </div>
     </OrganizationSectionCard>
-  </div>
+  </WorkbenchPage>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import DatePicker from '@/components/ui/DatePicker.vue'
 import FilterSelect from '@/components/ui/FilterSelect.vue'
+import WorkbenchPage from '@/components/workbench/WorkbenchPage.vue'
 import OrganizationPageHeader from '@/components/organization/OrganizationPageHeader.vue'
 import OrganizationMetricCard from '@/components/organization/OrganizationMetricCard.vue'
 import OrganizationSectionCard from '@/components/organization/OrganizationSectionCard.vue'
