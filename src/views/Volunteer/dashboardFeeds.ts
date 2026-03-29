@@ -2,6 +2,7 @@ import { getNotificationEventLabel } from '../../store/modules/notifications.ts'
 import { BACKEND_ACTIVITY_STATUS, BACKEND_ACTIVITY_SIGNUP_STATUS } from '../../constants/activityEnums.ts'
 import type { ActivityListItem } from '../../types/activity.ts'
 import type { NotificationItem } from '../../types/notification.ts'
+import { formatActivityTimeRange } from '@/utils/activityDateTime'
 
 export type VolunteerFeedTone = 'green' | 'blue' | 'amber' | 'slate' | 'rose'
 
@@ -9,7 +10,7 @@ export interface VolunteerRecommendedCardItem {
   id: number
   title: string
   description: string
-  date: string
+  timeRange: string
   location: string
   participants: number
   capacity: number
@@ -23,15 +24,6 @@ export interface VolunteerAchievementFeedItem {
   content: string
   context: string
   tone: VolunteerFeedTone
-}
-
-const formatMonthDayTime = (value: string) => {
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) {
-    return value
-  }
-
-  return `${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
 }
 
 const resolveFeedTone = (eventType?: string): VolunteerFeedTone => {
@@ -65,7 +57,7 @@ export const buildVolunteerRecommendedActivities = (items: ActivityListItem[]) =
       id: item.id,
       title: item.title,
       description: item.description,
-      date: formatMonthDayTime(item.startTime),
+      timeRange: formatActivityTimeRange(item.startTime, item.endTime),
       location: item.location,
       participants: item.currentPeople,
       capacity: item.maxPeople,

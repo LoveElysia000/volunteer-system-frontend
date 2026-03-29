@@ -235,6 +235,7 @@ export interface VolunteerActivityViewItem {
   description: string
   startAt: string
   date: string
+  timeRange: string
   signupTime?: string
   location: string
   participants: number
@@ -257,6 +258,7 @@ export interface OrganizationManagementActivityItem {
   title: string
   description: string
   date: string
+  timeRange: string
   startTime: DateTimeSecondString
   endTime: DateTimeSecondString
   location: string

@@ -5,6 +5,7 @@ import {
   mapRegisteredActivityItemToVolunteerView,
   mergeVolunteerActivityRows
 } from './volunteer-activity-merge'
+import { formatActivityTimeRange } from '@/utils/activityDateTime'
 import type { ApiResponse } from './types'
 import type {
   ActivityActionResult,
@@ -50,6 +51,7 @@ export const mapActivityItemToOrganizationManagementView = (
   title: item.title,
   description: item.description,
   date: item.startTime.slice(0, 10),
+  timeRange: formatActivityTimeRange(item.startTime, item.endTime),
   startTime: item.startTime,
   endTime: item.endTime,
   location: item.location,

@@ -32,7 +32,7 @@
         </div>
 
         <div class="flex flex-wrap gap-4 text-sm text-slate-500">
-          <span>{{ item.date }}</span>
+          <span>{{ item.timeRange }}</span>
           <span>{{ item.location }}</span>
           <span>{{ item.participants }}/{{ item.capacity }} 名额</span>
         </div>

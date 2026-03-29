@@ -28,7 +28,7 @@
         </div>
 
         <div class="flex flex-wrap gap-4 text-sm text-slate-500">
-          <span>{{ item.date }}</span>
+          <span>{{ item.timeRange }}</span>
           <span>{{ item.location }}</span>
           <span>{{ item.duration }} 小时</span>
         </div>

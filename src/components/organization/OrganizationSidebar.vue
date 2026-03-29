@@ -12,6 +12,7 @@
         :expanded="expandedKeys.includes(item.key)"
         @item-click="handleMenuItemClick"
         @toggle-expand="toggleMenuItemExpand"
+        @request-close="handleSubmenuClose"
       />
     </div>
   </nav>
@@ -34,7 +35,7 @@ import {
   SparklesIcon
 } from 'lucide-vue-next'
 import MenuItem from './MenuItem.vue'
-import { hasChildActive } from '@/utils/pathMatcher'
+import { getExpandedKeysForRoute, toggleExpandedKey } from '@/utils/sidebarState'
 
 interface SidebarMenuItem {
   key: string
@@ -181,33 +182,26 @@ const menuItems = computed<SidebarMenuItem[]>(() => [
 const parentMenuItems = computed(() => menuItems.value.filter(item => item.children?.length))
 
 watch(route, (newRoute) => {
-  const currentPath = newRoute.path
-
-  parentMenuItems.value.forEach((parentItem) => {
-    if (!parentItem.children) return
-    const isChildActive = hasChildActive(parentItem.children, currentPath)
-
-    if (isChildActive && !expandedKeys.value.includes(parentItem.key)) {
-      expandedKeys.value.push(parentItem.key)
-    }
-  })
+  expandedKeys.value = getExpandedKeysForRoute(
+    newRoute.path,
+    parentMenuItems.value,
+    isCompactSidebar.value
+  )
 }, { immediate: true })
 
 const toggleMenuItemExpand = (key: string) => {
-  const index = expandedKeys.value.indexOf(key)
-
-  if (index > -1) {
-    expandedKeys.value.splice(index, 1)
-    return
-  }
-
-  expandedKeys.value = [key]
+  expandedKeys.value = toggleExpandedKey(expandedKeys.value, key)
 }
 
 const handleMenuItemClick = (item: SidebarMenuItem) => {
   if (item.disabled || !item.to) return
 
+  expandedKeys.value = []
   router.push(item.to)
   emit('close')
+}
+
+const handleSubmenuClose = () => {
+  expandedKeys.value = []
 }
 </script>

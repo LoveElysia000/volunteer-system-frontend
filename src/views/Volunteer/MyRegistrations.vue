@@ -144,7 +144,7 @@
                     {{ item.description }}
                   </p>
                   <div class="grid gap-2 text-sm text-slate-500 sm:grid-cols-2 2xl:grid-cols-4">
-                    <p>时间：{{ item.date }}</p>
+                    <p>时间：{{ item.timeRange }}</p>
                     <p>地点：{{ item.location }}</p>
                     <p>报名进度：{{ registrationProgressText(item) }}</p>
                     <p>预计服务：{{ item.duration }} 小时</p>
@@ -231,7 +231,7 @@
                   活动时间
                 </p>
                 <p class="mt-1 text-sm font-semibold text-slate-900">
-                  {{ selectedRegistration.date }}
+                  {{ selectedRegistration.timeRange }}
                 </p>
               </div>
               <div>
@@ -490,24 +490,27 @@ const closeRegistrationDrawer = () => {
   selectedRegistrationSnapshot.value = null
 }
 
-const registrationBadgeLabel = (item: VolunteerActivityViewItem) => {
-  if (item.signupStatus === BACKEND_ACTIVITY_SIGNUP_STATUS.PENDING) return '待审核'
-  if (item.signupStatus === BACKEND_ACTIVITY_SIGNUP_STATUS.REJECTED) return '已驳回'
-  if (item.signupStatus === BACKEND_ACTIVITY_SIGNUP_STATUS.CANCELED) return '已取消报名'
-  return item.userRegistrationStatus === 'registered' ? '报名成功' : '未生效'
+const registrationBadgeLabel = (item: VolunteerActivityViewItem | Record<string, any>) => {
+  const registration = item as VolunteerActivityViewItem
+  if (registration.signupStatus === BACKEND_ACTIVITY_SIGNUP_STATUS.PENDING) return '待审核'
+  if (registration.signupStatus === BACKEND_ACTIVITY_SIGNUP_STATUS.REJECTED) return '已驳回'
+  if (registration.signupStatus === BACKEND_ACTIVITY_SIGNUP_STATUS.CANCELED) return '已取消报名'
+  return registration.userRegistrationStatus === 'registered' ? '报名成功' : '未生效'
 }
 
-const registrationBadgeTone = (item: VolunteerActivityViewItem) => {
-  if (item.signupStatus === BACKEND_ACTIVITY_SIGNUP_STATUS.PENDING) return 'amber'
-  if (item.signupStatus === BACKEND_ACTIVITY_SIGNUP_STATUS.REJECTED) return 'rose'
-  if (item.signupStatus === BACKEND_ACTIVITY_SIGNUP_STATUS.CANCELED) return 'slate'
+const registrationBadgeTone = (item: VolunteerActivityViewItem | Record<string, any>) => {
+  const registration = item as VolunteerActivityViewItem
+  if (registration.signupStatus === BACKEND_ACTIVITY_SIGNUP_STATUS.PENDING) return 'amber'
+  if (registration.signupStatus === BACKEND_ACTIVITY_SIGNUP_STATUS.REJECTED) return 'rose'
+  if (registration.signupStatus === BACKEND_ACTIVITY_SIGNUP_STATUS.CANCELED) return 'slate'
   return 'blue'
 }
 
-const registrationProgressText = (item: VolunteerActivityViewItem) => {
-  if (item.signupStatus === BACKEND_ACTIVITY_SIGNUP_STATUS.PENDING) return '等待组织审核'
-  if (item.signupStatus === BACKEND_ACTIVITY_SIGNUP_STATUS.REJECTED) return '审核未通过'
-  if (item.signupStatus === BACKEND_ACTIVITY_SIGNUP_STATUS.CANCELED) return '已取消报名'
+const registrationProgressText = (item: VolunteerActivityViewItem | Record<string, any>) => {
+  const registration = item as VolunteerActivityViewItem
+  if (registration.signupStatus === BACKEND_ACTIVITY_SIGNUP_STATUS.PENDING) return '等待组织审核'
+  if (registration.signupStatus === BACKEND_ACTIVITY_SIGNUP_STATUS.REJECTED) return '审核未通过'
+  if (registration.signupStatus === BACKEND_ACTIVITY_SIGNUP_STATUS.CANCELED) return '已取消报名'
   return '报名已生效'
 }
 

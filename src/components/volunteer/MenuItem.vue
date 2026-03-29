@@ -10,15 +10,11 @@
       :class="[mainClass, isCompactSidebar ? 'justify-center px-3' : '']"
       :disabled="item.disabled"
       :aria-current="!hasChildren && isActive ? 'page' : undefined"
-      :aria-expanded="hasChildren ? String(isExpanded) : undefined"
+      :aria-expanded="hasChildren ? isExpanded : undefined"
       :aria-disabled="item.disabled ? 'true' : undefined"
       :title="item.label"
       @click="handleClick"
     >
-      <span
-        class="absolute inset-y-2 left-2 w-1 rounded-full transition-all duration-200"
-        :class="isActive ? 'bg-emerald-500 opacity-100' : 'bg-transparent opacity-0'"
-      />
       <div
         class="menu-item-icon flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
         :class="iconWrapClass"
@@ -59,13 +55,14 @@
 
     <SubMenu
       v-if="hasChildren && (!isCompactSidebar || isExpanded)"
-      :items="item.children"
+      :items="childItems"
       :anchor-el="triggerRef"
       :is-compact-sidebar="isCompactSidebar"
       :expanded="isExpanded"
       :level="level + 1"
       @item-click="$emit('item-click', $event)"
       @toggle-expand="$emit('toggle-expand', $event)"
+      @request-close="$emit('request-close')"
     />
   </div>
 </template>
@@ -102,13 +99,15 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits<{
   'item-click': [item: MenuItem]
   'toggle-expand': [key: string]
+  'request-close': []
 }>()
 
 const route = useRoute()
 const triggerRef = ref<HTMLElement | null>(null)
 const hasChildren = computed(() => Boolean(props.item.children?.length))
+const childItems = computed(() => props.item.children ?? [])
 const isExpanded = computed(() => props.expanded)
-const isActive = computed(() => isMenuActive(props.item.to, route.path, hasChildren.value, props.item.children))
+const isActive = computed(() => isMenuActive(props.item.to ?? '', route.path, hasChildren.value, childItems.value))
 
 const mainClass = computed(() => {
   if (props.item.disabled) {
@@ -116,10 +115,10 @@ const mainClass = computed(() => {
   }
 
   if (isActive.value) {
-    return 'cursor-pointer bg-[linear-gradient(180deg,rgba(236,253,245,0.98),rgba(255,255,255,0.96))] pl-6 text-emerald-800 shadow-[inset_0_0_0_1px_rgba(16,185,129,0.18),0_12px_24px_-24px_rgba(5,150,105,0.24)]'
+    return 'cursor-pointer bg-[linear-gradient(180deg,rgba(236,253,245,0.98),rgba(255,255,255,0.96))] text-emerald-800 shadow-[inset_0_0_0_1px_rgba(16,185,129,0.18),0_12px_24px_-24px_rgba(5,150,105,0.24)]'
   }
 
-  return 'cursor-pointer text-slate-600 hover:bg-white hover:pl-5 hover:text-slate-900 hover:shadow-[0_10px_22px_-22px_rgba(15,23,42,0.16)]'
+  return 'cursor-pointer text-slate-600 hover:bg-white hover:text-slate-900 hover:shadow-[0_10px_22px_-22px_rgba(15,23,42,0.16)]'
 })
 
 const iconWrapClass = computed(() => {

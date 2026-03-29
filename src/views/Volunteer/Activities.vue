@@ -182,7 +182,7 @@
                 </div>
 
                 <div class="flex flex-wrap gap-4 text-sm text-slate-500">
-                  <span>{{ item.date }}</span>
+                  <span>{{ item.timeRange }}</span>
                   <span>{{ item.location }}</span>
                   <span>{{ item.duration }} 小时</span>
                   <span>{{ item.participants }}/{{ item.capacity }} 名额</span>
@@ -216,7 +216,7 @@
                 </span>
               </div>
               <p class="mt-2 text-xs text-slate-500">
-                {{ item.date }} · {{ item.location }}
+                {{ item.timeRange }} · {{ item.location }}
               </p>
               <div class="mt-3 flex items-center justify-between text-xs">
                 <span class="font-semibold text-slate-500">
@@ -280,7 +280,7 @@
                   活动时间
                 </p>
                 <p class="mt-1 text-sm font-semibold text-slate-900">
-                  {{ selectedActivity.date }}
+                  {{ selectedActivity.timeRange }}
                 </p>
               </div>
               <div>
@@ -467,7 +467,8 @@ const openActivityFromQuery = () => {
   }
 }
 
-watch(() => [route.name, route.query] as const, async ([routeName, query], [previousRouteName]) => {
+watch(() => [route.name, route.query] as const, async ([routeName, query], previousValue) => {
+  const previousRouteName = previousValue?.[0]
   const nextRouteState = normalizeVolunteerActivityRoute(query)
   const shouldReload = shouldReloadVolunteerActivityList({
     currentRouteName: String(routeName || ''),
@@ -654,7 +655,7 @@ const loadActivities = async () => {
       throw new Error(response.msg || '获取活动列表失败')
     }
 
-    activityRows.value = (response.data.list || []).map(mapActivityItemToVolunteerView)
+    activityRows.value = (response.data.list || []).map((item) => mapActivityItemToVolunteerView(item))
     total.value = response.data.total || 0
     syncSelectedActivity()
   } catch (error: any) {

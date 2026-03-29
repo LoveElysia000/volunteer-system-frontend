@@ -2,6 +2,7 @@ import type {
   ActivityListItem,
   VolunteerActivityViewItem
 } from '../types/activity'
+import { formatActivityDateTime, formatActivityTimeRange } from '../utils/activityDateTime'
 
 const ACTIVITY_STATUS = {
   OPEN: 1,
@@ -15,15 +16,6 @@ const SIGNUP_STATUS = {
   REJECTED: 3,
   CANCELLED: 4
 } as const
-
-const formatMonthDayTime = (value: string) => {
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) {
-    return value
-  }
-
-  return `${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
-}
 
 const resolveVolunteerStatus = (
   status: number,
@@ -77,7 +69,8 @@ export const mapActivityItemToVolunteerView = (
     title: item.title,
     description: item.description,
     startAt: item.startTime,
-    date: formatMonthDayTime(item.startTime),
+    date: formatActivityDateTime(item.startTime),
+    timeRange: formatActivityTimeRange(item.startTime, item.endTime),
     signupTime: mergedItem.signupTime,
     location: item.location,
     participants: item.currentPeople,
@@ -99,7 +92,8 @@ export const mapRegisteredActivityItemToVolunteerView = (item: ActivityListItem)
   title: item.title,
   description: item.description,
   startAt: item.startTime,
-  date: formatMonthDayTime(item.startTime),
+  date: formatActivityDateTime(item.startTime),
+  timeRange: formatActivityTimeRange(item.startTime, item.endTime),
   signupTime: item.signupTime,
   location: item.location,
   participants: item.currentPeople,

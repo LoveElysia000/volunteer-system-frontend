@@ -141,7 +141,7 @@
 
           <template #cell-schedule="{ item }">
             <div class="space-y-1 text-sm text-slate-600">
-              <p>{{ item.date }}</p>
+              <p>{{ item.timeRange }}</p>
               <p class="text-xs text-slate-500">
                 {{ item.duration }} 小时
               </p>
@@ -179,7 +179,7 @@
                 #{{ selectedActivity.id }} · {{ selectedActivity.title }}
               </h2>
               <p class="text-sm text-slate-500">
-                {{ selectedActivity.location }} · {{ selectedActivity.date }}
+                {{ selectedActivity.location }} · {{ selectedActivity.timeRange }}
               </p>
             </div>
 
@@ -206,7 +206,7 @@
                   活动时间
                 </p>
                 <p class="mt-1 text-sm font-semibold text-slate-900">
-                  {{ selectedActivity.date }}
+                  {{ selectedActivity.timeRange }}
                 </p>
               </div>
               <div>
@@ -920,11 +920,15 @@ const saveActivity = async () => {
     messageStore.error('请先填写完整的活动基础信息')
     return
   }
+  if (!editForm.value.startTime || !editForm.value.endTime) {
+    messageStore.error('请先补全活动时间')
+    return
+  }
   if (new Date(editForm.value.endTime).getTime() <= new Date(editForm.value.startTime).getTime()) {
     messageStore.error('结束时间必须晚于开始时间')
     return
   }
-  if (editForm.value.duration <= 0 || editForm.value.maxPeople <= 0) {
+  if ((editForm.value.duration ?? 0) <= 0 || (editForm.value.maxPeople ?? 0) <= 0) {
     messageStore.error('活动时长和人数上限都必须大于 0')
     return
   }

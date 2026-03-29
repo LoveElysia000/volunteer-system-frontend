@@ -24,6 +24,7 @@
           :level="level"
           @item-click="$emit('item-click', $event)"
           @toggle-expand="$emit('toggle-expand', $event)"
+          @request-close="$emit('request-close')"
         />
       </div>
     </div>
@@ -103,6 +104,23 @@ const handleViewportChange = () => {
   void updateFloatingPosition()
 }
 
+const handleDocumentPointerDown = (event: PointerEvent) => {
+  if (!props.isCompactSidebar || !props.expanded) {
+    return
+  }
+
+  const target = event.target
+  if (!(target instanceof Node)) {
+    return
+  }
+
+  if (menuRef.value?.contains(target) || props.anchorEl?.contains(target)) {
+    return
+  }
+
+  emit('request-close')
+}
+
 watch(
   () => [props.expanded, props.anchorEl],
   ([expanded]) => {
@@ -115,15 +133,18 @@ watch(
 onMounted(() => {
   window.addEventListener('resize', handleViewportChange)
   window.addEventListener('scroll', handleViewportChange, true)
+  document.addEventListener('pointerdown', handleDocumentPointerDown)
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener('resize', handleViewportChange)
   window.removeEventListener('scroll', handleViewportChange, true)
+  document.removeEventListener('pointerdown', handleDocumentPointerDown)
 })
 
-defineEmits<{
+const emit = defineEmits<{
   'item-click': [item: SubMenuItemData]
   'toggle-expand': [key: string]
+  'request-close': []
 }>()
 </script>
