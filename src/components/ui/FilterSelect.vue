@@ -163,8 +163,8 @@ const valueClassName = computed(() => (
 
 const panelClassName = computed(() => (
   props.compact
-    ? 'absolute right-0 z-20 mt-2 min-w-[180px] overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 p-2 shadow-[0_24px_48px_-24px_rgba(15,23,42,0.35)] backdrop-blur'
-    : 'absolute z-20 mt-2 w-full overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 p-2 shadow-[0_24px_48px_-24px_rgba(15,23,42,0.35)] backdrop-blur'
+    ? 'absolute right-0 z-[120] mt-2 min-w-[180px] overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 p-2 shadow-[0_24px_48px_-24px_rgba(15,23,42,0.35)] backdrop-blur'
+    : 'absolute z-[120] mt-2 w-full overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 p-2 shadow-[0_24px_48px_-24px_rgba(15,23,42,0.35)] backdrop-blur'
 ))
 
 const itemClassName = computed(() => (

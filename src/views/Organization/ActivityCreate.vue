@@ -15,7 +15,7 @@
           当前组织 / {{ organizationSummary }}
         </span>
         <span class="rounded-full border border-[#ffd8c2] bg-white/90 px-3 py-1.5 text-xs font-semibold text-slate-600">
-          排期状态 / {{ scheduleSummary }}
+          时间安排 / {{ scheduleSummary }}
         </span>
       </template>
       <template #actions>
@@ -110,7 +110,7 @@
         <OrganizationSectionCard
           title="活动排期"
           caption="Schedule"
-          description="录入到分钟即可，系统会自动补齐秒级格式供接口使用。"
+          description="活动排期统一精确到时分秒，提交时直接使用所选时间。"
           tone="soft"
         >
           <div class="grid gap-4 md:grid-cols-2">
@@ -120,7 +120,7 @@
                 v-model="startTimeValue"
                 class="mt-2"
                 placeholder="请选择开始时间"
-                mode="datetime"
+                mode="datetime-seconds"
               />
             </label>
             <label class="text-sm font-medium text-slate-600">
@@ -129,7 +129,7 @@
                 v-model="endTimeValue"
                 class="mt-2"
                 placeholder="请选择结束时间"
-                mode="datetime"
+                mode="datetime-seconds"
               />
             </label>
           </div>
@@ -266,28 +266,17 @@ const maxPeopleInput = computed({
   }
 })
 
-const stripSeconds = (value: string) => {
-  if (!value) return null
-  const match = value.match(/^(\d{4}-\d{2}-\d{2} \d{2}:\d{2})/)
-  return match?.[1] || value.slice(0, 16) || null
-}
-
-const withZeroSeconds = (value: string | null) => {
-  if (!value) return ''
-  return `${value}:00`
-}
-
 const startTimeValue = computed<string | null>({
-  get: () => stripSeconds(form.startTime),
+  get: () => form.startTime || null,
   set: (value) => {
-    form.startTime = withZeroSeconds(value)
+    form.startTime = value || ''
   }
 })
 
 const endTimeValue = computed<string | null>({
-  get: () => stripSeconds(form.endTime),
+  get: () => form.endTime || null,
   set: (value) => {
-    form.endTime = withZeroSeconds(value)
+    form.endTime = value || ''
   }
 })
 

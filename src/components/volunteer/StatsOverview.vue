@@ -3,7 +3,7 @@
     <VolunteerSummaryCard
       label="当前积分"
       :value="String(points)"
-      :detail="`本月新增 ${monthlyPointsGrowth} 分`"
+      detail="来自首页汇总接口的当前累计积分"
       tone="green"
     >
       <template #icon>
@@ -20,15 +20,15 @@
     <VolunteerSummaryCard
       label="服务时长"
       :value="`${totalHours}h`"
-      :detail="`年度目标完成 ${Math.min(Math.round((totalHours / 100) * 100), 100)}%`"
+      detail="当前账号累计服务时长"
       tone="blue"
     >
       <template #icon>
         <ClockIcon class="h-6 w-6" />
       </template>
       <div class="mt-4 flex items-center justify-between text-xs text-slate-500">
-        <span>本月 +{{ monthlyHoursGrowth }}h</span>
-        <span>100h 年度目标</span>
+        <span>{{ serviceHourFootnotes[0] }}</span>
+        <span>{{ serviceHourFootnotes[1] }}</span>
       </div>
     </VolunteerSummaryCard>
 
@@ -70,22 +70,29 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { StarIcon, ClockIcon, CalendarIcon, AwardIcon } from 'lucide-vue-next'
 import { useVolunteerMetrics } from '@/composables/useVolunteerMetrics'
+import { buildVolunteerServiceHourFootnotes } from '@/views/Volunteer/dashboardState'
 import VolunteerSummaryCard from './VolunteerSummaryCard.vue'
 import VolunteerStatusBadge from './VolunteerStatusBadge.vue'
 
 const {
   points,
   totalHours,
+  serviceCount,
   volunteerLevel,
   currentLevelHours,
   hoursToNextLevel,
   levelProgressPercentage,
   monthlyHoursGrowth,
-  monthlyPointsGrowth,
   totalActivities,
   completedActivities,
   upcomingActivities
 } = useVolunteerMetrics()
+
+const serviceHourFootnotes = computed(() => buildVolunteerServiceHourFootnotes({
+  monthlyHoursGrowth: monthlyHoursGrowth.value,
+  serviceCount: serviceCount.value
+}))
 </script>

@@ -203,7 +203,7 @@
             <div class="grid gap-4 sm:grid-cols-2 2xl:grid-cols-4">
               <div>
                 <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                  活动日期
+                  活动时间
                 </p>
                 <p class="mt-1 text-sm font-semibold text-slate-900">
                   {{ selectedActivity.date }}
@@ -283,7 +283,7 @@
                 <DatePicker
                   v-model="editStartTime"
                   placeholder="请选择开始时间"
-                  mode="datetime"
+                  mode="datetime-seconds"
                 />
               </div>
               <div>
@@ -291,7 +291,7 @@
                 <DatePicker
                   v-model="editEndTime"
                   placeholder="请选择结束时间"
-                  mode="datetime"
+                  mode="datetime-seconds"
                 />
               </div>
               <div>
@@ -411,7 +411,7 @@
                 <DatePicker
                   v-model="supplementCheckInTime"
                   placeholder="请选择签到时间"
-                  mode="datetime"
+                  mode="datetime-seconds"
                 />
               </div>
               <div>
@@ -419,7 +419,7 @@
                 <DatePicker
                   v-model="supplementCheckOutTime"
                   placeholder="请选择签退时间"
-                  mode="datetime"
+                  mode="datetime-seconds"
                 />
               </div>
               <div>
@@ -667,42 +667,31 @@ const statusTone = (statusClass: string) => {
   return 'slate'
 }
 
-const stripSeconds = (value?: string) => {
-  if (!value) return null
-  const match = value.match(/^(\d{4}-\d{2}-\d{2} \d{2}:\d{2})/)
-  return match?.[1] || value.slice(0, 16) || null
-}
-
-const withZeroSeconds = (value: string | null) => {
-  if (!value) return ''
-  return `${value}:00`
-}
-
 const editStartTime = computed<string | null>({
-  get: () => stripSeconds(editForm.value.startTime),
+  get: () => editForm.value.startTime || null,
   set: (value) => {
-    editForm.value.startTime = withZeroSeconds(value)
+    editForm.value.startTime = value || ''
   }
 })
 
 const editEndTime = computed<string | null>({
-  get: () => stripSeconds(editForm.value.endTime),
+  get: () => editForm.value.endTime || null,
   set: (value) => {
-    editForm.value.endTime = withZeroSeconds(value)
+    editForm.value.endTime = value || ''
   }
 })
 
 const supplementCheckInTime = computed<string | null>({
-  get: () => stripSeconds(supplementForm.value.checkInTime),
+  get: () => supplementForm.value.checkInTime || null,
   set: (value) => {
-    supplementForm.value.checkInTime = withZeroSeconds(value)
+    supplementForm.value.checkInTime = value || ''
   }
 })
 
 const supplementCheckOutTime = computed<string | null>({
-  get: () => stripSeconds(supplementForm.value.checkOutTime),
+  get: () => supplementForm.value.checkOutTime || null,
   set: (value) => {
-    supplementForm.value.checkOutTime = withZeroSeconds(value)
+    supplementForm.value.checkOutTime = value || ''
   }
 })
 

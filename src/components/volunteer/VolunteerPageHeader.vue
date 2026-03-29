@@ -1,6 +1,6 @@
 <template>
   <section
-    class="volunteer-page-header overflow-hidden border bg-white/95"
+    class="volunteer-page-header overflow-visible border bg-white/95"
     :class="headerModeClass"
   >
     <div

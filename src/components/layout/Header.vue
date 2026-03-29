@@ -54,28 +54,20 @@
 
           <!-- 用户已登录 -->
           <template v-else>
-            <div class="relative group">
-              <button class="flex items-center space-x-3 text-gray-600 hover:text-primary-600 px-4 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 hover:bg-gray-50">
-                <div class="h-8 w-8 bg-gradient-to-br from-primary-400 to-primary-600 rounded-full flex items-center justify-center text-white font-medium">
-                  {{ userInitials }}
-                </div>
-                <span>{{ user?.realName || t('header.myAccount') }}</span>
-              </button>
-              <div class="absolute top-full right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                <router-link
-                  to="/profile"
-                  class="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg"
-                >
-                  {{ t('header.profile') }}
-                </router-link>
-                <button
-                  class="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg"
-                  @click="handleLogout"
-                >
-                  {{ t('header.logout') }}
+            <Dropdown
+              :items="userMenuItems"
+              class="hidden sm:block"
+              @select="handleUserMenuSelect"
+            >
+              <template #trigger>
+                <button class="flex items-center space-x-3 text-gray-600 hover:text-primary-600 px-4 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 hover:bg-gray-50">
+                  <div class="h-8 w-8 bg-gradient-to-br from-primary-400 to-primary-600 rounded-full flex items-center justify-center text-white font-medium">
+                    {{ userInitials }}
+                  </div>
+                  <span>{{ user?.realName || t('header.myAccount') }}</span>
                 </button>
-              </div>
-            </div>
+              </template>
+            </Dropdown>
           </template>
 
           <!-- 移动端菜单按钮 -->
@@ -159,11 +151,12 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { LeafIcon, MenuIcon } from 'lucide-vue-next'
+import { LeafIcon, MenuIcon, LogOutIcon, UserIcon } from 'lucide-vue-next'
 import { useAuthStore } from '@/store/modules/auth'
 import { useLocaleStore } from '@/store/modules/locale'
 import NavigationMenu from './NavigationMenu.vue'
 import NavigationMenuMobile from './NavigationMenuMobile.vue'
+import Dropdown from '@/components/ui/Dropdown.vue'
 
 // 移动端菜单状态
 const isMobileMenuOpen = ref(false)
@@ -178,6 +171,20 @@ const user = computed(() => authStore.user)
 const languageToggleLabel = computed(() => (localeStore.locale === 'zh-CN'
   ? t('header.switchToEnglish')
   : t('header.switchToChinese')))
+const userMenuItems = computed(() => [
+  {
+    key: 'profile',
+    label: t('header.profile'),
+    icon: UserIcon
+  },
+  {
+    key: 'logout',
+    label: t('header.logout'),
+    icon: LogOutIcon,
+    divided: true,
+    danger: true
+  }
+])
 
 // 计算用户名首字母
 const userInitials = computed(() => {
@@ -187,6 +194,17 @@ const userInitials = computed(() => {
 
 const switchLanguage = () => {
   localeStore.toggleLocale()
+}
+
+const handleUserMenuSelect = (item: { key?: string }) => {
+  if (item.key === 'profile') {
+    router.push('/profile')
+    return
+  }
+
+  if (item.key === 'logout') {
+    handleLogout()
+  }
 }
 
 const handleLogout = () => {

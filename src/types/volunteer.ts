@@ -1,3 +1,5 @@
+import type { DateOnlyString, DateTimeSecondString } from './datetime'
+
 export type EmptyObjectData = Record<string, never>
 
 export enum VolunteerStatus {
@@ -31,15 +33,15 @@ export interface VolunteerProfileInfo {
   id: number
   accountId: number
   gender: number
-  birthday: string
+  birthday: DateOnlyString
   avatarUrl: string
   introduction: string
   totalHours: number
   serviceCount: number
   creditScore: number
   auditStatus: VolunteerAuditStatus
-  createdAt: string
-  updatedAt: string
+  createdAt: DateTimeSecondString
+  updatedAt: DateTimeSecondString
   status: VolunteerStatus
 }
 
@@ -80,8 +82,8 @@ export interface VolunteerListItem {
   serviceCount: number
   creditScore: number
   auditStatus: VolunteerAuditStatus
-  createdAt: string
-  updatedAt: string
+  createdAt: DateTimeSecondString
+  updatedAt: DateTimeSecondString
   status: VolunteerStatus
 }
 
@@ -96,7 +98,7 @@ export interface VolunteerDetailData {
 
 export interface UpdateVolunteerProfileRequest {
   gender?: number
-  birthday?: string
+  birthday?: DateOnlyString
   avatarUrl?: string
   introduction?: string
 }

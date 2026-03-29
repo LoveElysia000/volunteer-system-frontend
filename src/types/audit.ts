@@ -1,3 +1,5 @@
+import type { DateOnlyString, DateTimeSecondString } from './datetime'
+
 export enum AuditTargetType {
   VOLUNTEER_REAL_NAME = 1,
   ORGANIZATION = 2,
@@ -23,7 +25,7 @@ export interface PendingAuditItem {
   title: string
   subTitle: string
   creatorId: number
-  createdAt: string
+  createdAt: DateTimeSecondString
   isOverdue: boolean
 }
 
@@ -33,8 +35,8 @@ export interface PendingAuditsRequest {
   keyword?: string
   page: number
   pageSize: number
-  createdFrom?: string
-  createdTo?: string
+  createdFrom?: DateOnlyString
+  createdTo?: DateOnlyString
   slaHours?: number
 }
 
@@ -53,8 +55,8 @@ export interface AuditRecordDetail {
   newContent: string
   auditResult: AuditDecisionAction
   rejectReason: string
-  auditTime: string
-  createdAt: string
+  auditTime: DateTimeSecondString
+  createdAt: DateTimeSecondString
 }
 
 export interface AuditRecordDetailData {

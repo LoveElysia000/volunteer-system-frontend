@@ -22,12 +22,12 @@ export const useVolunteerMetrics = () => {
     user.value?.totalHours ??
     0
   )
+  const serviceCount = computed(() => profile.value?.serviceCount ?? 0)
   const volunteerLevel = computed(() => summary.value?.level ?? (Math.floor(totalHours.value / 10) + 1))
   const currentLevelHours = computed(() => totalHours.value % 10)
   const levelProgressPercentage = computed(() => currentLevelHours.value * 10)
   const hoursToNextLevel = computed(() => summary.value?.needHoursToNextLevel ?? Math.max(10 - currentLevelHours.value, 0))
   const monthlyHoursGrowth = computed(() => summary.value?.monthlyGrowth ?? 0)
-  const monthlyPointsGrowth = computed(() => 0)
   const totalActivities = computed(() => summaryStats.value?.activityCount ?? 0)
   const completedActivities = computed(() => (
     registeredActivities.value.filter((item) => item.status === 'completed').length
@@ -42,12 +42,12 @@ export const useVolunteerMetrics = () => {
     profile,
     points,
     totalHours,
+    serviceCount,
     volunteerLevel,
     currentLevelHours,
     levelProgressPercentage,
     hoursToNextLevel,
     monthlyHoursGrowth,
-    monthlyPointsGrowth,
     totalActivities,
     completedActivities,
     upcomingActivities,

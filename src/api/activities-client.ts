@@ -1,3 +1,5 @@
+import type { DateOnlyString } from '@/types/datetime'
+
 type ActivitiesHttpClient = {
   post: <T = unknown>(url: string, data?: unknown) => Promise<T>
   get: <T = unknown>(url: string, params?: unknown) => Promise<T>
@@ -10,8 +12,8 @@ type ActivitiesListRequest = {
   pageSize: number
   status?: number[]
   keyword?: string
-  startFrom?: string
-  startTo?: string
+  startFrom?: DateOnlyString
+  startTo?: DateOnlyString
   sortBy?: string
   sortOrder?: 'asc' | 'desc'
 }

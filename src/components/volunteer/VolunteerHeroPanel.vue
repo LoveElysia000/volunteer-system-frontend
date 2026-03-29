@@ -10,7 +10,7 @@
             欢迎回来，{{ user?.realName || '志愿者' }}
           </h2>
           <p class="max-w-xl text-sm leading-7 text-emerald-50/85 lg:text-base">
-            你的服务记录、成长进度和近期任务都在这里。今天距离“自然守护者”还差 {{ remainingPoints }} 积分。
+            {{ heroDescription }}
           </p>
         </div>
         <div class="flex flex-wrap gap-3">
@@ -30,40 +30,28 @@
       </div>
 
       <div class="grid gap-4 sm:grid-cols-3 xl:w-[420px] xl:grid-cols-1">
-        <div class="rounded-[1.5rem] border border-white/10 bg-white/10 p-4 backdrop-blur-sm">
+        <div
+          v-for="item in heroHighlights"
+          :key="item.label"
+          class="rounded-[1.5rem] border border-white/10 bg-white/10 p-4 backdrop-blur-sm"
+        >
           <p class="text-xs uppercase tracking-[0.2em] text-emerald-100/70">
-            当前等级
+            {{ item.label }}
           </p>
           <p class="mt-2 text-2xl font-black">
-            Lv.{{ volunteerLevel }}
+            {{ item.value }}
           </p>
-          <div class="mt-3 h-2 rounded-full bg-white/10">
+          <div
+            v-if="typeof item.progressPercentage === 'number'"
+            class="mt-3 h-2 rounded-full bg-white/10"
+          >
             <div
               class="h-full rounded-full bg-emerald-300"
-              :style="{ width: `${levelProgressPercentage}%` }"
+              :style="{ width: `${item.progressPercentage}%` }"
             />
           </div>
-        </div>
-        <div class="rounded-[1.5rem] border border-white/10 bg-white/10 p-4 backdrop-blur-sm">
-          <p class="text-xs uppercase tracking-[0.2em] text-emerald-100/70">
-            连续服务
-          </p>
-          <p class="mt-2 text-2xl font-black">
-            4 周
-          </p>
           <p class="mt-1 text-sm text-emerald-50/75">
-            保持节奏，周末再完成 1 场可刷新记录。
-          </p>
-        </div>
-        <div class="rounded-[1.5rem] border border-white/10 bg-white/10 p-4 backdrop-blur-sm">
-          <p class="text-xs uppercase tracking-[0.2em] text-emerald-100/70">
-            本周安排
-          </p>
-          <p class="mt-2 text-2xl font-black">
-            {{ registeredCount }} 场
-          </p>
-          <p class="mt-1 text-sm text-emerald-50/75">
-            优先完成已报名任务，避免影响出勤评分。
+            {{ item.detail }}
           </p>
         </div>
       </div>
@@ -75,8 +63,17 @@
 import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useVolunteerMetrics } from '@/composables/useVolunteerMetrics'
+import {
+  buildVolunteerHeroDescription,
+  buildVolunteerHeroHighlights
+} from '@/views/Volunteer/dashboardState'
 
-const { user, points, volunteerLevel, levelProgressPercentage, upcomingActivities } = useVolunteerMetrics()
-const registeredCount = computed(() => upcomingActivities.value)
-const remainingPoints = computed(() => Math.max(200 - (points.value % 200), 0))
+const { user, points, serviceCount, volunteerLevel, levelProgressPercentage, upcomingActivities } = useVolunteerMetrics()
+const heroDescription = computed(() => buildVolunteerHeroDescription(points.value))
+const heroHighlights = computed(() => buildVolunteerHeroHighlights({
+  volunteerLevel: volunteerLevel.value,
+  levelProgressPercentage: levelProgressPercentage.value,
+  serviceCount: serviceCount.value,
+  upcomingActivities: upcomingActivities.value
+}))
 </script>

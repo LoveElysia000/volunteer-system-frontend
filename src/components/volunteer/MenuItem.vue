@@ -1,7 +1,7 @@
 <template>
   <div
-    class="menu-item relative w-full"
-    :class="isCompactSidebar && isExpanded ? 'z-40' : ''"
+    class="menu-item relative w-full overflow-visible"
+    :class="isCompactSidebar && isExpanded ? 'z-[90]' : ''"
   >
     <button
       type="button"

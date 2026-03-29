@@ -51,8 +51,8 @@ const props = withDefaults(defineProps<{
 const submenuClass = computed(() => {
   if (props.isCompactSidebar) {
     return props.expanded
-      ? 'absolute left-full top-0 z-50 ml-3 w-56 translate-x-0 scale-100 opacity-100'
-      : 'pointer-events-none absolute left-full top-0 z-50 ml-3 w-56 -translate-x-2 scale-95 opacity-0'
+      ? 'pointer-events-auto absolute left-full top-0 z-[100] ml-3 w-56 translate-x-0 scale-100 opacity-100'
+      : 'pointer-events-none absolute left-full top-0 z-[100] ml-3 w-56 -translate-x-2 scale-95 opacity-0'
   }
 
   return props.expanded ? 'max-h-[720px] overflow-hidden opacity-100' : 'max-h-0 overflow-hidden opacity-0'

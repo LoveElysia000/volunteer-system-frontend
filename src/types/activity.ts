@@ -1,3 +1,5 @@
+import type { DateOnlyString, DateTimeSecondString } from './datetime'
+
 export interface Activity {
   id: number
   title: string
@@ -6,8 +8,8 @@ export interface Activity {
   location: string
   latitude?: number
   longitude?: number
-  startTime: string
-  endTime: string
+  startTime: DateTimeSecondString
+  endTime: DateTimeSecondString
   maxParticipants: number
   currentParticipants: number
   status: 'draft' | 'published' | 'ongoing' | 'completed' | 'cancelled'
@@ -15,8 +17,8 @@ export interface Activity {
   pointsReward: number
   requirements?: string
   contactInfo?: Record<string, any>
-  createdAt: string
-  updatedAt: string
+  createdAt: DateTimeSecondString
+  updatedAt: DateTimeSecondString
 }
 
 export interface ActivityFilters {
@@ -24,8 +26,8 @@ export interface ActivityFilters {
   status?: string
   location?: string
   dateRange?: {
-    start: string
-    end: string
+    start: DateOnlyString
+    end: DateOnlyString
   }
 }
 
@@ -58,8 +60,8 @@ export interface ActivityListRequest {
   pageSize: number
   status?: number[]
   keyword?: string
-  startFrom?: string
-  startTo?: string
+  startFrom?: DateOnlyString
+  startTo?: DateOnlyString
   sortBy?: string
   sortOrder?: 'asc' | 'desc'
 }
@@ -71,8 +73,8 @@ export interface ActivityListItem {
   title: string
   description: string
   coverUrl?: string
-  startTime: string
-  endTime: string
+  startTime: DateTimeSecondString
+  endTime: DateTimeSecondString
   location: string
   duration: number
   maxPeople: number
@@ -80,11 +82,11 @@ export interface ActivityListItem {
   status: ActivityStatus
   isRegistered?: boolean
   isFull?: boolean
-  signupTime?: string
+  signupTime?: DateTimeSecondString
   checkInStatus?: AttendanceStatus
-  checkInTime?: string
+  checkInTime?: DateTimeSecondString
   checkOutStatus?: AttendanceStatus
-  checkOutTime?: string
+  checkOutTime?: DateTimeSecondString
   workHourStatus?: WorkHourStatus
   grantedHours?: number
   signupStatus?: ActivitySignupStatus
@@ -104,8 +106,8 @@ export interface ActivityDetailData {
     title: string
     description: string
     coverUrl?: string
-    startTime: string
-    endTime: string
+    startTime: DateTimeSecondString
+    endTime: DateTimeSecondString
     location: string
     address?: string
     duration: number
@@ -113,11 +115,11 @@ export interface ActivityDetailData {
     currentPeople: number
     status: ActivityStatus
     isRegistered?: boolean
-    createdAt?: string
+    createdAt?: DateTimeSecondString
     checkInStatus?: AttendanceStatus
-    checkInTime?: string
+    checkInTime?: DateTimeSecondString
     checkOutStatus?: AttendanceStatus
-    checkOutTime?: string
+    checkOutTime?: DateTimeSecondString
     workHourStatus?: WorkHourStatus
     grantedHours?: number
   }
@@ -125,8 +127,8 @@ export interface ActivityDetailData {
 
 export interface ActivityActionResult {
   success: boolean
-  checkInTime?: string
-  checkOutTime?: string
+  checkInTime?: DateTimeSecondString
+  checkOutTime?: DateTimeSecondString
   grantedHours?: number
 }
 
@@ -145,8 +147,8 @@ export interface CreateOrganizationActivityRequest {
   title: string
   description: string
   coverUrl?: string
-  startTime: string
-  endTime: string
+  startTime: DateTimeSecondString
+  endTime: DateTimeSecondString
   location: string
   address?: string
   duration: number
@@ -162,8 +164,8 @@ export interface UpdateOrganizationActivityRequest {
   title?: string
   description?: string
   coverUrl?: string
-  startTime?: string
-  endTime?: string
+  startTime?: DateTimeSecondString
+  endTime?: DateTimeSecondString
   location?: string
   address?: string
   duration?: number
@@ -193,9 +195,9 @@ export interface AttendanceCodeInfo {
   checkInCode: string
   checkOutCode: string
   attendanceCodeVersion: number
-  attendanceCodeUpdatedAt: string
-  checkInExpireAt: string
-  checkOutExpireAt: string
+  attendanceCodeUpdatedAt: DateTimeSecondString
+  checkInExpireAt: DateTimeSecondString
+  checkOutExpireAt: DateTimeSecondString
 }
 
 export interface AttendanceCodeResetRequest {
@@ -208,22 +210,22 @@ export interface AttendanceCodeResetData {
   code: string
   codeType: AttendanceCodeType
   attendanceCodeVersion: number
-  attendanceCodeUpdatedAt: string
-  expireAt: string
+  attendanceCodeUpdatedAt: DateTimeSecondString
+  expireAt: DateTimeSecondString
 }
 
 export interface SupplementAttendanceRequest {
   activityId: number
   volunteerId: number
-  checkInTime: string
-  checkOutTime: string
+  checkInTime: DateTimeSecondString
+  checkOutTime: DateTimeSecondString
   reason: string
 }
 
 export interface SupplementAttendanceData {
   success: boolean
-  checkInTime: string
-  checkOutTime: string
+  checkInTime: DateTimeSecondString
+  checkOutTime: DateTimeSecondString
   grantedHours: number
 }
 
@@ -255,8 +257,8 @@ export interface OrganizationManagementActivityItem {
   title: string
   description: string
   date: string
-  startTime: string
-  endTime: string
+  startTime: DateTimeSecondString
+  endTime: DateTimeSecondString
   location: string
   address?: string
   status: string
