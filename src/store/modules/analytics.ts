@@ -1,48 +1,68 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { analyticsApi } from '@/api/analytics'
 import type {
   OrganizationAnalyticsQuery,
   OrganizationDashboardAnalyticsData,
   OrganizationFunnelData
 } from '@/types/analytics'
+import {
+  fetchCombinedAnalyticsData,
+  fetchDashboardData,
+  fetchFunnelData
+} from './analytics-requests'
 
 export const useAnalyticsStore = defineStore('analytics', () => {
   const funnel = ref<OrganizationFunnelData | null>(null)
   const dashboard = ref<OrganizationDashboardAnalyticsData | null>(null)
-  const loading = ref(false)
+  const funnelLoading = ref(false)
+  const dashboardLoading = ref(false)
+  const loading = computed(() => funnelLoading.value || dashboardLoading.value)
+
+  const fetchOrganizationFunnel = async (params: OrganizationAnalyticsQuery) => {
+    funnelLoading.value = true
+    try {
+      const data = await fetchFunnelData(analyticsApi, params)
+      funnel.value = data
+      return data
+    } finally {
+      funnelLoading.value = false
+    }
+  }
+
+  const fetchOrganizationDashboard = async (params: OrganizationAnalyticsQuery) => {
+    dashboardLoading.value = true
+    try {
+      const data = await fetchDashboardData(analyticsApi, params)
+      dashboard.value = data
+      return data
+    } finally {
+      dashboardLoading.value = false
+    }
+  }
 
   const fetchOrganizationAnalytics = async (params: OrganizationAnalyticsQuery) => {
-    loading.value = true
+    funnelLoading.value = true
+    dashboardLoading.value = true
     try {
-      const [funnelResponse, dashboardResponse] = await Promise.all([
-        analyticsApi.getOrganizationFunnel(params),
-        analyticsApi.getOrganizationDashboard(params)
-      ])
-
-      if (funnelResponse.code !== 200) {
-        throw new Error(funnelResponse.msg || '获取转化漏斗失败')
-      }
-      if (dashboardResponse.code !== 200) {
-        throw new Error(dashboardResponse.msg || '获取看板统计失败')
-      }
-
-      funnel.value = funnelResponse.data
-      dashboard.value = dashboardResponse.data
-
-      return {
-        funnel: funnelResponse.data,
-        dashboard: dashboardResponse.data
-      }
+      const data = await fetchCombinedAnalyticsData(analyticsApi, params)
+      funnel.value = data.funnel
+      dashboard.value = data.dashboard
+      return data
     } finally {
-      loading.value = false
+      funnelLoading.value = false
+      dashboardLoading.value = false
     }
   }
 
   return {
     funnel,
     dashboard,
+    funnelLoading,
+    dashboardLoading,
     loading,
+    fetchOrganizationFunnel,
+    fetchOrganizationDashboard,
     fetchOrganizationAnalytics
   }
 })

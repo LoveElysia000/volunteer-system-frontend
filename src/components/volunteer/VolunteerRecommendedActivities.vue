@@ -1,6 +1,7 @@
 <template>
   <DataList
     :items="recommendedActivities"
+    :loading="loading"
     row-key="id"
     open-text="查看详情"
     empty-title="当前没有推荐活动"
@@ -10,10 +11,15 @@
       <div class="space-y-3">
         <div class="flex flex-wrap items-center gap-3">
           <VolunteerStatusBadge
-            :label="item.tag || '推荐'"
+            :label="item.tag"
             tone="green"
           />
-          <span class="text-sm font-semibold text-emerald-700">+{{ item.points }} 积分</span>
+          <span
+            v-if="item.orgName"
+            class="text-sm font-semibold text-emerald-700"
+          >
+            {{ item.orgName }}
+          </span>
         </div>
 
         <div>
@@ -45,8 +51,55 @@
 </template>
 
 <script setup lang="ts">
+import { onActivated, onMounted, ref } from 'vue'
+import { useRoute } from 'vue-router'
 import { RouterLink } from 'vue-router'
 import DataList from '@/components/data-list/DataList.vue'
+import { activitiesApi } from '@/api/activities'
+import { shouldRefreshOnKeepAliveActivated } from '@/utils/keepAliveRefresh'
 import VolunteerStatusBadge from './VolunteerStatusBadge.vue'
-import { recommendedActivities } from '@/data/volunteerCenter'
+import { buildVolunteerRecommendedActivities, type VolunteerRecommendedCardItem } from '@/views/Volunteer/dashboardFeeds'
+import { getVolunteerRecommendedActivitiesRequest } from '@/views/Volunteer/dashboardState'
+
+const route = useRoute()
+const hasLoadedOnce = ref(false)
+const hasActivatedOnce = ref(false)
+const loading = ref(false)
+const recommendedActivities = ref<VolunteerRecommendedCardItem[]>([])
+
+const loadRecommendedActivities = async () => {
+  loading.value = true
+  try {
+    const response = await activitiesApi.list(getVolunteerRecommendedActivitiesRequest())
+
+    if (response.code !== 200) {
+      throw new Error(response.msg || '获取推荐活动失败')
+    }
+
+    recommendedActivities.value = buildVolunteerRecommendedActivities(response.data.list || [])
+  } catch (error) {
+    console.error('加载推荐活动失败:', error)
+    recommendedActivities.value = []
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(async () => {
+  await loadRecommendedActivities()
+  hasLoadedOnce.value = true
+})
+
+onActivated(async () => {
+  if (shouldRefreshOnKeepAliveActivated({
+    currentRouteName: String(route.name || ''),
+    expectedRouteName: 'volunteer-dashboard',
+    hasLoadedOnce: hasLoadedOnce.value,
+    hasActivatedOnce: hasActivatedOnce.value
+  })) {
+    await loadRecommendedActivities()
+  }
+
+  hasActivatedOnce.value = true
+})
 </script>

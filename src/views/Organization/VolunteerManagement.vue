@@ -297,7 +297,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onActivated, onMounted, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import Button from '@/components/ui/Button.vue'
 import Input from '@/components/ui/Input.vue'
 import FilterSelect from '@/components/ui/FilterSelect.vue'
@@ -314,7 +315,9 @@ import { adminApi } from '@/api/admin'
 import { useMessageStore } from '@/store/modules/messages'
 import { VolunteerAuditStatus, VolunteerStatus, type VolunteerListItem, type VolunteerProfileInfo } from '@/types/volunteer'
 import { SearchIcon } from 'lucide-vue-next'
+import { shouldRefreshOnKeepAliveActivated } from '@/utils/keepAliveRefresh'
 
+const route = useRoute()
 const messageStore = useMessageStore()
 
 const importInputRef = ref<HTMLInputElement | null>(null)
@@ -349,6 +352,8 @@ const exporting = ref(false)
 const selectedVolunteerId = ref<number | null>(null)
 const selectedVolunteerSnapshot = ref<(VolunteerListItem & Partial<VolunteerProfileInfo>) | null>(null)
 const drawerOpen = ref(false)
+const hasLoadedOnce = ref(false)
+const hasActivatedOnce = ref(false)
 const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pageSize.value)))
 
 const columns: DataTableColumn[] = [
@@ -584,6 +589,25 @@ const genderText = (gender?: number) => {
 }
 
 onMounted(() => {
+  hasLoadedOnce.value = true
+  void loadVolunteers()
+})
+
+onActivated(() => {
+  if (!hasActivatedOnce.value) {
+    hasActivatedOnce.value = true
+    return
+  }
+
+  if (!shouldRefreshOnKeepAliveActivated({
+    currentRouteName: String(route.name || ''),
+    expectedRouteName: 'organization-volunteers',
+    hasLoadedOnce: hasLoadedOnce.value,
+    hasActivatedOnce: hasActivatedOnce.value
+  })) {
+    return
+  }
+
   void loadVolunteers()
 })
 

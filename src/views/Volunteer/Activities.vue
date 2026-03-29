@@ -373,7 +373,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, onActivated, ref, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { SearchIcon } from 'lucide-vue-next'
 import Button from '@/components/ui/Button.vue'
@@ -399,7 +399,9 @@ import {
   normalizeVolunteerActivityRoute,
   type ActivityTab
 } from './activityFeed'
+import { shouldReloadVolunteerActivityList } from './activityPageState'
 import { BACKEND_ACTIVITY_STATUS } from '@/constants/activityEnums'
+import { shouldRefreshOnKeepAliveActivated } from '@/utils/keepAliveRefresh'
 
 type VolunteerTone = 'green' | 'blue' | 'amber' | 'rose'
 
@@ -444,6 +446,7 @@ const pageSizeOptions = [
   { key: 'activities-page-50', value: 50, label: '每页 50 条', description: '适合批量查看' }
 ] as const
 const hasLoadedOnce = ref(false)
+const hasActivatedOnce = ref(false)
 
 const filterTabs: FilterTab[] = [
   { id: 'all', label: '全部活动' },
@@ -464,11 +467,17 @@ const openActivityFromQuery = () => {
   }
 }
 
-watch(() => route.query, async (query) => {
+watch(() => [route.name, route.query] as const, async ([routeName, query], [previousRouteName]) => {
   const nextRouteState = normalizeVolunteerActivityRoute(query)
-  const shouldReload = !hasLoadedOnce.value
-    || nextRouteState.tab !== activeTab.value
-    || nextRouteState.search !== searchQuery.value
+  const shouldReload = shouldReloadVolunteerActivityList({
+    currentRouteName: String(routeName || ''),
+    previousRouteName: String(previousRouteName || ''),
+    hasLoadedOnce: hasLoadedOnce.value,
+    nextTab: nextRouteState.tab,
+    currentTab: activeTab.value,
+    nextSearch: nextRouteState.search,
+    currentSearch: searchQuery.value
+  })
 
   activeTab.value = nextRouteState.tab
   searchQuery.value = nextRouteState.search
@@ -480,7 +489,26 @@ watch(() => route.query, async (query) => {
   }
 
   openActivityFromQuery()
-}, { immediate: true })
+}, { immediate: true, deep: true })
+
+onActivated(async () => {
+  if (!hasActivatedOnce.value) {
+    hasActivatedOnce.value = true
+    return
+  }
+
+  if (!shouldRefreshOnKeepAliveActivated({
+    currentRouteName: String(route.name || ''),
+    expectedRouteName: 'volunteer-activities',
+    hasLoadedOnce: hasLoadedOnce.value,
+    hasActivatedOnce: hasActivatedOnce.value
+  })) {
+    return
+  }
+
+  await loadActivities()
+  openActivityFromQuery()
+})
 
 watch([activeTab, searchQuery, drawerOpen, selectedActivityId], ([tab, search, isDrawerOpen, selectedId]) => {
   const query = buildVolunteerActivityRouteQuery({

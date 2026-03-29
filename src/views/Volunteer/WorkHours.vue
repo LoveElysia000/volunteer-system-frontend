@@ -309,8 +309,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
-import { RouterLink } from 'vue-router'
+import { computed, onActivated, onMounted, ref, watch } from 'vue'
+import { RouterLink, useRoute } from 'vue-router'
 import Button from '@/components/ui/Button.vue'
 import FilterSelect from '@/components/ui/FilterSelect.vue'
 import Input from '@/components/ui/Input.vue'
@@ -333,7 +333,9 @@ import {
 import { useVolunteerMetrics } from '@/composables/useVolunteerMetrics'
 import { useMessageStore } from '@/store/modules/messages'
 import { WorkHourOperationType, type VolunteerWorkHourItem } from '@/types/work-hour'
+import { shouldRefreshOnKeepAliveActivated } from '@/utils/keepAliveRefresh'
 
+const route = useRoute()
 const messageStore = useMessageStore()
 const { totalHours } = useVolunteerMetrics()
 
@@ -346,6 +348,8 @@ const pageSize = ref(20)
 const loading = ref(false)
 const selectedLogId = ref<number | null>(null)
 const drawerOpen = ref(false)
+const hasLoadedOnce = ref(false)
+const hasActivatedOnce = ref(false)
 
 const columns: DataTableColumn[] = [
   { key: 'createdAt', label: '时间', width: '180px' },
@@ -463,6 +467,25 @@ const goToNextPage = async () => {
 }
 
 onMounted(() => {
+  hasLoadedOnce.value = true
+  void loadLogs()
+})
+
+onActivated(() => {
+  if (!hasActivatedOnce.value) {
+    hasActivatedOnce.value = true
+    return
+  }
+
+  if (!shouldRefreshOnKeepAliveActivated({
+    currentRouteName: String(route.name || ''),
+    expectedRouteName: 'volunteer-work-hours',
+    hasLoadedOnce: hasLoadedOnce.value,
+    hasActivatedOnce: hasActivatedOnce.value
+  })) {
+    return
+  }
+
   void loadLogs()
 })
 

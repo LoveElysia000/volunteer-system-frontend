@@ -3,7 +3,7 @@
     <div class="volunteer-shell-main flex h-screen">
       <aside
         v-if="!isMobile"
-        class="volunteer-nav-surface shrink-0"
+        class="volunteer-nav-surface shrink-0 overflow-y-auto"
         :class="isCompact ? 'volunteer-nav-surface--compact' : 'volunteer-nav-surface--expanded'"
         :style="desktopSidebarStyle"
       >
@@ -430,10 +430,6 @@ const headerMeta = computed(() => [
   { label: '当前身份', value: '环保志愿者', detail: '已登录工作台' },
   { label: '成长等级', value: `Lv.${volunteerLevel.value}`, detail: `${points.value} 当前积分` }
 ])
-const shouldPrefetchRegisteredActivities = computed(() => {
-  const routeName = String(route.name || '')
-  return routeName === 'volunteer-dashboard'
-})
 
 const handleLogout = async () => {
   await authStore.logout()
@@ -446,11 +442,7 @@ onMounted(async () => {
 
   try {
     await Promise.all([
-      volunteerStore.fetchHomeSummary(),
-      volunteerStore.fetchMyProfile(),
-      ...(shouldPrefetchRegisteredActivities.value
-        ? [volunteerStore.fetchRegisteredActivities()]
-        : [])
+      volunteerStore.fetchMyProfile()
     ])
   } catch (error) {
     console.error('加载志愿者工作台数据失败:', error)

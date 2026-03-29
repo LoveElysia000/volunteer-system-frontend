@@ -356,8 +356,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, onActivated, onMounted, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import Button from '@/components/ui/Button.vue'
 import Input from '@/components/ui/Input.vue'
 import FilterSelect from '@/components/ui/FilterSelect.vue'
@@ -374,8 +374,10 @@ import {
   useNotificationsStore
 } from '@/store/modules/notifications'
 import { NotificationReadStatus } from '@/types/notification'
+import { shouldRefreshOnKeepAliveActivated } from '@/utils/keepAliveRefresh'
 import { resolveNotificationTarget } from '@/utils/notificationNavigation'
 
+const route = useRoute()
 const router = useRouter()
 const notificationsStore = useNotificationsStore()
 const messageStore = useMessageStore()
@@ -386,6 +388,8 @@ const page = ref(1)
 const pageSize = ref(10)
 const selectedNotificationId = ref<number | null>(null)
 const markingRead = ref(false)
+const hasLoadedOnce = ref(false)
+const hasActivatedOnce = ref(false)
 
 const pageSizeOptions = [
   { value: 10, label: '10 条', description: '适合逐条确认提醒内容' },
@@ -540,6 +544,25 @@ watch(searchQuery, () => {
 })
 
 onMounted(() => {
+  hasLoadedOnce.value = true
+  void loadNotifications()
+})
+
+onActivated(() => {
+  if (!hasActivatedOnce.value) {
+    hasActivatedOnce.value = true
+    return
+  }
+
+  if (!shouldRefreshOnKeepAliveActivated({
+    currentRouteName: String(route.name || ''),
+    expectedRouteName: 'volunteer-notifications',
+    hasLoadedOnce: hasLoadedOnce.value,
+    hasActivatedOnce: hasActivatedOnce.value
+  })) {
+    return
+  }
+
   void loadNotifications()
 })
 </script>

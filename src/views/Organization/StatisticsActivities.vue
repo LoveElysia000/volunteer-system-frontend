@@ -69,7 +69,7 @@
                 </p>
               </div>
               <div class="rounded-full border border-[#ffe0cc] bg-[#fff5ee] px-3 py-2 text-xs font-semibold text-[#b45309]">
-                {{ analyticsStore.loading ? '统计刷新中' : '最近 30 天' }}
+                {{ analyticsStore.funnelLoading ? '统计刷新中' : '最近 30 天' }}
               </div>
             </div>
           </div>
@@ -193,7 +193,7 @@ const loadAnalytics = async () => {
   const formatDate = (value: Date) => value.toISOString().slice(0, 10)
 
   try {
-    await analyticsStore.fetchOrganizationAnalytics({
+    await analyticsStore.fetchOrganizationFunnel({
       orgId,
       start: formatDate(startDate),
       end: formatDate(endDate)

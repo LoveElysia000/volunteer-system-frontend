@@ -394,8 +394,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
-import { RouterLink } from 'vue-router'
+import { computed, onActivated, onMounted, ref } from 'vue'
+import { RouterLink, useRoute } from 'vue-router'
 import {
   ArrowRightIcon,
   BarChart3Icon,
@@ -422,7 +422,9 @@ import { useAnalyticsStore } from '@/store/modules/analytics'
 import { useMessageStore } from '@/store/modules/messages'
 import { adminApi } from '@/api/admin'
 import { useOrganizationContext } from '@/composables/useOrganizationContext'
+import { shouldRefreshOnKeepAliveActivated } from '@/utils/keepAliveRefresh'
 
+const route = useRoute()
 const {
   user,
   organizationKpiMetrics,
@@ -451,6 +453,8 @@ const reportPeriodOptions = [
   { value: 'custom', label: '自定义区间', description: '手动选择导出和统计范围' }
 ] as const
 const isExporting = ref(false)
+const hasLoadedOnce = ref(false)
+const hasActivatedOnce = ref(false)
 
 const normalizeKeyword = (value: string) => value.trim().toLowerCase()
 
@@ -635,6 +639,25 @@ const loadAnalytics = async () => {
 }
 
 onMounted(() => {
+  hasLoadedOnce.value = true
+  void loadAnalytics()
+})
+
+onActivated(() => {
+  if (!hasActivatedOnce.value) {
+    hasActivatedOnce.value = true
+    return
+  }
+
+  if (!shouldRefreshOnKeepAliveActivated({
+    currentRouteName: String(route.name || ''),
+    expectedRouteName: 'organization-dashboard',
+    hasLoadedOnce: hasLoadedOnce.value,
+    hasActivatedOnce: hasActivatedOnce.value
+  })) {
+    return
+  }
+
   void loadAnalytics()
 })
 </script>

@@ -67,7 +67,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onActivated, onMounted, ref } from 'vue'
+import { useRoute } from 'vue-router'
 import WorkbenchHeroPanel from '@/components/workbench/WorkbenchHeroPanel.vue'
 import WorkbenchPage from '@/components/workbench/WorkbenchPage.vue'
 import WorkbenchSplitLayout from '@/components/workbench/WorkbenchSplitLayout.vue'
@@ -78,14 +79,56 @@ import VolunteerAchievementFeed from '@/components/volunteer/VolunteerAchievemen
 import VolunteerStatusBadge from '@/components/volunteer/VolunteerStatusBadge.vue'
 import StatsOverview from '@/components/volunteer/StatsOverview.vue'
 import UpcomingActivities from '@/components/volunteer/UpcomingActivities.vue'
-import { monthlyMetrics } from '@/data/volunteerCenter'
+import { useVolunteerMetrics } from '@/composables/useVolunteerMetrics'
+import { useVolunteerStore } from '@/store/modules/volunteer'
+import {
+  buildVolunteerDashboardMonthlyMetrics,
+  shouldRefreshVolunteerDashboardData
+} from './dashboardState'
 
-const displayMonthlyMetrics = computed(() => {
-  if (monthlyMetrics.length > 0) return monthlyMetrics
-  return [
-    { label: '本月服务时长', value: '0 小时', detail: '等待接口同步', tone: 'green' as const },
-    { label: '完成活动', value: '0 场', detail: '保留当前展示结构', tone: 'blue' as const },
-    { label: '积分增长', value: '0', detail: '真实数据接入后更新', tone: 'amber' as const }
-  ]
+const volunteerStore = useVolunteerStore()
+const route = useRoute()
+const hasLoadedOnce = ref(false)
+const hasActivatedOnce = ref(false)
+const {
+  monthlyHoursGrowth,
+  totalActivities,
+  completedActivities,
+  upcomingActivities
+} = useVolunteerMetrics()
+
+const displayMonthlyMetrics = computed(() => buildVolunteerDashboardMonthlyMetrics({
+  monthlyHoursGrowth: monthlyHoursGrowth.value,
+  totalActivities: totalActivities.value,
+  completedActivities: completedActivities.value,
+  upcomingActivities: upcomingActivities.value
+}))
+
+const loadDashboardData = async () => {
+  try {
+    await Promise.all([
+      volunteerStore.fetchHomeSummary(),
+      volunteerStore.fetchRegisteredActivities()
+    ])
+  } catch (error) {
+    console.error('加载志愿者首页总览失败:', error)
+  }
+}
+
+onMounted(async () => {
+  await loadDashboardData()
+  hasLoadedOnce.value = true
+})
+
+onActivated(async () => {
+  if (shouldRefreshVolunteerDashboardData({
+    currentRouteName: String(route.name || ''),
+    hasLoadedOnce: hasLoadedOnce.value,
+    hasActivatedOnce: hasActivatedOnce.value
+  })) {
+    await loadDashboardData()
+  }
+
+  hasActivatedOnce.value = true
 })
 </script>

@@ -93,7 +93,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onActivated, onMounted, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import DatePicker from '@/components/ui/DatePicker.vue'
 import FilterSelect from '@/components/ui/FilterSelect.vue'
 import WorkbenchPage from '@/components/workbench/WorkbenchPage.vue'
@@ -106,7 +107,9 @@ import { useMessageStore } from '@/store/modules/messages'
 import { adminApi } from '@/api/admin'
 import { useOrganizationContext } from '@/composables/useOrganizationContext'
 import { CalendarRangeIcon } from 'lucide-vue-next'
+import { shouldRefreshOnKeepAliveActivated } from '@/utils/keepAliveRefresh'
 
+const route = useRoute()
 const analyticsStore = useAnalyticsStore()
 const organizationStore = useOrganizationStore()
 const messageStore = useMessageStore()
@@ -117,6 +120,8 @@ const dashboard = computed(() => analyticsStore.dashboard)
 const selectedReportPeriod = ref<'last_7_days' | 'last_30_days' | 'custom'>('last_30_days')
 const customStart = ref('')
 const customEnd = ref('')
+const hasLoadedOnce = ref(false)
+const hasActivatedOnce = ref(false)
 const reportPeriodOptions = [
   { value: 'last_7_days', label: '近 7 天', description: '适合近期复盘' },
   { value: 'last_30_days', label: '近 30 天', description: '默认统计口径' },
@@ -221,6 +226,25 @@ const exportOpsReport = async () => {
 }
 
 onMounted(() => {
+  hasLoadedOnce.value = true
+  void loadAnalytics()
+})
+
+onActivated(() => {
+  if (!hasActivatedOnce.value) {
+    hasActivatedOnce.value = true
+    return
+  }
+
+  if (!shouldRefreshOnKeepAliveActivated({
+    currentRouteName: String(route.name || ''),
+    expectedRouteName: 'organization-statistics',
+    hasLoadedOnce: hasLoadedOnce.value,
+    hasActivatedOnce: hasActivatedOnce.value
+  })) {
+    return
+  }
+
   void loadAnalytics()
 })
 

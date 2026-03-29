@@ -321,7 +321,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onActivated, onMounted, ref, watch } from 'vue'
 import DataListPage from '@/components/data-list/DataListPage.vue'
 import DataList from '@/components/data-list/DataList.vue'
 import DataToolbar from '@/components/data-list/DataToolbar.vue'
@@ -330,7 +330,7 @@ import Button from '@/components/ui/Button.vue'
 import Input from '@/components/ui/Input.vue'
 import FilterSelect from '@/components/ui/FilterSelect.vue'
 import WorkbenchEmptyPanel from '@/components/workbench/WorkbenchEmptyPanel.vue'
-import { RouterLink, useRouter } from 'vue-router'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
 import VolunteerPageHeader from '@/components/volunteer/VolunteerPageHeader.vue'
 import VolunteerSectionCard from '@/components/volunteer/VolunteerSectionCard.vue'
 import VolunteerStatusBadge from '@/components/volunteer/VolunteerStatusBadge.vue'
@@ -342,8 +342,10 @@ import {
   type VolunteerActivityViewItem
 } from '@/types/activity'
 import { BACKEND_ACTIVITY_SIGNUP_STATUS, BACKEND_ACTIVITY_STATUS } from '@/constants/activityEnums'
+import { shouldRefreshOnKeepAliveActivated } from '@/utils/keepAliveRefresh'
 import { buildVolunteerMyRegistrationsRequest, countUpcomingParticipations } from './activityFeed'
 
+const route = useRoute()
 const router = useRouter()
 const messageStore = useMessageStore()
 const loading = ref(false)
@@ -356,6 +358,8 @@ const total = ref(0)
 const selectedRegistrationId = ref<number | null>(null)
 const selectedRegistrationSnapshot = ref<VolunteerActivityViewItem | null>(null)
 const drawerOpen = ref(false)
+const hasLoadedOnce = ref(false)
+const hasActivatedOnce = ref(false)
 const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pageSize.value)))
 const statusOptions = [
   { key: 'registration-status-all', value: '', label: '全部报名状态', description: '查看所有报名记录' },
@@ -400,6 +404,25 @@ const loadRegisteredActivities = async () => {
 }
 
 onMounted(() => {
+  hasLoadedOnce.value = true
+  void loadRegisteredActivities()
+})
+
+onActivated(() => {
+  if (!hasActivatedOnce.value) {
+    hasActivatedOnce.value = true
+    return
+  }
+
+  if (!shouldRefreshOnKeepAliveActivated({
+    currentRouteName: String(route.name || ''),
+    expectedRouteName: 'volunteer-my-registrations',
+    hasLoadedOnce: hasLoadedOnce.value,
+    hasActivatedOnce: hasActivatedOnce.value
+  })) {
+    return
+  }
+
   void loadRegisteredActivities()
 })
 
