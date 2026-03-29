@@ -4,6 +4,7 @@
     :class="isCompactSidebar && isExpanded ? 'z-[90]' : ''"
   >
     <button
+      ref="triggerRef"
       type="button"
       class="menu-item-main relative flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium transition-all duration-200"
       :class="[mainClass, isCompactSidebar ? 'justify-center px-3' : '']"
@@ -59,6 +60,7 @@
     <SubMenu
       v-if="hasChildren && (!isCompactSidebar || isExpanded)"
       :items="item.children"
+      :anchor-el="triggerRef"
       :is-compact-sidebar="isCompactSidebar"
       :expanded="isExpanded"
       :level="level + 1"
@@ -69,7 +71,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { ChevronRightIcon } from 'lucide-vue-next'
 import SubMenu from './SubMenu.vue'
@@ -103,6 +105,7 @@ const emit = defineEmits<{
 }>()
 
 const route = useRoute()
+const triggerRef = ref<HTMLElement | null>(null)
 const hasChildren = computed(() => Boolean(props.item.children?.length))
 const isExpanded = computed(() => props.expanded)
 const isActive = computed(() => isMenuActive(props.item.to, route.path, hasChildren.value, props.item.children))

@@ -481,6 +481,8 @@ watch(() => [route.name, route.query] as const, async ([routeName, query], [prev
 
   activeTab.value = nextRouteState.tab
   searchQuery.value = nextRouteState.search
+  startFrom.value = nextRouteState.startFrom
+  endTo.value = nextRouteState.endTo
 
   if (shouldReload) {
     page.value = 1
@@ -510,10 +512,12 @@ onActivated(async () => {
   openActivityFromQuery()
 })
 
-watch([activeTab, searchQuery, drawerOpen, selectedActivityId], ([tab, search, isDrawerOpen, selectedId]) => {
+watch([activeTab, searchQuery, startFrom, endTo, drawerOpen, selectedActivityId], ([tab, search, from, to, isDrawerOpen, selectedId]) => {
   const query = buildVolunteerActivityRouteQuery({
     tab,
     search,
+    startFrom: from,
+    endTo: to,
     activityId: isDrawerOpen ? selectedId : null
   })
   const currentQuery = buildVolunteerActivityRouteQuery(normalizeVolunteerActivityRoute(route.query))

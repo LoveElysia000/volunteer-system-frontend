@@ -22,6 +22,8 @@ export interface VolunteerActivityListParams {
 export interface VolunteerActivityRouteState {
   tab: ActivityTab
   search: string
+  startFrom: string
+  endTo: string
   activityId: number | null
 }
 
@@ -94,12 +96,16 @@ export const normalizeVolunteerActivityRoute = (
 ): VolunteerActivityRouteState => {
   const tabValue = getSingleQueryValue(query.tab)
   const search = getSingleQueryValue(query.search)
+  const startFrom = getSingleQueryValue(query.startFrom)
+  const endTo = getSingleQueryValue(query.endTo)
   const idValue = getSingleQueryValue(query.id)
   const parsedId = Number(idValue)
 
   return {
     tab: isActivityTab(tabValue) ? tabValue : 'all',
     search,
+    startFrom,
+    endTo,
     activityId: Number.isInteger(parsedId) && parsedId > 0 ? parsedId : null
   }
 }
@@ -115,6 +121,14 @@ export const buildVolunteerActivityRouteQuery = (
 
   if (state.search) {
     query.search = state.search
+  }
+
+  if (state.startFrom) {
+    query.startFrom = state.startFrom
+  }
+
+  if (state.endTo) {
+    query.endTo = state.endTo
   }
 
   if (state.activityId !== null) {

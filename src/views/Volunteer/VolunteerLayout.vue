@@ -3,93 +3,98 @@
     <div class="volunteer-shell-main flex h-screen">
       <aside
         v-if="!isMobile"
-        class="volunteer-nav-surface shrink-0 overflow-y-auto"
+        class="volunteer-nav-surface shrink-0 overflow-visible"
         :class="isCompact ? 'volunteer-nav-surface--compact' : 'volunteer-nav-surface--expanded'"
         :style="desktopSidebarStyle"
       >
-        <div class="flex min-h-full flex-col gap-6 px-5 py-6">
+        <div class="volunteer-nav-scroll">
           <div
-            class="volunteer-shell-panel rounded-[1.9rem] border border-emerald-100/80 bg-[linear-gradient(135deg,_rgba(16,185,129,0.10),_rgba(255,255,255,0.96))] p-5"
-            :class="isCompact ? 'px-3 py-4' : ''"
+            class="volunteer-nav-stack flex min-h-full flex-col gap-6 px-5 py-6"
+            :class="isCompact ? 'volunteer-nav-stack--compact' : ''"
           >
             <div
-              class="flex items-center gap-3"
-              :class="isCompact ? 'justify-center' : ''"
+              class="volunteer-shell-panel rounded-[1.9rem] border border-emerald-100/80 bg-[linear-gradient(135deg,_rgba(16,185,129,0.10),_rgba(255,255,255,0.96))] p-5"
+              :class="isCompact ? 'px-3 py-4' : ''"
             >
-              <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-700 text-white shadow-lg">
-                <LeafIcon class="h-6 w-6" />
-              </div>
-              <div v-if="!isCompact">
-                <p class="text-lg font-black tracking-tight text-slate-900">
-                  环保志愿者
-                </p>
-                <p class="mt-1 text-[11px] font-medium uppercase tracking-[0.24em] text-emerald-700">
-                  Volunteer Center
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div
-            class="volunteer-shell-panel p-5"
-            :class="isCompact ? 'px-3 py-4' : ''"
-          >
-            <div
-              class="flex items-center gap-4"
-              :class="isCompact ? 'flex-col justify-center gap-3 text-center' : ''"
-            >
-              <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-700 text-xl font-black text-white">
-                {{ userInitials }}
-              </div>
               <div
-                v-if="!isCompact"
-                class="min-w-0 flex-1"
+                class="flex items-center gap-3"
+                :class="isCompact ? 'justify-center' : ''"
               >
-                <p class="truncate text-base font-bold text-slate-900">
-                  {{ user?.realName || '志愿者' }}
-                </p>
-                <p class="text-sm text-slate-500">
-                  志愿者工作台在线
-                </p>
-                <p class="mt-0.5 text-[11px] font-medium tracking-[0.18em] text-slate-400">
-                  Volunteer Workbench
-                </p>
-                <div class="mt-3 flex items-center gap-3">
-                  <div class="h-2 flex-1 rounded-full bg-emerald-100">
-                    <div
-                      class="h-full rounded-full bg-gradient-to-r from-emerald-500 to-emerald-700"
-                      :style="{ width: `${levelProgressPercentage}%` }"
-                    />
-                  </div>
-                  <span class="text-xs font-semibold text-slate-500">Lv.{{ volunteerLevel }}</span>
+                <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-700 text-white shadow-lg">
+                  <LeafIcon class="h-6 w-6" />
+                </div>
+                <div v-if="!isCompact">
+                  <p class="text-lg font-black tracking-tight text-slate-900">
+                    环保志愿者
+                  </p>
+                  <p class="mt-1 text-[11px] font-medium uppercase tracking-[0.24em] text-emerald-700">
+                    Volunteer Center
+                  </p>
                 </div>
               </div>
+            </div>
+
+            <div
+              class="volunteer-shell-panel p-5"
+              :class="isCompact ? 'px-3 py-4' : ''"
+            >
               <div
-                v-else
-                class="space-y-1"
+                class="flex items-center gap-4"
+                :class="isCompact ? 'flex-col justify-center gap-3 text-center' : ''"
               >
-                <p class="text-sm font-bold text-slate-900">
+                <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-700 text-xl font-black text-white">
                   {{ userInitials }}
-                </p>
-                <p class="text-[11px] font-medium uppercase tracking-[0.18em] text-slate-400">
-                  Lv.{{ volunteerLevel }}
-                </p>
+                </div>
+                <div
+                  v-if="!isCompact"
+                  class="min-w-0 flex-1"
+                >
+                  <p class="truncate text-base font-bold text-slate-900">
+                    {{ user?.realName || '志愿者' }}
+                  </p>
+                  <p class="text-sm text-slate-500">
+                    志愿者工作台在线
+                  </p>
+                  <p class="mt-0.5 text-[11px] font-medium tracking-[0.18em] text-slate-400">
+                    Volunteer Workbench
+                  </p>
+                  <div class="mt-3 flex items-center gap-3">
+                    <div class="h-2 flex-1 rounded-full bg-emerald-100">
+                      <div
+                        class="h-full rounded-full bg-gradient-to-r from-emerald-500 to-emerald-700"
+                        :style="{ width: `${levelProgressPercentage}%` }"
+                      />
+                    </div>
+                    <span class="text-xs font-semibold text-slate-500">Lv.{{ volunteerLevel }}</span>
+                  </div>
+                </div>
+                <div
+                  v-else
+                  class="space-y-1"
+                >
+                  <p class="text-sm font-bold text-slate-900">
+                    {{ userInitials }}
+                  </p>
+                  <p class="text-[11px] font-medium uppercase tracking-[0.18em] text-slate-400">
+                    Lv.{{ volunteerLevel }}
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
 
-          <VolunteerSidebar
-            :enable-compact="isCompact"
-          />
+            <VolunteerSidebar
+              :enable-compact="isCompact"
+            />
 
-          <div class="mt-auto volunteer-shell-panel p-4">
-            <button
-              class="flex w-full items-center justify-center gap-2 rounded-full border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-600 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700"
-              @click="handleLogout"
-            >
-              <LogOutIcon class="h-4 w-4" />
-              退出登录
-            </button>
+            <div class="mt-auto volunteer-shell-panel p-4">
+              <button
+                class="flex w-full items-center justify-center gap-2 rounded-full border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-600 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700"
+                @click="handleLogout"
+              >
+                <LogOutIcon class="h-4 w-4" />
+                退出登录
+              </button>
+            </div>
           </div>
         </div>
       </aside>
