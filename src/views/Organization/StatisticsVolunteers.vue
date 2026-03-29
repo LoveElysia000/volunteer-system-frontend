@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-6">
     <section class="overflow-hidden rounded-[2rem] border border-[#d5e8df] bg-[radial-gradient(circle_at_top_left,rgba(239,251,245,0.98),rgba(255,255,255,0.97)_45%,rgba(247,252,249,0.98)_100%)] p-6 shadow-[0_28px_70px_-54px_rgba(21,128,61,0.28)] lg:p-8">
-      <div class="grid gap-5 xl:grid-cols-[minmax(0,0.95fr)_minmax(360px,1.05fr)] xl:items-start">
+      <div class="grid gap-5 2xl:grid-cols-[minmax(0,0.95fr)_minmax(360px,1.05fr)] 2xl:items-start">
         <div class="space-y-5">
           <div class="space-y-3">
             <span class="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-emerald-700">
@@ -17,7 +17,7 @@
             </div>
           </div>
 
-          <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          <div class="grid gap-3 sm:grid-cols-2 2xl:grid-cols-3">
             <div
               v-for="item in headerHighlights"
               :key="item.label"
@@ -81,8 +81,8 @@
       title="志愿者转化指标"
       description="从报名参与到最终到场和工时结算，追踪志愿者活跃度。"
     >
-      <div class="grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
-        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-2">
+      <div class="grid gap-4 2xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
+        <div class="grid gap-4 md:grid-cols-2 2xl:grid-cols-2">
           <article
             v-for="item in volunteerMetrics"
             :key="item.label"

@@ -14,7 +14,7 @@
           compact
         />
         <button
-          class="org-toolbar-button org-toolbar-button--soft"
+          class="org-toolbar-button org-toolbar-button--soft w-full sm:w-auto"
           @click="exportOpsReport"
         >
           导出运营报表
@@ -54,7 +54,7 @@
       </p>
     </OrganizationSectionCard>
 
-    <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+    <div class="grid gap-4 md:grid-cols-2 2xl:grid-cols-4">
       <OrganizationMetricCard
         v-for="metric in metrics"
         :key="metric.label"
@@ -69,7 +69,7 @@
       title="转化漏斗"
       description="查看从注册到工时的关键转化环节。"
     >
-      <div class="grid gap-4 md:grid-cols-5">
+      <div class="grid gap-4 md:grid-cols-2 2xl:grid-cols-5">
         <article
           v-for="item in funnelCards"
           :key="item.label"

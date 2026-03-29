@@ -58,7 +58,7 @@
     <template #toolbar>
       <DataToolbar>
         <template #filters>
-          <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          <div class="grid gap-3 md:grid-cols-2 2xl:grid-cols-3">
             <FilterSelect
               v-model="auditStatusFilter"
               title="审核状态"

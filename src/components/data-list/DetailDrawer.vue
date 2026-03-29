@@ -273,10 +273,17 @@ onBeforeUnmount(() => {
   }
 
   .detail-drawer-panel {
+    width: min(calc(100vw - 32px), var(--detail-drawer-width));
     height: calc(100vh - 32px);
     max-height: calc(100vh - 32px);
     border-radius: 24px;
     box-shadow: 0 28px 70px -34px rgba(15, 23, 42, 0.4);
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .detail-drawer-panel {
+    width: min(calc(100vw - 32px), 480px);
   }
 }
 

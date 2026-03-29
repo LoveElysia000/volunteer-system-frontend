@@ -22,7 +22,7 @@
           </div>
         </template>
         <template #actions>
-          <div class="grid w-full gap-3 sm:grid-cols-2 xl:max-w-lg">
+          <div class="grid w-full gap-3 sm:grid-cols-2 2xl:max-w-lg">
             <Input
               v-model="activityIdInput"
               type="number"
@@ -41,7 +41,7 @@
     <template #toolbar>
       <DataToolbar>
         <template #filters>
-          <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-2">
+          <div class="grid gap-3 md:grid-cols-2 2xl:grid-cols-2">
             <FilterSelect
               v-model="operationType"
               title="操作类型"
@@ -86,7 +86,7 @@
     </template>
 
     <template #body>
-      <div class="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
+      <div class="grid gap-6 2xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
         <OrganizationSectionCard
           title="流水列表"
           description="点击一行查看详情，也可在右侧直接处理指定报名。"

@@ -51,14 +51,14 @@
         class="w-full min-w-0"
       >
         <div
-          class="flex h-full flex-col gap-4"
+          class="volunteer-page-header-actions flex h-full min-w-0 flex-col gap-4"
           :class="layout === 'operations'
             ? 'rounded-[1.75rem] border border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(236,253,245,0.92))] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.86),0_22px_54px_-42px_rgba(5,150,105,0.38)] lg:p-5'
             : 'lg:items-end'"
         >
           <div
             v-if="$slots.actions"
-            class="flex w-full flex-wrap gap-3"
+            class="flex w-full min-w-0 flex-wrap gap-3"
             :class="layout === 'operations' ? 'items-center justify-between' : 'lg:justify-end'"
           >
             <slot name="actions" />

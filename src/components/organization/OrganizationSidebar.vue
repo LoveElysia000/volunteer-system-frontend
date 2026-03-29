@@ -1,10 +1,14 @@
 <template>
-  <nav class="organization-sidebar organization-sidebar-shell rounded-[1.7rem] border border-[#ffd8c2]/65 bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(255,249,245,0.92))] p-3 shadow-[0_18px_44px_-38px_rgba(120,53,15,0.28)] backdrop-blur">
+  <nav
+    class="organization-sidebar organization-sidebar-shell rounded-[1.7rem] border border-[#ffd8c2]/65 bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(255,249,245,0.92))] p-3 shadow-[0_18px_44px_-38px_rgba(120,53,15,0.28)] backdrop-blur"
+    :class="isCompactSidebar ? 'organization-sidebar--compact' : ''"
+  >
     <div class="space-y-1.5 p-1">
       <MenuItem
         v-for="item in menuItems"
         :key="item.key"
         :item="item"
+        :is-compact-sidebar="isCompactSidebar"
         :expanded="expandedKeys.includes(item.key)"
         @item-click="handleMenuItemClick"
         @toggle-expand="toggleMenuItemExpand"
@@ -47,9 +51,18 @@ const emit = defineEmits<{
   close: []
 }>()
 
+const props = withDefaults(defineProps<{
+  sidebarWidth?: number
+  enableCompact?: boolean
+}>(), {
+  sidebarWidth: 304,
+  enableCompact: false
+})
+
 const route = useRoute()
 const router = useRouter()
 const expandedKeys = ref<string[]>([])
+const isCompactSidebar = computed(() => props.enableCompact)
 
 const menuItems = computed<SidebarMenuItem[]>(() => [
   {

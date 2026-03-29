@@ -45,7 +45,7 @@
     <template #toolbar>
       <DataToolbar>
         <template #filters>
-          <div class="grid gap-3 lg:grid-cols-[minmax(220px,320px)_180px_180px_180px_160px]">
+          <div class="grid gap-3 2xl:grid-cols-[minmax(220px,320px)_180px_180px_180px_160px]">
             <Input
               v-model="search"
               placeholder="搜索活动标题或地点"
@@ -200,7 +200,7 @@
           class="space-y-6"
         >
           <section class="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
-            <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <div class="grid gap-4 sm:grid-cols-2 2xl:grid-cols-4">
               <div>
                 <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
                   活动日期
@@ -313,7 +313,7 @@
             </div>
           </section>
 
-          <div class="grid gap-6 xl:grid-cols-[1fr_1fr]">
+          <div class="grid gap-6 2xl:grid-cols-[1fr_1fr]">
             <section class="rounded-2xl border border-slate-200 bg-white p-5 space-y-4">
               <div class="flex items-center justify-between">
                 <div>

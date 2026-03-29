@@ -27,10 +27,11 @@
             placeholder="搜索标题、说明或审核单号"
             :icon="SearchIcon"
             allow-clear
-            class="w-full xl:max-w-sm"
+            class="w-full 2xl:max-w-sm"
           />
           <Button
             variant="success"
+            class="w-full xl:w-auto"
             :loading="actionLoading"
             :disabled="!filteredItems.length"
             @click="batchApproveFiltered"
@@ -39,6 +40,7 @@
           </Button>
           <Button
             variant="danger"
+            class="w-full xl:w-auto"
             :loading="actionLoading"
             :disabled="!filteredItems.length"
             @click="batchRejectFiltered"
@@ -52,7 +54,7 @@
     <template #toolbar>
       <DataToolbar>
         <template #filters>
-          <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
+          <div class="grid gap-3 md:grid-cols-2 2xl:grid-cols-6">
             <FilterSelect
               v-model="targetTypeFilter"
               title="审核类型"

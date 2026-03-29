@@ -19,7 +19,7 @@
         </span>
       </template>
       <template #actions>
-        <div class="grid w-full gap-3 lg:grid-cols-[minmax(0,1fr)_auto]">
+        <div class="grid w-full gap-3 xl:grid-cols-[minmax(0,1fr)_auto]">
           <Input
             v-model="form.title"
             placeholder="先填写活动标题，方便后续继续补充其他信息"
@@ -27,6 +27,7 @@
           />
           <Button
             variant="primary"
+            class="w-full xl:w-auto"
             :loading="submitting"
             @click="submitActivity"
           >
@@ -36,7 +37,7 @@
       </template>
     </OrganizationPageHeader>
 
-    <div class="grid gap-6 xl:grid-cols-[minmax(0,1.3fr)_minmax(320px,0.7fr)]">
+    <div class="grid gap-6 2xl:grid-cols-[minmax(0,1.3fr)_minmax(320px,0.7fr)]">
       <div class="space-y-6">
         <OrganizationSectionCard
           title="基础信息"

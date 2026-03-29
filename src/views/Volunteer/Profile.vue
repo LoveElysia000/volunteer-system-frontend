@@ -19,11 +19,11 @@
         </span>
       </template>
       <template #actions>
-        <div class="grid w-full gap-3 lg:grid-cols-[auto_auto] lg:justify-end">
+        <div class="grid w-full gap-3 xl:grid-cols-[auto_auto] xl:justify-end">
           <Button
             variant="outline"
             rounded
-            class="min-h-[48px]"
+            class="min-h-[48px] w-full xl:w-auto"
             :disabled="accountSaving || profileSaving"
             @click="syncForm"
           >
@@ -31,7 +31,7 @@
           </Button>
           <RouterLink
             to="/volunteer/organizations"
-            class="volunteer-toolbar-button volunteer-toolbar-button--soft min-h-[48px]"
+            class="volunteer-toolbar-button volunteer-toolbar-button--soft min-h-[48px] w-full xl:w-auto"
           >
             前往我的组织
           </RouterLink>
@@ -39,7 +39,7 @@
       </template>
     </VolunteerPageHeader>
 
-    <div class="volunteer-profile-studio grid gap-6 xl:grid-cols-[0.92fr_1.08fr]">
+    <div class="volunteer-profile-studio grid gap-6 2xl:grid-cols-[0.92fr_1.08fr]">
       <div class="space-y-6">
         <VolunteerSectionCard
           title="志愿者名片"

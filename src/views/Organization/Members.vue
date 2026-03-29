@@ -27,7 +27,7 @@
             placeholder="搜索成员姓名、编号"
             :icon="SearchIcon"
             allow-clear
-            class="w-full lg:max-w-md"
+            class="w-full xl:max-w-md"
           />
         </template>
       </OrganizationPageHeader>
@@ -36,7 +36,7 @@
     <template #toolbar>
       <DataToolbar>
         <template #filters>
-          <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          <div class="grid gap-3 md:grid-cols-2 2xl:grid-cols-4">
             <FilterSelect
               v-model="statusFilter"
               title="成员状态"

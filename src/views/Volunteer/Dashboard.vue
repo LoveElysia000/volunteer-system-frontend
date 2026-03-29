@@ -4,7 +4,7 @@
 
     <StatsOverview />
 
-    <div class="grid gap-6 xl:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.9fr)]">
+    <div class="grid gap-6 2xl:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.9fr)]">
       <VolunteerSectionCard
         title="推荐活动"
         description="结合你的近期参与偏好和距离，优先展示适合本周报名的任务。"

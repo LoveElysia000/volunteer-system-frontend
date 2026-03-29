@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-6">
     <section class="overflow-hidden rounded-[2rem] border border-[#ffd8c2] bg-[radial-gradient(circle_at_top_left,rgba(255,244,236,0.98),rgba(255,255,255,0.97)_45%,rgba(255,248,243,0.98)_100%)] p-6 shadow-[0_28px_70px_-54px_rgba(120,53,15,0.42)] lg:p-8">
-      <div class="grid gap-5 xl:grid-cols-[minmax(0,0.95fr)_minmax(360px,1.05fr)] xl:items-start">
+      <div class="grid gap-5 2xl:grid-cols-[minmax(0,0.95fr)_minmax(360px,1.05fr)] 2xl:items-start">
         <div class="space-y-5">
           <div class="space-y-3">
             <span class="inline-flex items-center rounded-full bg-[#fff1ea] px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-[#ec5b13]">
@@ -17,7 +17,7 @@
             </div>
           </div>
 
-          <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          <div class="grid gap-3 sm:grid-cols-2 2xl:grid-cols-3">
             <div
               v-for="item in headerHighlights"
               :key="item.label"
@@ -81,8 +81,8 @@
       title="活动执行指标"
       description="从注册到工时发放，观察每个阶段的漏斗表现。"
     >
-      <div class="grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
-        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div class="grid gap-4 2xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
+        <div class="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
           <article
             v-for="item in activityMetrics"
             :key="item.label"

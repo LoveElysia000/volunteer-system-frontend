@@ -9,7 +9,7 @@
       <template #actions>
         <RouterLink
           to="/volunteer/activities"
-          class="volunteer-toolbar-button volunteer-toolbar-button--soft"
+          class="volunteer-toolbar-button volunteer-toolbar-button--soft w-full sm:w-auto"
         >
           返回活动列表
         </RouterLink>
@@ -32,7 +32,7 @@
         class="space-y-5"
       >
         <div class="rounded-[1.5rem] border border-slate-200 bg-slate-50/80 p-5">
-          <div class="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
+          <div class="flex flex-col gap-5 2xl:flex-row 2xl:items-start 2xl:justify-between">
             <div class="space-y-3">
               <div
                 v-if="detail.coverUrl"
@@ -58,7 +58,7 @@
               </p>
             </div>
 
-            <div class="flex flex-wrap gap-3 xl:justify-end">
+            <div class="flex flex-wrap gap-3 2xl:justify-end">
               <Button
                 v-if="!detail.isRegistered && detail.status === ActivityStatus.OPEN"
                 variant="success"
@@ -82,7 +82,7 @@
           </div>
         </div>
 
-        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div class="grid gap-4 md:grid-cols-2 2xl:grid-cols-4">
           <div class="rounded-[1.35rem] border border-slate-200 bg-white p-4">
             <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
               开始时间

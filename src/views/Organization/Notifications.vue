@@ -178,7 +178,7 @@
           class="space-y-5"
         >
           <section class="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
-            <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            <div class="grid gap-4 sm:grid-cols-2 2xl:grid-cols-3">
               <div>
                 <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
                   事件类型

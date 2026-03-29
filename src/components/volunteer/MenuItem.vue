@@ -1,9 +1,9 @@
 <template>
-  <div class="menu-item w-full">
+  <div class="menu-item relative w-full">
     <button
       type="button"
       class="menu-item-main relative flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium transition-all duration-200"
-      :class="mainClass"
+      :class="[mainClass, isCompactSidebar ? 'justify-center px-3' : '']"
       :disabled="item.disabled"
       :aria-current="!hasChildren && isActive ? 'page' : undefined"
       :aria-expanded="hasChildren ? String(isExpanded) : undefined"
@@ -25,10 +25,13 @@
         />
       </div>
 
-      <div class="min-w-0 flex-1">
+      <div
+        v-if="!isCompactSidebar"
+        class="min-w-0 flex-1"
+      >
         <p
           class="font-semibold leading-5"
-          :class="isCompactSidebar ? 'truncate whitespace-nowrap' : 'break-keep'"
+          :class="'truncate whitespace-nowrap'"
         >
           {{ item.label }}
         </p>
@@ -43,14 +46,14 @@
       </span>
 
       <ChevronRightIcon
-        v-if="hasChildren"
+        v-if="hasChildren && !isCompactSidebar"
         class="h-4 w-4 shrink-0 transition-transform duration-200"
         :class="isExpanded ? 'rotate-90 text-emerald-700' : 'text-slate-400'"
       />
     </button>
 
     <SubMenu
-      v-if="hasChildren"
+      v-if="hasChildren && (!isCompactSidebar || isExpanded)"
       :items="item.children"
       :is-compact-sidebar="isCompactSidebar"
       :expanded="isExpanded"

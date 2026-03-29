@@ -77,7 +77,7 @@
           </div>
         </div>
 
-        <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+        <div class="grid gap-3 md:grid-cols-2 2xl:grid-cols-5">
           <FilterSelect
             v-model="listFilters.status"
             title="组织状态"
@@ -114,7 +114,7 @@
           v-if="organizationStore.organizations.length"
           class="overflow-hidden rounded-[1.2rem] border border-slate-200 bg-white"
         >
-          <div class="hidden grid-cols-[minmax(0,1.45fr)_minmax(110px,0.75fr)_minmax(140px,0.9fr)_100px_110px_120px] gap-4 border-b border-slate-200 bg-slate-50/80 px-5 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-400 lg:grid">
+          <div class="hidden grid-cols-[minmax(0,1.45fr)_minmax(110px,0.75fr)_minmax(140px,0.9fr)_100px_110px_120px] gap-4 border-b border-slate-200 bg-slate-50/80 px-5 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-400 2xl:grid">
             <span>组织信息</span>
             <span>联系人</span>
             <span>联系电话</span>
@@ -126,7 +126,7 @@
           <button
             v-for="item in organizationStore.organizations"
             :key="item.id"
-            class="group grid w-full gap-3 border-b border-slate-100 px-5 py-4 text-left transition last:border-b-0 hover:bg-[#fffaf7] lg:grid-cols-[minmax(0,1.45fr)_minmax(110px,0.75fr)_minmax(140px,0.9fr)_100px_110px_120px] lg:items-center lg:gap-4"
+            class="group grid w-full gap-3 border-b border-slate-100 px-5 py-4 text-left transition last:border-b-0 hover:bg-[#fffaf7] 2xl:grid-cols-[minmax(0,1.45fr)_minmax(110px,0.75fr)_minmax(140px,0.9fr)_100px_110px_120px] 2xl:items-center 2xl:gap-4"
             :class="organizationStore.activeOrganizationId === item.id && drawerOpen ? 'bg-[#fff8f3]' : 'bg-white'"
             @click="openOrganizationDetail(item.id)"
           >
@@ -159,12 +159,12 @@
               {{ item.organizationCode || '待补充' }}
             </div>
 
-            <div class="hidden text-sm text-slate-500 lg:block">
+            <div class="hidden text-sm text-slate-500 2xl:block">
               {{ formatDate(item.updatedAt || item.createdAt) }}
             </div>
 
-            <div class="flex items-center justify-between gap-3 lg:justify-end">
-              <span class="text-xs text-slate-400 lg:hidden">
+            <div class="flex items-center justify-between gap-3 2xl:justify-end">
+              <span class="text-xs text-slate-400 2xl:hidden">
                 {{ formatDate(item.updatedAt || item.createdAt) }}
               </span>
               <span class="inline-flex items-center gap-1 text-sm font-semibold text-[#ec5b13] transition group-hover:translate-x-0.5">

@@ -1,9 +1,9 @@
 <template>
-  <div class="menu-item w-full">
+  <div class="menu-item relative w-full">
     <button
       type="button"
       class="menu-item-main relative flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium transition-all duration-200"
-      :class="mainClass"
+      :class="[mainClass, isCompactSidebar ? 'justify-center px-3' : '']"
       :disabled="item.disabled"
       :aria-current="!hasChildren && isActive ? 'page' : undefined"
       :aria-expanded="hasChildren ? String(isExpanded) : undefined"
@@ -26,14 +26,17 @@
         />
       </div>
 
-      <div class="min-w-0 flex-1">
+      <div
+        v-if="!isCompactSidebar"
+        class="min-w-0 flex-1"
+      >
         <p class="truncate font-semibold leading-5">
           {{ item.label }}
         </p>
       </div>
 
       <span
-        v-if="item.badge"
+        v-if="item.badge && !isCompactSidebar"
         class="menu-item-badge shrink-0 rounded-full px-2 py-1 text-[11px] font-semibold"
         :class="item.badgeClass || 'bg-[#fff1ea] text-[#ec5b13]'"
       >
@@ -41,15 +44,16 @@
       </span>
 
       <ChevronRightIcon
-        v-if="hasChildren"
+        v-if="hasChildren && !isCompactSidebar"
         class="h-4 w-4 shrink-0 transition-transform duration-200"
         :class="isExpanded ? 'rotate-90 text-[#ec5b13]' : 'text-slate-400'"
       />
     </button>
 
     <SubMenu
-      v-if="hasChildren"
+      v-if="hasChildren && (!isCompactSidebar || isExpanded)"
       :items="item.children"
+      :is-compact-sidebar="isCompactSidebar"
       :expanded="isExpanded"
       :level="level + 1"
       @item-click="$emit('item-click', $event)"
@@ -80,9 +84,11 @@ const props = withDefaults(defineProps<{
   item: MenuItem
   expanded?: boolean
   level?: number
+  isCompactSidebar?: boolean
 }>(), {
   expanded: false,
-  level: 0
+  level: 0,
+  isCompactSidebar: false
 })
 
 const emit = defineEmits<{

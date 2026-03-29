@@ -19,7 +19,7 @@
         </span>
       </template>
       <template #actions>
-        <div class="grid w-full gap-3 lg:grid-cols-[minmax(0,1fr)_auto_auto]">
+        <div class="grid w-full gap-3 xl:grid-cols-[minmax(0,1fr)_auto_auto]">
           <Input
             v-model="searchQuery"
             placeholder="搜索组织名称、地区或类型"
@@ -29,14 +29,14 @@
             @keyup.enter="reloadOrganizationsFromFirstPage"
           />
           <button
-            class="volunteer-toolbar-button volunteer-toolbar-button--ghost min-h-[48px]"
+            class="volunteer-toolbar-button volunteer-toolbar-button--ghost min-h-[48px] w-full xl:w-auto"
             :disabled="organizationsLoading"
             @click="refreshMemberships"
           >
             刷新关系
           </button>
           <button
-            class="volunteer-toolbar-button volunteer-toolbar-button--soft min-h-[48px]"
+            class="volunteer-toolbar-button volunteer-toolbar-button--soft min-h-[48px] w-full xl:w-auto"
             :disabled="organizationsLoading"
             @click="reloadOrganizationsFromFirstPage"
           >
@@ -46,7 +46,7 @@
       </template>
     </VolunteerPageHeader>
 
-    <div class="grid gap-6 xl:grid-cols-[0.88fr_1.12fr]">
+    <div class="grid gap-6 2xl:grid-cols-[0.88fr_1.12fr]">
       <div class="space-y-6">
         <VolunteerSectionCard
           title="我的组织概览"
@@ -182,7 +182,7 @@
           description="通过关键词筛选活跃组织，找到适合你长期参与的协作方向。"
         >
           <div class="space-y-5">
-            <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            <div class="grid gap-3 md:grid-cols-2 2xl:grid-cols-3">
               <Input
                 v-model="organizationTypeFilter"
                 placeholder="组织类型"

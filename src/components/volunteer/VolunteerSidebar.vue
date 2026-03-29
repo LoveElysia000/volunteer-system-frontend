@@ -1,5 +1,8 @@
 <template>
-  <nav class="volunteer-sidebar rounded-[1.75rem] border border-emerald-100/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(240,253,250,0.92))] p-3 shadow-[0_18px_44px_-38px_rgba(5,150,105,0.22)] backdrop-blur">
+  <nav
+    class="volunteer-sidebar rounded-[1.75rem] border border-emerald-100/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(240,253,250,0.92))] p-3 shadow-[0_18px_44px_-38px_rgba(5,150,105,0.22)] backdrop-blur"
+    :class="isCompactSidebar ? 'volunteer-sidebar--compact' : ''"
+  >
     <div class="space-y-1.5 p-1">
       <MenuItem
         v-for="item in menuItems"
@@ -49,7 +52,7 @@ const props = withDefaults(defineProps<{
 const route = useRoute()
 const router = useRouter()
 const expandedKeys = ref<string[]>([])
-const isCompactSidebar = computed(() => props.enableCompact && props.sidebarWidth <= 320)
+const isCompactSidebar = computed(() => props.enableCompact)
 
 const menuItems = computed<SidebarMenuItem[]>(() => [
   {

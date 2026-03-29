@@ -24,7 +24,7 @@
       </template>
     </OrganizationPageHeader>
 
-    <div class="grid gap-6 xl:grid-cols-[280px_minmax(0,1fr)]">
+    <div class="grid gap-6 2xl:grid-cols-[280px_minmax(0,1fr)]">
       <OrganizationSectionCard
         title="会话列表"
         description="查看最近会话，快速切换上下文。"

@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-6">
     <section class="overflow-hidden rounded-[2rem] border border-[#ffd8c2] bg-[radial-gradient(circle_at_top_left,rgba(255,244,236,0.98),rgba(255,255,255,0.97)_45%,rgba(255,248,243,0.98)_100%)] p-6 shadow-[0_28px_70px_-54px_rgba(120,53,15,0.42)] lg:p-8">
-      <div class="grid gap-5 xl:grid-cols-[minmax(0,1.05fr)_minmax(360px,0.95fr)] xl:items-start">
+      <div class="grid gap-5 2xl:grid-cols-[minmax(0,1.05fr)_minmax(360px,0.95fr)] 2xl:items-start">
         <div class="space-y-5">
           <div class="space-y-3">
             <span class="inline-flex items-center rounded-full bg-[#fff1ea] px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-[#ec5b13]">
@@ -34,7 +34,7 @@
             </div>
           </div>
 
-          <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          <div class="grid gap-3 md:grid-cols-2 2xl:grid-cols-3">
             <article
               v-for="item in quickPanels"
               :key="item.label"
@@ -135,7 +135,7 @@
       </div>
     </section>
 
-    <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+    <div class="grid gap-4 md:grid-cols-2 2xl:grid-cols-4">
       <OrganizationMetricCard
         v-for="metric in organizationKpiMetrics"
         :key="metric.key"
@@ -202,7 +202,7 @@
       </p>
     </OrganizationSectionCard>
 
-    <div class="grid gap-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(320px,1fr)]">
+    <div class="grid gap-6 2xl:grid-cols-[minmax(0,1.6fr)_minmax(320px,1fr)]">
       <OrganizationSectionCard
         class="organization-impact-trend"
         title="环保成效趋势"
@@ -325,7 +325,7 @@
       <transition-group
         name="organization-list-rise"
         tag="div"
-        class="grid gap-5 md:grid-cols-2 xl:grid-cols-3"
+        class="grid gap-5 md:grid-cols-2 2xl:grid-cols-3"
       >
         <article
           v-for="project in filteredTopProjectRows"

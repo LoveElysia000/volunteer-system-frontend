@@ -2,16 +2,24 @@
   <div class="volunteer-shell">
     <div class="volunteer-shell-main flex h-screen">
       <aside
-        class="volunteer-nav-surface hidden shrink-0 overflow-y-auto xl:block"
+        v-if="!isMobile"
+        class="volunteer-nav-surface shrink-0 overflow-y-auto"
+        :class="isCompact ? 'volunteer-nav-surface--compact' : 'volunteer-nav-surface--expanded'"
         :style="desktopSidebarStyle"
       >
         <div class="flex min-h-full flex-col gap-6 px-5 py-6">
-          <div class="volunteer-shell-panel rounded-[1.9rem] border border-emerald-100/80 bg-[linear-gradient(135deg,_rgba(16,185,129,0.10),_rgba(255,255,255,0.96))] p-5">
-            <div class="flex items-center gap-3">
+          <div
+            class="volunteer-shell-panel rounded-[1.9rem] border border-emerald-100/80 bg-[linear-gradient(135deg,_rgba(16,185,129,0.10),_rgba(255,255,255,0.96))] p-5"
+            :class="isCompact ? 'px-3 py-4' : ''"
+          >
+            <div
+              class="flex items-center gap-3"
+              :class="isCompact ? 'justify-center' : ''"
+            >
               <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-700 text-white shadow-lg">
                 <LeafIcon class="h-6 w-6" />
               </div>
-              <div>
+              <div v-if="!isCompact">
                 <p class="text-lg font-black tracking-tight text-slate-900">
                   环保志愿者
                 </p>
@@ -22,12 +30,21 @@
             </div>
           </div>
 
-          <div class="volunteer-shell-panel p-5">
-            <div class="flex items-center gap-4">
+          <div
+            class="volunteer-shell-panel p-5"
+            :class="isCompact ? 'px-3 py-4' : ''"
+          >
+            <div
+              class="flex items-center gap-4"
+              :class="isCompact ? 'flex-col justify-center gap-3 text-center' : ''"
+            >
               <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-700 text-xl font-black text-white">
                 {{ userInitials }}
               </div>
-              <div class="min-w-0 flex-1">
+              <div
+                v-if="!isCompact"
+                class="min-w-0 flex-1"
+              >
                 <p class="truncate text-base font-bold text-slate-900">
                   {{ user?.realName || '志愿者' }}
                 </p>
@@ -47,12 +64,23 @@
                   <span class="text-xs font-semibold text-slate-500">Lv.{{ volunteerLevel }}</span>
                 </div>
               </div>
+              <div
+                v-else
+                class="space-y-1"
+              >
+                <p class="text-sm font-bold text-slate-900">
+                  {{ userInitials }}
+                </p>
+                <p class="text-[11px] font-medium uppercase tracking-[0.18em] text-slate-400">
+                  Lv.{{ volunteerLevel }}
+                </p>
+              </div>
             </div>
           </div>
 
           <VolunteerSidebar
             :sidebar-width="sidebarWidth"
-            :enable-compact="true"
+            :enable-compact="isCompact"
           />
 
           <div class="mt-auto volunteer-shell-panel p-4">
@@ -67,7 +95,8 @@
         </div>
       </aside>
       <div
-        class="volunteer-resize-handle hidden xl:flex"
+        v-if="isExpanded"
+        class="volunteer-resize-handle"
         aria-label="调整导航宽度"
         aria-orientation="vertical"
         aria-valuemax="420"
@@ -84,13 +113,17 @@
       />
 
       <div class="flex min-w-0 flex-1 flex-col overflow-hidden">
-        <div class="border-b border-white/70 bg-white/75 px-4 py-3 backdrop-blur xl:hidden">
+        <div
+          v-if="isMobile"
+          class="border-b border-white/70 bg-white/75 px-4 py-3 backdrop-blur"
+        >
           <div class="flex items-center justify-between">
             <button
-              class="rounded-full border border-slate-200 bg-white p-2 text-slate-600"
+              class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-slate-600"
               @click="isMobileSidebarOpen = true"
             >
               <MenuIcon class="h-5 w-5" />
+              <span class="text-sm font-semibold">菜单</span>
             </button>
             <div class="flex items-center gap-3">
               <div class="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-emerald-400 to-emerald-700 font-bold text-white">
@@ -171,7 +204,7 @@
     <transition name="volunteer-mobile-drawer">
       <div
         v-if="isMobileSidebarOpen"
-        class="fixed inset-0 z-40 bg-slate-950/35 backdrop-blur-sm xl:hidden"
+        class="fixed inset-0 z-40 bg-slate-950/35 backdrop-blur-sm"
         @click="isMobileSidebarOpen = false"
       />
     </transition>
@@ -179,7 +212,7 @@
     <transition name="volunteer-mobile-drawer">
       <aside
         v-if="isMobileSidebarOpen"
-        class="volunteer-mobile-drawer-panel fixed inset-y-0 left-0 z-50 w-[302px] max-w-[85vw] overflow-y-auto bg-white/95 px-5 py-6 backdrop-blur xl:hidden"
+        class="volunteer-mobile-drawer-panel fixed inset-y-0 left-0 z-50 w-[302px] max-w-[85vw] overflow-y-auto bg-white/95 px-5 py-6 backdrop-blur"
       >
         <div class="flex min-h-full flex-col gap-6">
           <div class="flex items-center justify-between">
@@ -243,11 +276,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/store/modules/auth'
 import { useVolunteerStore } from '@/store/modules/volunteer'
 import { useVolunteerMetrics } from '@/composables/useVolunteerMetrics'
+import { useResponsiveWorkbench } from '@/composables/useResponsiveWorkbench'
 import { LeafIcon, LogOutIcon, MenuIcon, XIcon } from 'lucide-vue-next'
 import VolunteerSidebar from '@/components/volunteer/VolunteerSidebar.vue'
 
@@ -257,6 +291,7 @@ const authStore = useAuthStore()
 const volunteerStore = useVolunteerStore()
 const { user, points, volunteerLevel, levelProgressPercentage } = useVolunteerMetrics()
 const isMobileSidebarOpen = ref(false)
+const { isMobile, isCompact, isExpanded } = useResponsiveWorkbench()
 const SIDEBAR_STORAGE_KEY = 'volunteer_center_sidebar_width'
 const SIDEBAR_DEFAULT_WIDTH = 296
 const SIDEBAR_MIN_WIDTH = 256
@@ -277,7 +312,7 @@ let dragStartX = 0
 let dragStartWidth = sidebarWidth.value
 
 const desktopSidebarStyle = computed(() => ({
-  width: `${sidebarWidth.value}px`
+  width: isCompact.value ? '92px' : `${sidebarWidth.value}px`
 }))
 
 const clampSidebarWidth = (value: number) => Math.min(SIDEBAR_MAX_WIDTH, Math.max(SIDEBAR_MIN_WIDTH, value))
@@ -412,5 +447,11 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   stopSidebarResize()
+})
+
+watch(isMobile, (value) => {
+  if (!value) {
+    isMobileSidebarOpen.value = false
+  }
 })
 </script>

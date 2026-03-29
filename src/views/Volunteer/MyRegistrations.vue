@@ -20,7 +20,7 @@
           </span>
         </template>
         <template #actions>
-          <div class="grid w-full gap-3 lg:grid-cols-[minmax(0,1fr)_auto]">
+          <div class="grid w-full gap-3 xl:grid-cols-[minmax(0,1fr)_auto]">
             <Input
               v-model.trim="keyword"
               placeholder="搜索报名记录或活动名称"
@@ -29,7 +29,7 @@
             />
             <RouterLink
               to="/volunteer/activities"
-              class="volunteer-toolbar-button volunteer-toolbar-button--soft min-h-[48px]"
+              class="volunteer-toolbar-button volunteer-toolbar-button--soft min-h-[48px] w-full xl:w-auto"
             >
               继续报名活动
             </RouterLink>
@@ -79,7 +79,7 @@
     </template>
 
     <template #body>
-      <div class="grid gap-6 xl:grid-cols-[minmax(0,1.5fr)_minmax(300px,0.85fr)]">
+      <div class="grid gap-6 2xl:grid-cols-[minmax(0,1.5fr)_minmax(300px,0.85fr)]">
         <VolunteerSectionCard
           class="volunteer-registration-ops"
           title="行前运营面板"
@@ -136,7 +136,7 @@
                   <p class="text-sm leading-6 text-slate-600">
                     {{ item.description }}
                   </p>
-                  <div class="grid gap-2 text-sm text-slate-500 sm:grid-cols-2 xl:grid-cols-4">
+                  <div class="grid gap-2 text-sm text-slate-500 sm:grid-cols-2 2xl:grid-cols-4">
                     <p>时间：{{ item.date }}</p>
                     <p>地点：{{ item.location }}</p>
                     <p>报名进度：{{ registrationProgressText(item) }}</p>
