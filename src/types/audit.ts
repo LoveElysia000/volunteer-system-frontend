@@ -22,6 +22,7 @@ export interface PendingAuditItem {
   id: number
   targetType: AuditTargetType
   targetId: number
+  status: AuditStatus
   title: string
   subTitle: string
   creatorId: number

@@ -33,7 +33,7 @@
             variant="success"
             class="w-full 2xl:w-auto"
             :loading="actionLoading"
-            :disabled="!filteredItems.length"
+            :disabled="!actionableItems.length"
             @click="batchApproveFiltered"
           >
             批量通过
@@ -42,7 +42,7 @@
             variant="danger"
             class="w-full 2xl:w-auto"
             :loading="actionLoading"
-            :disabled="!filteredItems.length"
+            :disabled="!actionableItems.length"
             @click="batchRejectFiltered"
           >
             批量驳回
@@ -62,10 +62,10 @@
               :options="targetTypeOptions"
             />
             <FilterSelect
-              v-model="queueFilter"
-              title="审核队列"
+              v-model="auditStatusFilter"
+              title="审核状态"
               :icon="TimerResetIcon"
-              :options="queueFilterOptions"
+              :options="auditStatusOptions"
             />
             <DatePicker
               v-model="createdFrom"
@@ -94,7 +94,7 @@
         <template #summary>
           <div class="data-list-summary-stack">
             <span class="data-list-pagination">第 {{ page }} / {{ totalPages }} 页</span>
-            <span>接口返回 <strong>{{ auditsStore.total }}</strong> 条待审核</span>
+            <span>接口返回 <strong>{{ auditsStore.total }}</strong> 条审核记录</span>
             <span>当前列表 <strong>{{ filteredItems.length }}</strong> 条</span>
           </div>
         </template>
@@ -156,8 +156,8 @@
 
           <template #cell-queue="{ item }">
             <StatusBadge
-              :label="item.isOverdue ? '已超时' : '待处理'"
-              :tone="item.isOverdue ? 'rose' : 'amber'"
+              :label="auditStatusText(item.status)"
+              :tone="auditStatusTone(item.status)"
             />
           </template>
 
@@ -193,8 +193,8 @@
             </div>
 
             <StatusBadge
-              :label="selectedAudit.isOverdue ? '已超时' : '待处理'"
-              :tone="selectedAudit.isOverdue ? 'rose' : 'amber'"
+              :label="auditStatusText(selectedAudit.status)"
+              :tone="auditStatusTone(selectedAudit.status)"
             />
           </div>
         </template>
@@ -272,7 +272,7 @@
         <template #footer>
           <div class="flex flex-col gap-3 sm:flex-row sm:justify-end">
             <Button
-              v-if="selectedAuditId"
+              v-if="selectedAuditId && selectedAudit?.status === AuditStatus.PENDING"
               variant="success"
               :loading="actionLoading"
               @click="approveCurrentAudit"
@@ -280,7 +280,7 @@
               审核通过
             </Button>
             <Button
-              v-if="selectedAuditId"
+              v-if="selectedAuditId && selectedAudit?.status === AuditStatus.PENDING"
               variant="danger"
               :loading="actionLoading"
               @click="rejectCurrentAudit"
@@ -312,6 +312,11 @@ import OrganizationSectionCard from '@/components/organization/OrganizationSecti
 import { useAuditsStore } from '@/store/modules/audits'
 import { useMessageStore } from '@/store/modules/messages'
 import { AuditDecisionAction, AuditStatus, AuditTargetType } from '@/types/audit'
+import {
+  getAuditStatusFilterText,
+  getAuditStatusRequest,
+  type ActivityReviewStatusFilter
+} from './activityReviewStatus'
 import { FoldersIcon, SearchIcon, TimerResetIcon } from 'lucide-vue-next'
 
 const auditsStore = useAuditsStore()
@@ -323,7 +328,7 @@ const detailLoading = ref(false)
 const actionLoading = ref(false)
 const drawerOpen = ref(false)
 const searchQuery = ref('')
-const queueFilter = ref<'all' | 'overdue' | 'pending'>('all')
+const auditStatusFilter = ref<ActivityReviewStatusFilter>('all')
 const targetTypeFilter = ref<'all' | AuditTargetType>('all')
 const createdFrom = ref('')
 const createdTo = ref('')
@@ -335,10 +340,11 @@ const pageSizeOptions = [
   { value: 20, label: '20 条', description: '默认处理密度' },
   { value: 50, label: '50 条', description: '适合批量巡检' }
 ] as const
-const queueFilterOptions = [
-  { value: 'all', label: '全部队列', description: '查看所有待审核记录' },
-  { value: 'overdue', label: '已超时', description: '优先处理超过时限的审核单' },
-  { value: 'pending', label: '正常待处理', description: '查看仍在正常处理时限内的记录' }
+const auditStatusOptions = [
+  { value: 'all', label: '全部状态', description: '查看所有审核状态的记录' },
+  { value: AuditStatus.PENDING, label: '待审核', description: '查看等待处理的审核记录' },
+  { value: AuditStatus.APPROVED, label: '审核通过', description: '查看已通过的审核记录' },
+  { value: AuditStatus.REJECTED, label: '审核拒绝', description: '查看已拒绝的审核记录' }
 ] as const
 const targetTypeOptions = [
   { value: 'all', label: '全部类型', description: '统一查看实名、组织、成员和活动审核' },
@@ -367,7 +373,7 @@ const columns: DataTableColumn[] = [
   },
   {
     key: 'queue',
-    label: '队列状态',
+    label: '审核状态',
     width: '130px',
     align: 'center',
     cellClass: 'whitespace-nowrap'
@@ -381,19 +387,14 @@ const totalPages = computed(() => Math.max(1, Math.ceil(auditsStore.total / page
 const selectedAudit = computed(() => (
   items.value.find((item) => item.id === selectedAuditId.value) || null
 ))
+const actionableItems = computed(() => (
+  filteredItems.value.filter((item) => item.status === AuditStatus.PENDING)
+))
 
 const filteredItems = computed(() => {
   const keyword = searchQuery.value.trim().toLowerCase()
 
   return items.value.filter((item) => {
-    const queueMatched = queueFilter.value === 'all'
-      || (queueFilter.value === 'overdue' && item.isOverdue)
-      || (queueFilter.value === 'pending' && !item.isOverdue)
-
-    if (!queueMatched) {
-      return false
-    }
-
     if (!keyword) {
       return true
     }
@@ -415,7 +416,7 @@ const targetTypes = computed(() => (
 ))
 
 const headerMeta = computed(() => [
-  { label: '待审核总数', value: `${auditsStore.total}`, detail: '来源于审核中心接口' },
+  { label: '审核记录总数', value: `${auditsStore.total}`, detail: '来源于审核中心接口' },
   {
     label: '当前模块',
     value: targetTypeFilter.value === 'all' ? '综合审核' : targetTypeText(targetTypeFilter.value),
@@ -434,9 +435,9 @@ const headerMeta = computed(() => [
 ])
 const headerHighlights = computed(() => [
   {
-    label: '审核队列',
-    value: queueFilterText(queueFilter.value),
-    tone: queueFilter.value === 'overdue' ? 'danger' : 'neutral'
+    label: '审核状态',
+    value: getAuditStatusFilterText(auditStatusFilter.value),
+    tone: auditStatusFilter.value === AuditStatus.REJECTED ? 'danger' : 'neutral'
   },
   {
     label: '处理范围',
@@ -445,7 +446,7 @@ const headerHighlights = computed(() => [
   },
   {
     label: '批量操作',
-    value: filteredItems.value.length ? `${filteredItems.value.length} 条可处理` : '当前无可处理项',
+    value: actionableItems.value.length ? `${actionableItems.value.length} 条可处理` : '当前无可处理项',
     tone: 'neutral'
   }
 ])
@@ -454,7 +455,7 @@ const loadAudits = async () => {
   try {
     const data = await auditsStore.fetchPending({
       targetTypes: targetTypes.value,
-      status: [AuditStatus.PENDING],
+      status: getAuditStatusRequest(auditStatusFilter.value) as AuditStatus[],
       keyword: searchQuery.value || undefined,
       page: page.value,
       pageSize: pageSize.value,
@@ -543,11 +544,11 @@ const rejectCurrentAudit = async () => {
 }
 
 const runBatchDecision = async (action: AuditDecisionAction, successMessage: string) => {
-  if (!filteredItems.value.length) return
+  if (!actionableItems.value.length) return
   actionLoading.value = true
   try {
     const response = await auditsStore.batchDecision({
-      ids: filteredItems.value.map((item) => item.id),
+      ids: actionableItems.value.map((item) => item.id),
       action,
       reason: auditReason.value || undefined
     })
@@ -579,17 +580,32 @@ const targetTypeText = (targetType: AuditTargetType) => ({
   [AuditTargetType.ACTIVITY_SIGNUP]: '活动报名'
 }[targetType] || '未知类型')
 
-const queueFilterText = (queue: 'all' | 'overdue' | 'pending') => ({
-  all: '全部队列',
-  overdue: '已超时',
-  pending: '正常待处理'
-}[queue] || '全部队列')
+const auditStatusText = (status: AuditStatus) => ({
+  [AuditStatus.PENDING]: '待审核',
+  [AuditStatus.APPROVED]: '审核通过',
+  [AuditStatus.REJECTED]: '审核拒绝'
+}[status] || '未知状态')
+
+const auditStatusTone = (
+  status: AuditStatus
+): 'green' | 'blue' | 'amber' | 'slate' | 'rose' => {
+  switch (status) {
+    case AuditStatus.PENDING:
+      return 'amber'
+    case AuditStatus.APPROVED:
+      return 'green'
+    case AuditStatus.REJECTED:
+      return 'rose'
+    default:
+      return 'slate'
+  }
+}
 
 onMounted(() => {
   void loadAudits()
 })
 
-watch([searchQuery, queueFilter, targetTypeFilter, createdFrom, createdTo, slaHours, pageSize], () => {
+watch([searchQuery, auditStatusFilter, targetTypeFilter, createdFrom, createdTo, slaHours, pageSize], () => {
   page.value = 1
   void loadAudits()
 })
