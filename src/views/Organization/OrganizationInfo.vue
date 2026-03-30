@@ -70,17 +70,9 @@
         tone="soft"
       >
         <div class="space-y-4">
-        <div class="data-list-toolbar data-list-toolbar-surface 2xl:grid-cols-[minmax(220px,0.72fr)_minmax(0,1.28fr)]">
-          <div class="data-list-toolbar-group data-list-toolbar-pane">
-            <div class="data-list-summary-stack text-xs">
-              <span class="data-list-pagination">{{ organizationStore.total }} 条记录</span>
-              <span class="text-slate-300">/</span>
-              <span>点击任一行打开详情</span>
-            </div>
-          </div>
-
-          <div class="data-list-toolbar-actions data-list-toolbar-pane 2xl:max-w-none 2xl:items-stretch">
-            <div class="data-list-filter-grid md:grid-cols-2 2xl:grid-cols-[minmax(156px,1.2fr)_repeat(4,minmax(132px,1fr))] 2xl:w-full">
+        <DataToolbar>
+          <template #filters>
+            <div class="data-list-filter-grid md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5">
               <FilterSelect
                 v-model="listFilters.status"
                 title="组织状态"
@@ -112,8 +104,15 @@
                 mode="date"
               />
             </div>
-          </div>
-        </div>
+          </template>
+
+          <template #summary>
+            <div class="data-list-summary-stack text-xs">
+              <span class="data-list-pagination">{{ organizationStore.total }} 条记录</span>
+              <span>点击任一行打开详情</span>
+            </div>
+          </template>
+        </DataToolbar>
 
         <div
           v-if="organizationStore.organizations.length"
@@ -671,6 +670,7 @@ import Input from '@/components/ui/Input.vue'
 import FilterSelect from '@/components/ui/FilterSelect.vue'
 import DatePicker from '@/components/ui/DatePicker.vue'
 import Textarea from '@/components/ui/Textarea.vue'
+import DataToolbar from '@/components/data-list/DataToolbar.vue'
 import WorkbenchDetailPanel from '@/components/workbench/WorkbenchDetailPanel.vue'
 import WorkbenchEmptyPanel from '@/components/workbench/WorkbenchEmptyPanel.vue'
 import WorkbenchPage from '@/components/workbench/WorkbenchPage.vue'

@@ -1,33 +1,59 @@
-import type { ActivityTab } from './activityFeed'
+import {
+  normalizeVolunteerActivityRoute,
+  type VolunteerActivityRouteState
+} from './activityFeed.ts'
 
-interface ActivityReloadDecisionInput {
-  currentRouteName: string
+interface VolunteerActivityRouteSyncInput {
+  routeName: string
   previousRouteName?: string
+  query: Record<string, unknown>
   hasLoadedOnce: boolean
-  nextTab: ActivityTab
-  currentTab: ActivityTab
-  nextSearch: string
-  currentSearch: string
+  currentState: VolunteerActivityRouteState
 }
 
-export const shouldReloadVolunteerActivityList = ({
-  currentRouteName,
+interface VolunteerActivityRouteSyncPlan {
+  nextState: VolunteerActivityRouteState
+  shouldRefresh: boolean
+  shouldResetPage: boolean
+  shouldOpenFromQuery: boolean
+}
+
+const didListFiltersChange = (
+  currentState: VolunteerActivityRouteState,
+  nextState: VolunteerActivityRouteState
+) => {
+  return currentState.tab !== nextState.tab
+    || currentState.search !== nextState.search
+    || currentState.startFrom !== nextState.startFrom
+    || currentState.endTo !== nextState.endTo
+}
+
+export const planVolunteerActivityRouteSync = ({
+  routeName,
   previousRouteName,
+  query,
   hasLoadedOnce,
-  nextTab,
-  currentTab,
-  nextSearch,
-  currentSearch
-}: ActivityReloadDecisionInput) => {
-  if (currentRouteName !== 'volunteer-activities') {
-    return false
+  currentState
+}: VolunteerActivityRouteSyncInput): VolunteerActivityRouteSyncPlan => {
+  const nextState = normalizeVolunteerActivityRoute(query)
+
+  if (routeName !== 'volunteer-activities') {
+    return {
+      nextState,
+      shouldRefresh: false,
+      shouldResetPage: false,
+      shouldOpenFromQuery: false
+    }
   }
 
-  if (previousRouteName !== 'volunteer-activities') {
-    return true
-  }
+  const enteredFromAnotherRoute = previousRouteName !== 'volunteer-activities'
+  const filtersChanged = didListFiltersChange(currentState, nextState)
+  const shouldRefresh = enteredFromAnotherRoute || !hasLoadedOnce || filtersChanged
 
-  return !hasLoadedOnce
-    || nextTab !== currentTab
-    || nextSearch !== currentSearch
+  return {
+    nextState,
+    shouldRefresh,
+    shouldResetPage: enteredFromAnotherRoute || filtersChanged,
+    shouldOpenFromQuery: true
+  }
 }

@@ -399,7 +399,7 @@ import {
   normalizeVolunteerActivityRoute,
   type ActivityTab
 } from './activityFeed'
-import { shouldReloadVolunteerActivityList } from './activityPageState'
+import { planVolunteerActivityRouteSync } from './activityPageState'
 import { BACKEND_ACTIVITY_STATUS } from '@/constants/activityEnums'
 import { shouldRefreshOnKeepAliveActivated } from '@/utils/keepAliveRefresh'
 
@@ -447,6 +447,7 @@ const pageSizeOptions = [
 ] as const
 const hasLoadedOnce = ref(false)
 const hasActivatedOnce = ref(false)
+const isApplyingRouteState = ref(false)
 
 const filterTabs: FilterTab[] = [
   { id: 'all', label: '全部活动' },
@@ -455,7 +456,24 @@ const filterTabs: FilterTab[] = [
   { id: 'canceled', label: '已取消' }
 ]
 
-const openActivityFromQuery = () => {
+function applyRouteState(nextRouteState: ReturnType<typeof normalizeVolunteerActivityRoute>) {
+  activeTab.value = nextRouteState.tab
+  searchQuery.value = nextRouteState.search
+  startFrom.value = nextRouteState.startFrom
+  endTo.value = nextRouteState.endTo
+}
+
+function currentRouteState() {
+  return {
+    tab: activeTab.value,
+    search: searchQuery.value,
+    startFrom: startFrom.value,
+    endTo: endTo.value,
+    activityId: selectedActivityId.value
+  }
+}
+
+function openActivityFromQuery() {
   const { activityId } = normalizeVolunteerActivityRoute(route.query)
   if (activityId === null) {
     return
@@ -468,30 +486,34 @@ const openActivityFromQuery = () => {
 }
 
 watch(() => [route.name, route.query] as const, async ([routeName, query], previousValue) => {
-  const previousRouteName = previousValue?.[0]
-  const nextRouteState = normalizeVolunteerActivityRoute(query)
-  const shouldReload = shouldReloadVolunteerActivityList({
-    currentRouteName: String(routeName || ''),
-    previousRouteName: String(previousRouteName || ''),
+  const plan = planVolunteerActivityRouteSync({
+    routeName: String(routeName || ''),
+    previousRouteName: previousValue?.[0] ? String(previousValue[0]) : undefined,
+    query,
     hasLoadedOnce: hasLoadedOnce.value,
-    nextTab: nextRouteState.tab,
-    currentTab: activeTab.value,
-    nextSearch: nextRouteState.search,
-    currentSearch: searchQuery.value
+    currentState: currentRouteState()
   })
 
-  activeTab.value = nextRouteState.tab
-  searchQuery.value = nextRouteState.search
-  startFrom.value = nextRouteState.startFrom
-  endTo.value = nextRouteState.endTo
+  isApplyingRouteState.value = true
+  applyRouteState(plan.nextState)
+  selectedActivityId.value = plan.nextState.activityId
+  if (plan.nextState.activityId === null) {
+    drawerOpen.value = false
+    selectedActivitySnapshot.value = null
+  }
+  isApplyingRouteState.value = false
 
-  if (shouldReload) {
+  if (plan.shouldResetPage) {
     page.value = 1
-    await loadActivities()
-    hasLoadedOnce.value = true
   }
 
-  openActivityFromQuery()
+  if (plan.shouldRefresh) {
+    await refreshActivities()
+  }
+
+  if (plan.shouldOpenFromQuery) {
+    openActivityFromQuery()
+  }
 }, { immediate: true, deep: true })
 
 onActivated(async () => {
@@ -509,11 +531,15 @@ onActivated(async () => {
     return
   }
 
-  await loadActivities()
+  await refreshActivities()
   openActivityFromQuery()
 })
 
 watch([activeTab, searchQuery, startFrom, endTo, drawerOpen, selectedActivityId], ([tab, search, from, to, isDrawerOpen, selectedId]) => {
+  if (isApplyingRouteState.value) {
+    return
+  }
+
   const query = buildVolunteerActivityRouteQuery({
     tab,
     search,
@@ -626,7 +652,7 @@ const setActiveTab = (tab: ActivityTab) => {
   activeTab.value = tab
 }
 
-const syncSelectedActivity = () => {
+function syncSelectedActivity() {
   if (selectedActivityId.value === null) {
     return
   }
@@ -637,7 +663,7 @@ const syncSelectedActivity = () => {
   }
 }
 
-const loadActivities = async () => {
+async function loadActivities() {
   loading.value = true
 
   try {
@@ -666,6 +692,11 @@ const loadActivities = async () => {
   } finally {
     loading.value = false
   }
+}
+
+async function refreshActivities() {
+  await loadActivities()
+  hasLoadedOnce.value = true
 }
 
 const clearFilters = () => {
@@ -723,7 +754,7 @@ const handleRegister = async (id: number) => {
       throw new Error(response.msg || '报名失败')
     }
     messageStore.success('报名成功')
-    await loadActivities()
+    await refreshActivities()
     syncSelectedActivity()
   } catch (error: any) {
     console.error('报名活动失败:', error)
@@ -746,7 +777,7 @@ const handleCancel = async (id: number) => {
       throw new Error(response.msg || '取消报名失败')
     }
     messageStore.success('已取消报名')
-    await loadActivities()
+    await refreshActivities()
     syncSelectedActivity()
   } catch (error: any) {
     console.error('取消报名失败:', error)
@@ -761,10 +792,10 @@ watch(activityRows, () => {
 })
 
 watch([activeTab, searchQuery, startFrom, endTo, pageSize], () => {
-  if (!hasLoadedOnce.value) {
+  if (!hasLoadedOnce.value || isApplyingRouteState.value) {
     return
   }
   page.value = 1
-  void loadActivities()
+  void refreshActivities()
 })
 </script>
