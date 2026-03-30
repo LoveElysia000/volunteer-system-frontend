@@ -448,6 +448,7 @@ const pageSizeOptions = [
 const hasLoadedOnce = ref(false)
 const hasActivatedOnce = ref(false)
 const isApplyingRouteState = ref(false)
+const isSyncingRouteFromLocalState = ref(false)
 
 const filterTabs: FilterTab[] = [
   { id: 'all', label: '全部活动' },
@@ -507,7 +508,7 @@ watch(() => [route.name, route.query] as const, async ([routeName, query], previ
     page.value = 1
   }
 
-  if (plan.shouldRefresh) {
+  if (plan.shouldRefresh && !isSyncingRouteFromLocalState.value) {
     await refreshActivities()
   }
 
@@ -550,7 +551,10 @@ watch([activeTab, searchQuery, startFrom, endTo, drawerOpen, selectedActivityId]
   const currentQuery = buildVolunteerActivityRouteQuery(normalizeVolunteerActivityRoute(route.query))
 
   if (JSON.stringify(query) !== JSON.stringify(currentQuery)) {
-    void router.replace({ query })
+    isSyncingRouteFromLocalState.value = true
+    void router.replace({ query }).finally(() => {
+      isSyncingRouteFromLocalState.value = false
+    })
   }
 
   pageStateStore.updateVolunteerActivitiesState({ activeTab: tab, searchQuery: search })
@@ -789,6 +793,15 @@ const handleCancel = async (id: number) => {
 
 watch(activityRows, () => {
   syncSelectedActivity()
+})
+
+watch([activeTab, searchQuery, startFrom, endTo], () => {
+  if (!hasLoadedOnce.value || isApplyingRouteState.value) {
+    return
+  }
+
+  page.value = 1
+  void refreshActivities()
 })
 
 watch(pageSize, () => {
