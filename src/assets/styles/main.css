@@ -41,7 +41,7 @@
   }
 
   .table-text-action {
-    @apply text-sm font-semibold text-[#2563eb] transition hover:text-[#1d4ed8] hover:underline focus:outline-none;
+    @apply text-sm font-semibold text-slate-600 transition hover:text-slate-900 hover:underline focus:outline-none;
   }
 
   /* 危险按钮 */
@@ -1671,6 +1671,87 @@
     transform: translateY(-1px);
   }
 
+  .data-list-page-shell {
+    @apply gap-5;
+  }
+
+  .data-list-toolbar {
+    @apply flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between;
+  }
+
+  .data-list-toolbar-surface {
+    @apply rounded-[1.35rem] border border-slate-200/80 bg-white/90 p-4 shadow-[0_16px_40px_-34px_rgba(15,23,42,0.18)] backdrop-blur-sm lg:p-5;
+  }
+
+  .data-list-toolbar-pane {
+    @apply flex min-w-0 flex-col gap-3;
+  }
+
+  .data-list-toolbar-group {
+    @apply flex-1;
+  }
+
+  .data-list-toolbar-actions {
+    @apply lg:max-w-[40%] lg:items-end;
+  }
+
+  .data-list-summary-text {
+    @apply text-sm font-medium text-slate-500;
+  }
+
+  .data-list-summary-stack {
+    @apply flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-slate-500;
+  }
+
+  .data-list-summary-stack strong {
+    @apply font-semibold text-slate-800;
+  }
+
+  .data-list-action-stack {
+    @apply flex flex-wrap items-center gap-2 self-start lg:justify-end;
+  }
+
+  .data-list-pagination {
+    @apply inline-flex min-h-[42px] items-center rounded-xl border border-slate-200 bg-white px-3.5 text-sm font-medium text-slate-500 shadow-[0_10px_24px_-22px_rgba(15,23,42,0.18)];
+  }
+
+  .data-list-filter-grid {
+    @apply grid gap-3;
+  }
+
+  .data-list-inline-bar {
+    @apply mb-4 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-500;
+  }
+
+  .data-list-inline-actions {
+    @apply flex flex-wrap items-center gap-2;
+  }
+
+  .data-list-custom-row {
+    @apply transition-colors duration-200;
+  }
+
+  .data-list-custom-row:hover {
+    background: rgba(248, 250, 252, 0.88);
+  }
+
+  .data-list-custom-row-active {
+    background: rgba(241, 245, 249, 0.96);
+    box-shadow: inset 3px 0 0 rgba(148, 163, 184, 0.9);
+  }
+
+  .data-table-frame {
+    @apply overflow-hidden rounded-[1.35rem] border border-slate-200/80 bg-white/95 shadow-[0_18px_44px_-38px_rgba(15,23,42,0.2)];
+  }
+
+  .data-table-head-row {
+    background: linear-gradient(180deg, rgba(248, 250, 252, 0.96) 0%, rgba(255, 255, 255, 0.98) 100%);
+  }
+
+  .data-list-status-badge {
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
+  }
+
   .data-list-chip-neutral {
     @apply border-transparent bg-white text-slate-600 hover:border-slate-200 hover:bg-slate-50;
     box-shadow: 0 10px 24px -20px rgba(15, 23, 42, 0.16);
@@ -1690,7 +1771,7 @@
   }
 
   .data-list-row {
-    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
   }
 
   .data-list-clickable-row {
@@ -1698,33 +1779,36 @@
   }
 
   .data-list-clickable-row:hover {
-    transform: translateY(-1px);
-    border-color: rgba(203, 213, 225, 1);
-    box-shadow: 0 18px 42px -34px rgba(15, 23, 42, 0.24);
+    box-shadow: inset 0 0 0 999px rgba(248, 250, 252, 0.7);
     background: rgba(248, 250, 252, 0.96);
   }
 
   .data-list-clickable-row:focus-within {
-    transform: translateY(-1px);
-    border-color: rgba(203, 213, 225, 1);
-    box-shadow: 0 18px 42px -34px rgba(15, 23, 42, 0.24);
+    box-shadow: inset 0 0 0 999px rgba(248, 250, 252, 0.7);
     background: rgba(248, 250, 252, 0.96);
   }
 
   .data-list-row-selected {
-    border-color: rgba(16, 185, 129, 0.3);
-    background: rgba(236, 253, 245, 0.8);
-    box-shadow: inset 0 0 0 1px rgba(16, 185, 129, 0.12);
+    background: rgba(241, 245, 249, 0.96);
+    box-shadow: inset 3px 0 0 rgba(148, 163, 184, 0.9);
   }
 
   .data-table-density-compact .data-table-header-cell,
   .data-table-density-compact .data-table-cell {
-    @apply px-3 py-2.5 text-sm;
+    @apply px-4 py-3 text-sm;
   }
 
   .data-table-density-comfortable .data-table-header-cell,
   .data-table-density-comfortable .data-table-cell {
-    @apply px-4 py-3.5 text-sm;
+    @apply px-5 py-4 text-sm;
+  }
+
+  .data-table-header-cell {
+    @apply text-xs font-semibold tracking-[0.16em] text-slate-400;
+  }
+
+  .data-table-cell {
+    @apply align-middle;
   }
 
   .data-list-density-compact .data-list-row {

@@ -41,7 +41,7 @@
     <template #toolbar>
       <DataToolbar>
         <template #filters>
-          <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          <div class="data-list-filter-grid md:grid-cols-2 xl:grid-cols-3">
             <div class="rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-sm text-slate-500">
               建议先筛出本周内活动，再按时间顺序检查路线、签到和物资准备。
             </div>
@@ -61,11 +61,13 @@
         </template>
 
         <template #summary>
-          <span class="text-sm text-slate-500">第 {{ page }} / {{ totalPages }} 页</span>
+          <div class="data-list-summary-stack">
+            <span class="data-list-pagination">第 {{ page }} / {{ totalPages }} 页</span>
+          </div>
         </template>
 
         <template #actions>
-          <div class="flex flex-wrap items-center gap-2">
+          <div class="data-list-action-stack">
             <Button
               variant="outline"
               :disabled="loading || page <= 1"

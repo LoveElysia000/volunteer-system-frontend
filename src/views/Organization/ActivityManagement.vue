@@ -45,7 +45,7 @@
     <template #toolbar>
       <DataToolbar>
         <template #filters>
-          <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-[minmax(220px,320px)_180px_180px_180px_160px]">
+          <div class="data-list-filter-grid md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-[minmax(220px,320px)_180px_180px_180px_160px]">
             <Input
               v-model="search"
               placeholder="搜索活动标题或地点"
@@ -77,27 +77,29 @@
         </template>
 
         <template #summary>
-          <div class="flex flex-wrap items-center gap-3 text-sm text-slate-500">
-            <span>第 {{ page }} / {{ totalPages }} 页</span>
-            <span>当前 {{ activities.length }} 条</span>
+          <div class="data-list-summary-stack">
+            <span class="data-list-pagination">第 {{ page }} / {{ totalPages }} 页</span>
+            <span>当前 <strong>{{ activities.length }}</strong> 条</span>
           </div>
         </template>
 
         <template #actions>
-          <Button
-            variant="outline"
-            :disabled="loading || page <= 1"
-            @click="goToPreviousPage"
-          >
-            上一页
-          </Button>
-          <Button
-            variant="outline"
-            :disabled="loading || page >= totalPages"
-            @click="goToNextPage"
-          >
-            下一页
-          </Button>
+          <div class="data-list-action-stack">
+            <Button
+              variant="outline"
+              :disabled="loading || page <= 1"
+              @click="goToPreviousPage"
+            >
+              上一页
+            </Button>
+            <Button
+              variant="outline"
+              :disabled="loading || page >= totalPages"
+              @click="goToNextPage"
+            >
+              下一页
+            </Button>
+          </div>
         </template>
       </DataToolbar>
     </template>

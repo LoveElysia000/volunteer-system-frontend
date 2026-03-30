@@ -36,7 +36,7 @@
     <template #toolbar>
       <DataToolbar>
         <template #filters>
-          <div class="grid gap-3 md:grid-cols-2 2xl:grid-cols-4">
+          <div class="data-list-filter-grid md:grid-cols-2 2xl:grid-cols-4">
             <FilterSelect
               v-model="statusFilter"
               title="成员状态"
@@ -60,83 +60,90 @@
         </template>
 
         <template #summary>
-          <div class="flex flex-wrap items-center gap-3 text-sm text-slate-500">
-            <span>第 {{ page }} / {{ totalPages }} 页</span>
-            <span>当前 {{ members.length }} 条，共 {{ membershipsStore.total }} 条</span>
+          <div class="data-list-summary-stack">
+            <span class="data-list-pagination">第 {{ page }} / {{ totalPages }} 页</span>
+            <span>当前 <strong>{{ members.length }}</strong> 条，共 <strong>{{ membershipsStore.total }}</strong> 条</span>
           </div>
         </template>
 
         <template #actions>
-          <Button
-            variant="outline"
-            :disabled="loading || page <= 1"
-            @click="goToPreviousPage"
-          >
-            上一页
-          </Button>
-          <Button
-            variant="outline"
-            :disabled="loading || page >= totalPages"
-            @click="goToNextPage"
-          >
-            下一页
-          </Button>
+          <div class="data-list-action-stack">
+            <Button
+              variant="outline"
+              :disabled="loading || page <= 1"
+              @click="goToPreviousPage"
+            >
+              上一页
+            </Button>
+            <Button
+              variant="outline"
+              :disabled="loading || page >= totalPages"
+              @click="goToNextPage"
+            >
+              下一页
+            </Button>
+          </div>
         </template>
       </DataToolbar>
     </template>
 
     <template #body>
-      <DataTable
-        :columns="columns"
-        :items="members"
-        :loading="loading"
-        row-key="membershipId"
-        :selected-key="selectedMembershipId"
-        interactive
-        open-text="查看"
-        open-style="text"
-        density="compact"
-        empty-title="当前没有符合条件的成员"
-        empty-description="调整关键词、状态或角色后再试。"
-        @row-click="openMemberDrawer"
+      <OrganizationSectionCard
+        title="成员列表"
+        description="按成员状态和角色筛选后查看详情。"
       >
-        <template #cell-identity="{ item }">
-          <div class="min-w-0 space-y-1">
-            <p class="truncate text-sm font-semibold text-slate-900">
-              {{ item.volunteerName }}
-            </p>
-            <p class="truncate text-xs text-slate-500">
-              编号：{{ item.volunteerCode || '-' }}
-            </p>
-          </div>
-        </template>
+        <DataTable
+          :columns="columns"
+          :items="members"
+          :loading="loading"
+          row-key="membershipId"
+          :selected-key="selectedMembershipId"
+          interactive
+          open-text="查看"
+          open-style="text"
+          density="compact"
+          empty-title="当前没有符合条件的成员"
+          empty-description="调整关键词、状态或角色后再试。"
+          @row-click="openMemberDrawer"
+        >
+          <template #cell-identity="{ item }">
+            <div class="min-w-0 space-y-1">
+              <p class="truncate text-sm font-semibold text-slate-900">
+                {{ item.volunteerName }}
+              </p>
+              <p class="truncate text-xs text-slate-500">
+                编号：{{ item.volunteerCode || '-' }}
+              </p>
+            </div>
+          </template>
 
-        <template #cell-role="{ item }">
-          <StatusBadge
-            :label="roleText(item.role)"
-            :tone="roleTone(item.role)"
-          />
-        </template>
+          <template #cell-role="{ item }">
+            <StatusBadge
+              :label="roleText(item.role)"
+              :tone="roleTone(item.role)"
+            />
+          </template>
 
-        <template #cell-status="{ item }">
-          <StatusBadge
-            :label="statusText(item.status)"
-            :tone="statusTone(item.status)"
-          />
-        </template>
+          <template #cell-status="{ item }">
+            <StatusBadge
+              :label="statusText(item.status)"
+              :tone="statusTone(item.status)"
+            />
+          </template>
 
-        <template #cell-position="{ item }">
-          {{ item.position || '未填写' }}
-        </template>
+          <template #cell-position="{ item }">
+            {{ item.position || '未填写' }}
+          </template>
 
-        <template #cell-joinDate="{ item }">
-          {{ memberJoinDate(item) }}
-        </template>
+          <template #cell-joinDate="{ item }">
+            {{ memberJoinDate(item) }}
+          </template>
 
-        <template #cell-expectedHours="{ item }">
-          {{ item.expectedHours || '未填写' }}
-        </template>
-      </DataTable>
+          <template #cell-expectedHours="{ item }">
+            {{ item.expectedHours || '未填写' }}
+          </template>
+        </DataTable>
+      </OrganizationSectionCard>
     </template>
 
     <template #drawer>

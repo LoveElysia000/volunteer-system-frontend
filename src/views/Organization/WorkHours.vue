@@ -41,7 +41,7 @@
     <template #toolbar>
       <DataToolbar>
         <template #filters>
-          <div class="grid gap-3 md:grid-cols-2 2xl:grid-cols-2">
+          <div class="data-list-filter-grid md:grid-cols-2 2xl:grid-cols-2">
             <FilterSelect
               v-model="operationType"
               title="操作类型"
@@ -58,14 +58,14 @@
         </template>
 
         <template #summary>
-          <div class="flex flex-wrap items-center gap-3 text-sm text-slate-500">
-            <span>第 {{ page }} / {{ totalPages }} 页</span>
-            <span>共 {{ total }} 条流水</span>
+          <div class="data-list-summary-stack">
+            <span class="data-list-pagination">第 {{ page }} / {{ totalPages }} 页</span>
+            <span>共 <strong>{{ total }}</strong> 条流水</span>
           </div>
         </template>
 
         <template #actions>
-          <div class="flex flex-wrap gap-2">
+          <div class="data-list-action-stack">
             <Button
               variant="outline"
               :disabled="loading || page <= 1"

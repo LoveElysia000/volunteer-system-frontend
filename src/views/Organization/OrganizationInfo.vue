@@ -69,51 +69,55 @@
         description="点击一条组织记录，在右侧查看完整信息。"
         tone="soft"
       >
-      <div class="space-y-4">
-        <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div class="flex items-center gap-2 text-xs text-slate-400">
-            <span>{{ organizationStore.total }} 条记录</span>
-            <span class="text-slate-300">/</span>
-            <span>点击任一行打开详情</span>
+        <div class="space-y-4">
+        <div class="data-list-toolbar data-list-toolbar-surface">
+          <div class="data-list-toolbar-group data-list-toolbar-pane">
+            <div class="data-list-summary-stack text-xs">
+              <span class="data-list-pagination">{{ organizationStore.total }} 条记录</span>
+              <span class="text-slate-300">/</span>
+              <span>点击任一行打开详情</span>
+            </div>
           </div>
-        </div>
 
-        <div class="grid gap-3 md:grid-cols-2 2xl:grid-cols-5">
-          <FilterSelect
-            v-model="listFilters.status"
-            title="组织状态"
-            :icon="ShieldCheckIcon"
-            :options="organizationStatusOptions"
-          />
+          <div class="data-list-toolbar-actions data-list-toolbar-pane">
+            <div class="data-list-filter-grid md:grid-cols-2 2xl:grid-cols-5">
+              <FilterSelect
+                v-model="listFilters.status"
+                title="组织状态"
+                :icon="ShieldCheckIcon"
+                :options="organizationStatusOptions"
+              />
 
-          <Input
-            v-model="listFilters.organizationType"
-            class="!rounded-[1rem] !border-white/90 !bg-white"
-            placeholder="组织类型"
-          />
+              <Input
+                v-model="listFilters.organizationType"
+                class="!rounded-[1rem] !border-white/90 !bg-white"
+                placeholder="组织类型"
+              />
 
-          <Input
-            v-model="listFilters.region"
-            class="!rounded-[1rem] !border-white/90 !bg-white"
-            placeholder="地区"
-          />
+              <Input
+                v-model="listFilters.region"
+                class="!rounded-[1rem] !border-white/90 !bg-white"
+                placeholder="地区"
+              />
 
-          <DatePicker
-            v-model="listFilters.startDate"
-            placeholder="开始日期"
-            mode="date"
-          />
+              <DatePicker
+                v-model="listFilters.startDate"
+                placeholder="开始日期"
+                mode="date"
+              />
 
-          <DatePicker
-            v-model="listFilters.endDate"
-            placeholder="结束日期"
-            mode="date"
-          />
+              <DatePicker
+                v-model="listFilters.endDate"
+                placeholder="结束日期"
+                mode="date"
+              />
+            </div>
+          </div>
         </div>
 
         <div
           v-if="organizationStore.organizations.length"
-          class="overflow-hidden rounded-[1.2rem] border border-slate-200 bg-white"
+          class="data-table-frame"
         >
           <div class="hidden grid-cols-[minmax(0,1.45fr)_minmax(110px,0.75fr)_minmax(140px,0.9fr)_100px_110px_120px] gap-4 border-b border-slate-200 bg-slate-50/80 px-5 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-400 2xl:grid">
             <span>组织信息</span>
@@ -127,8 +131,8 @@
           <button
             v-for="item in organizationStore.organizations"
             :key="item.id"
-            class="group grid w-full gap-3 border-b border-slate-100 px-5 py-4 text-left transition last:border-b-0 hover:bg-[#fffaf7] 2xl:grid-cols-[minmax(0,1.45fr)_minmax(110px,0.75fr)_minmax(140px,0.9fr)_100px_110px_120px] 2xl:items-center 2xl:gap-4"
-            :class="organizationStore.activeOrganizationId === item.id && drawerOpen ? 'bg-[#fff8f3]' : 'bg-white'"
+            class="data-list-custom-row group grid w-full gap-3 border-b border-slate-100 px-5 py-4 text-left last:border-b-0 2xl:grid-cols-[minmax(0,1.45fr)_minmax(110px,0.75fr)_minmax(140px,0.9fr)_100px_110px_120px] 2xl:items-center 2xl:gap-4"
+            :class="organizationStore.activeOrganizationId === item.id && drawerOpen ? 'data-list-custom-row-active' : 'bg-white'"
             @click="openOrganizationDetail(item.id)"
           >
             <div class="min-w-0">
@@ -185,7 +189,7 @@
         >
           暂无可管理组织数据
         </WorkbenchEmptyPanel>
-      </div>
+        </div>
       </OrganizationSectionCard>
     </WorkbenchDetailPanel>
 

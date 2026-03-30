@@ -44,7 +44,7 @@
     <template #toolbar>
       <DataToolbar>
         <template #filters>
-          <div class="grid gap-3 lg:grid-cols-[auto_200px]">
+          <div class="data-list-filter-grid lg:grid-cols-[auto_200px]">
             <label class="inline-flex min-h-[44px] cursor-pointer items-center gap-2 rounded-2xl border border-emerald-100 bg-emerald-50/70 px-4 py-3 text-sm font-semibold text-slate-700">
               <input
                 v-model="unreadOnly"
@@ -64,15 +64,15 @@
         </template>
 
         <template #summary>
-          <div class="flex flex-wrap items-center gap-3 text-sm text-slate-500">
-            <span>第 {{ page }} / {{ totalPages }} 页</span>
-            <span>当前页 {{ notifications.length }} 条</span>
-            <span>未读 {{ unreadInboxIds.length }} 条</span>
+          <div class="data-list-summary-stack">
+            <span class="data-list-pagination">第 {{ page }} / {{ totalPages }} 页</span>
+            <span>当前页 <strong>{{ notifications.length }}</strong> 条</span>
+            <span>未读 <strong>{{ unreadInboxIds.length }}</strong> 条</span>
           </div>
         </template>
 
         <template #actions>
-          <div class="flex flex-wrap items-center gap-2">
+          <div class="data-list-action-stack">
             <Button
               variant="outline"
               :disabled="loading || page <= 1"

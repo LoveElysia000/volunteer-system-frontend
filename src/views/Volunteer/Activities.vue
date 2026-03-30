@@ -115,14 +115,14 @@
           title="活动列表"
           description="浏览当前筛选结果，点击一行在右侧查看详情并完成报名或取消。"
         >
-          <div class="mb-4 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-500">
+          <div class="data-list-inline-bar">
             <p>
               当前共找到
               <span class="font-semibold text-slate-800">{{ filteredActivities.length }}</span>
               个匹配活动
             </p>
-            <div class="flex flex-wrap items-center gap-2">
-              <span>第 {{ page }} / {{ totalPages }} 页</span>
+            <div class="data-list-inline-actions">
+              <span class="data-list-pagination">第 {{ page }} / {{ totalPages }} 页</span>
               <Button
                 variant="outline"
                 rounded

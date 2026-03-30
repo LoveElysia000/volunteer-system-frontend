@@ -60,7 +60,7 @@
           <div class="flex flex-col gap-3">
             <Input
               v-model.trim="searchKeyword"
-              placeholder="搜索活动名称、志愿者姓名..."
+              placeholder="搜索活动名称、审核标题..."
               :icon="SearchIcon"
               allow-clear
               class="!border-[#ffd9c4] !bg-white"
@@ -207,7 +207,7 @@
         class="organization-impact-trend"
         title="环保成效趋势"
         caption="Impact Trends"
-        description="基于当前活跃活动的综合表现，观察阶段性变化。"
+        description="基于真实活动列表，查看每月活动数量变化。"
       >
         <template #header>
           <FilterSelect
@@ -221,7 +221,7 @@
         <div class="flex min-h-[clamp(14rem,32vh,17.5rem)] items-end gap-3 border-b border-slate-100 pb-5">
           <div
             v-for="row in trendRowsForView"
-            :key="`${selectedTrendRange}-${row.month}`"
+            :key="`${selectedTrendRange}-${row.key}`"
             class="group flex min-w-0 flex-1 flex-col items-center gap-2"
           >
             <div
@@ -240,10 +240,10 @@
 
         <div class="mt-4 flex items-center gap-4 text-xs font-medium text-slate-500">
           <div class="flex items-center gap-2">
-            <span class="h-3 w-3 rounded-full bg-[#ec5b13]" /> 当前周期
+            <span class="h-3 w-3 rounded-full bg-[#ec5b13]" /> 最近月份
           </div>
           <div class="flex items-center gap-2">
-            <span class="h-3 w-3 rounded-full bg-slate-300" /> 上一周期
+            <span class="h-3 w-3 rounded-full bg-slate-300" /> 历史月份
           </div>
         </div>
       </OrganizationSectionCard>
@@ -252,7 +252,7 @@
         class="organization-critical-tasks"
         title="关键任务"
         caption="Critical Tasks"
-        description="优先处理审批事项与执行阻塞问题"
+        description="直接展示待审核接口返回的真实记录。"
         tone="soft"
       >
         <template #header>
@@ -271,7 +271,7 @@
         >
           <div
             v-for="task in filteredCriticalTaskRows"
-            :key="task.key"
+            :key="task.id"
             class="rounded-2xl border border-white/70 bg-white/90 p-4"
           >
             <div class="mb-2 flex items-center justify-between gap-3">
@@ -286,16 +286,11 @@
               </span>
             </div>
 
-            <div class="h-2 overflow-hidden rounded-full bg-slate-100">
-              <div
-                class="h-full rounded-full"
-                :class="taskProgressClass(task.tone)"
-                :style="{ width: `${task.progress}%` }"
-              />
-            </div>
-
-            <p class="mt-2 text-xs text-slate-500">
+            <p class="text-xs text-slate-500">
               {{ task.detail }}
+            </p>
+            <p class="mt-2 text-[11px] font-medium text-slate-400">
+              创建时间 {{ task.createdAt }}
             </p>
           </div>
         </transition-group>
@@ -320,7 +315,7 @@
       class="organization-top-projects"
       title="重点活动"
       caption="Top Projects"
-      description="优先查看当前执行节奏稳定、反馈较好的重点活动。"
+      description="直接展示活动接口返回的真实活动。"
     >
       <transition-group
         name="organization-list-rise"
@@ -329,18 +324,26 @@
       >
         <article
           v-for="project in filteredTopProjectRows"
-          :key="project.key"
+          :key="project.id"
           class="organization-surface-lift overflow-hidden rounded-[1.35rem] border border-slate-200 bg-white"
         >
-          <div
-            class="relative h-36 bg-gradient-to-br"
-            :class="project.imageClass"
-          >
+          <div class="relative h-36 overflow-hidden bg-[linear-gradient(135deg,#fff4ec_0%,#ffe0cf_48%,#fffaf5_100%)]">
+            <img
+              v-if="project.coverUrl"
+              :src="project.coverUrl"
+              :alt="project.title"
+              class="h-full w-full object-cover"
+            >
+            <div
+              v-else
+              class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(236,91,19,0.24),transparent_58%),radial-gradient(circle_at_bottom_right,rgba(251,146,60,0.2),transparent_52%)]"
+            />
+            <div class="absolute inset-0 bg-gradient-to-t from-slate-900/50 via-slate-900/10 to-transparent" />
             <div class="absolute right-3 top-3 rounded-lg bg-white/90 px-2 py-1 text-xs font-bold text-slate-700">
-              ★ {{ project.rating.toFixed(1) }}
+              {{ project.statusLabel }}
             </div>
-            <div class="absolute left-3 top-3 rounded-full bg-black/20 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-white">
-              {{ project.category }}
+            <div class="absolute left-3 bottom-3 rounded-full bg-black/35 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-white">
+              {{ project.timeRange }}
             </div>
           </div>
 
@@ -350,28 +353,32 @@
                 {{ project.title }}
               </h3>
               <p class="mt-2 text-sm leading-6 text-slate-500">
-                {{ project.summary }}
+                {{ project.description }}
               </p>
             </div>
 
             <div class="grid grid-cols-2 gap-3 text-sm">
               <div>
                 <p class="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400">
-                  参与志愿者
+                  当前人数
                 </p>
                 <p class="font-bold text-slate-800">
-                  {{ project.volunteers.toLocaleString('en-US') }}
+                  {{ project.participants }}/{{ project.capacity }}
                 </p>
               </div>
               <div>
                 <p class="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400">
-                  完成进度
+                  满员率
                 </p>
                 <p class="font-bold text-slate-800">
-                  {{ project.completion }}%
+                  {{ project.fillRate }}%
                 </p>
               </div>
             </div>
+
+            <p class="text-xs text-slate-500">
+              {{ project.location }}
+            </p>
 
             <RouterLink
               to="/organization/activities"
@@ -418,24 +425,57 @@ import WorkbenchPage from '@/components/workbench/WorkbenchPage.vue'
 import OrganizationSectionCard from '@/components/organization/OrganizationSectionCard.vue'
 import OrganizationMetricCard from '@/components/organization/OrganizationMetricCard.vue'
 import { useOrganizationDashboardMetrics } from '@/composables/useOrganizationDashboardMetrics'
+import { useAuditsStore } from '@/store/modules/audits'
 import { useAnalyticsStore } from '@/store/modules/analytics'
 import { useMessageStore } from '@/store/modules/messages'
 import { adminApi } from '@/api/admin'
+import { activitiesApi } from '@/api/activities'
 import { useOrganizationContext } from '@/composables/useOrganizationContext'
 import { shouldRefreshOnKeepAliveActivated } from '@/utils/keepAliveRefresh'
+import { formatActivityTimeRange } from '@/utils/activityDateTime'
+import { ActivityStatus, type ActivityListItem } from '@/types/activity'
+import { AuditTargetType, type PendingAuditItem } from '@/types/audit'
+import { ACTIVITY_STATUS_LABELS } from '@/constants/status'
 
 const route = useRoute()
 const {
   user,
   organizationKpiMetrics,
-  organizationImpactTrendRows,
-  criticalTaskRows,
-  topProjectRows,
   currentDateLabel
 } = useOrganizationDashboardMetrics()
+const auditsStore = useAuditsStore()
 const analyticsStore = useAnalyticsStore()
 const messageStore = useMessageStore()
 const { ensureOrganizationId } = useOrganizationContext()
+
+interface DashboardTrendRow {
+  key: string
+  month: string
+  value: number
+  highlight?: boolean
+}
+
+interface DashboardCriticalTaskRow {
+  id: number
+  title: string
+  detail: string
+  status: string
+  tone: 'green' | 'amber' | 'orange'
+  createdAt: string
+}
+
+interface DashboardProjectRow {
+  id: number
+  title: string
+  description: string
+  timeRange: string
+  location: string
+  participants: number
+  capacity: number
+  fillRate: number
+  statusLabel: string
+  coverUrl?: string
+}
 
 const searchKeyword = ref('')
 const selectedTrendRange = ref<'12m' | 'qtr' | 'ytd'>('12m')
@@ -455,17 +495,92 @@ const reportPeriodOptions = [
 const isExporting = ref(false)
 const hasLoadedOnce = ref(false)
 const hasActivatedOnce = ref(false)
+const dashboardActivities = ref<ActivityListItem[]>([])
 
 const normalizeKeyword = (value: string) => value.trim().toLowerCase()
+
+const formatShortDateTime = (value: string) => {
+  const date = new Date(value.replace(' ', 'T'))
+  if (Number.isNaN(date.getTime())) return value
+  return date.toLocaleString('zh-CN', {
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
+
+const auditTargetLabel = (targetType: AuditTargetType) => ({
+  [AuditTargetType.VOLUNTEER_REAL_NAME]: '实名认证',
+  [AuditTargetType.ORGANIZATION]: '组织资料',
+  [AuditTargetType.MEMBERSHIP]: '成员加入',
+  [AuditTargetType.ACTIVITY_SIGNUP]: '活动报名'
+}[targetType] || '待处理')
+
+const mapAuditToTaskRow = (item: PendingAuditItem): DashboardCriticalTaskRow => ({
+  id: item.id,
+  title: item.title,
+  detail: item.subTitle || `目标 ID #${item.targetId}`,
+  status: item.isOverdue ? '超时' : auditTargetLabel(item.targetType),
+  tone: item.isOverdue ? 'orange' : item.targetType === AuditTargetType.ACTIVITY_SIGNUP ? 'green' : 'amber',
+  createdAt: formatShortDateTime(item.createdAt)
+})
+
+const mapActivityToProjectRow = (item: ActivityListItem): DashboardProjectRow => ({
+  id: item.id,
+  title: item.title,
+  description: item.description,
+  timeRange: formatActivityTimeRange(item.startTime, item.endTime),
+  location: item.location,
+  participants: item.currentPeople,
+  capacity: item.maxPeople,
+  fillRate: item.maxPeople > 0 ? Math.min(100, Math.round((item.currentPeople / item.maxPeople) * 100)) : 0,
+  statusLabel: ACTIVITY_STATUS_LABELS[item.status],
+  coverUrl: item.coverUrl
+})
+
+const organizationImpactTrendRows = computed<DashboardTrendRow[]>(() => {
+  const monthlyCounts = new Map<string, number>()
+  dashboardActivities.value.forEach((item) => {
+    const monthKey = item.startTime.slice(0, 7)
+    monthlyCounts.set(monthKey, (monthlyCounts.get(monthKey) || 0) + 1)
+  })
+
+  return Array.from(monthlyCounts.entries())
+    .sort(([left], [right]) => left.localeCompare(right))
+    .slice(-12)
+    .map(([month, value], index, items) => ({
+      key: month,
+      month: month.slice(2).replace('-', '/'),
+      value,
+      highlight: index === items.length - 1
+    }))
+})
 
 const trendRowsForView = computed(() => {
   if (selectedTrendRange.value === 'qtr') {
     return organizationImpactTrendRows.value.slice(-4)
   }
   if (selectedTrendRange.value === 'ytd') {
-    return organizationImpactTrendRows.value.slice(0, 6)
+    const currentYear = String(new Date().getFullYear())
+    const ytdRows = organizationImpactTrendRows.value.filter((row) => row.key.startsWith(currentYear))
+    return ytdRows.length ? ytdRows : organizationImpactTrendRows.value
   }
   return organizationImpactTrendRows.value
+})
+
+const criticalTaskRows = computed(() => auditsStore.items.map(mapAuditToTaskRow))
+const topProjectRows = computed(() => {
+  return dashboardActivities.value
+    .slice()
+    .sort((left, right) => {
+      const seatPressure = (item: ActivityListItem) => item.maxPeople > 0 ? item.currentPeople / item.maxPeople : 0
+      const pressureDiff = seatPressure(right) - seatPressure(left)
+      if (pressureDiff !== 0) return pressureDiff
+      return new Date(left.startTime).getTime() - new Date(right.startTime).getTime()
+    })
+    .slice(0, 6)
+    .map(mapActivityToProjectRow)
 })
 
 const filteredCriticalTaskRows = computed(() => {
@@ -482,7 +597,7 @@ const filteredTopProjectRows = computed(() => {
   if (!keyword) return topProjectRows.value
 
   return topProjectRows.value.filter(project => {
-    return normalizeKeyword(`${project.title} ${project.summary} ${project.category}`).includes(keyword)
+    return normalizeKeyword(`${project.title} ${project.description} ${project.location} ${project.statusLabel}`).includes(keyword)
   })
 })
 
@@ -521,7 +636,7 @@ const workbenchHighlights = computed(() => [
   },
   {
     label: '重点活动',
-    value: `${filteredTopProjectRows.value.length} 个项目`,
+    value: `${filteredTopProjectRows.value.length} 个活动`,
     tone: 'neutral'
   }
 ])
@@ -638,9 +753,49 @@ const loadAnalytics = async () => {
   }
 }
 
+const loadDashboardActivities = async () => {
+  try {
+    const response = await activitiesApi.list({
+      page: 1,
+      pageSize: 100,
+      status: [ActivityStatus.OPEN, ActivityStatus.ENDED, ActivityStatus.CANCELLED],
+      sortBy: 'start_time',
+      sortOrder: 'desc'
+    })
+    if (response.code !== 200) {
+      throw new Error(response.msg || '加载活动总览失败')
+    }
+    dashboardActivities.value = response.data.list || []
+  } catch (error: any) {
+    console.error('加载活动总览失败:', error)
+    messageStore.error(error.message || '加载活动总览失败，请稍后重试')
+    dashboardActivities.value = []
+  }
+}
+
+const loadPendingAudits = async () => {
+  try {
+    await auditsStore.fetchPending({
+      page: 1,
+      pageSize: 6
+    })
+  } catch (error: any) {
+    console.error('加载待审核任务失败:', error)
+    messageStore.error(error.message || '加载待审核任务失败，请稍后重试')
+  }
+}
+
+const loadDashboardData = async () => {
+  await Promise.allSettled([
+    loadAnalytics(),
+    loadDashboardActivities(),
+    loadPendingAudits()
+  ])
+}
+
 onMounted(() => {
   hasLoadedOnce.value = true
-  void loadAnalytics()
+  void loadDashboardData()
 })
 
 onActivated(() => {
@@ -658,6 +813,6 @@ onActivated(() => {
     return
   }
 
-  void loadAnalytics()
+  void loadDashboardData()
 })
 </script>

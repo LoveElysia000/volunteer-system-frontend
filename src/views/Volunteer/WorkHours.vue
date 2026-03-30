@@ -97,9 +97,9 @@
             </template>
 
             <template #summary>
-              <div class="flex flex-wrap items-center gap-3 text-sm text-slate-500">
-                <span>第 {{ page }} / {{ totalPages }} 页</span>
-                <span>当前页 {{ logs.length }} 条记录</span>
+              <div class="data-list-summary-stack">
+                <span class="data-list-pagination">第 {{ page }} / {{ totalPages }} 页</span>
+                <span>当前页 <strong>{{ logs.length }}</strong> 条记录</span>
               </div>
             </template>
 
@@ -111,7 +111,7 @@
                   :options="pageSizeOptions"
                   theme="emerald"
                 />
-                <div class="flex flex-wrap items-center gap-2">
+                <div class="data-list-action-stack">
                   <Button
                     variant="outline"
                     :disabled="loading || page <= 1"

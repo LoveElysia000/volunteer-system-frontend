@@ -1,9 +1,9 @@
 <template>
-  <div :class="['data-table-density-' + density]">
+  <div :class="['data-table-density-' + density, 'data-table-frame']">
     <div class="overflow-x-auto">
       <table class="min-w-full border-separate border-spacing-0">
         <thead>
-          <tr class="bg-slate-50/80 text-left text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+          <tr class="data-table-head-row text-left text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
             <th
               v-for="column in columns"
               :key="column.key"
@@ -32,9 +32,9 @@
           >
             <td
               :colspan="tableColspan"
-              class="border-b border-slate-100"
+              class="border-b border-slate-100/90 bg-white"
             >
-              <div class="flex items-center gap-3">
+              <div class="flex items-center gap-3 px-4 py-4">
                 <Skeleton
                   v-for="column in Math.max(columns.length, 1)"
                   :key="`loading-cell-${index}-${column}`"
@@ -117,7 +117,7 @@
           <tr>
             <td
               :colspan="tableColspan"
-              class="border-b border-slate-100 px-4 py-12"
+              class="border-b border-slate-100/90 px-4 py-12"
             >
               <slot name="empty">
                 <div class="flex flex-col items-center justify-center gap-2 text-center">

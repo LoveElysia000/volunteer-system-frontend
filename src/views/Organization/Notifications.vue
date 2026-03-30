@@ -24,7 +24,7 @@
     <template #toolbar>
       <DataToolbar>
         <template #filters>
-          <div class="flex flex-wrap items-center gap-3">
+          <div class="data-list-filter-grid sm:grid-cols-[auto_minmax(0,1fr)_180px] sm:items-center">
             <label class="group inline-flex cursor-pointer items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-2 text-sm font-semibold text-slate-600 transition hover:border-[#ffcfb3] hover:text-[#ec5b13]">
               <input
                 v-model="unreadOnly"
@@ -51,28 +51,30 @@
         </template>
 
         <template #summary>
-          <div class="flex flex-wrap items-center gap-3 text-sm text-slate-500">
-            <span>第 {{ page }} / {{ totalPages }} 页</span>
-            <span>当前筛选 {{ filteredNotifications.length }} 条，共 {{ notificationsStore.total }} 条</span>
-            <span>未读 {{ unreadCount }} 条</span>
+          <div class="data-list-summary-stack">
+            <span class="data-list-pagination">第 {{ page }} / {{ totalPages }} 页</span>
+            <span>当前筛选 <strong>{{ filteredNotifications.length }}</strong> 条，共 <strong>{{ notificationsStore.total }}</strong> 条</span>
+            <span>未读 <strong>{{ unreadCount }}</strong> 条</span>
           </div>
         </template>
 
         <template #actions>
-          <Button
-            variant="outline"
-            :disabled="loading || page <= 1"
-            @click="goToPreviousPage"
-          >
-            上一页
-          </Button>
-          <Button
-            variant="outline"
-            :disabled="loading || page >= totalPages"
-            @click="goToNextPage"
-          >
-            下一页
-          </Button>
+          <div class="data-list-action-stack">
+            <Button
+              variant="outline"
+              :disabled="loading || page <= 1"
+              @click="goToPreviousPage"
+            >
+              上一页
+            </Button>
+            <Button
+              variant="outline"
+              :disabled="loading || page >= totalPages"
+              @click="goToNextPage"
+            >
+              下一页
+            </Button>
+          </div>
         </template>
       </DataToolbar>
     </template>

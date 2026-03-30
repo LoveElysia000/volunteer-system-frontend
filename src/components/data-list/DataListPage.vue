@@ -1,5 +1,5 @@
 <template>
-  <WorkbenchPage class="data-list-page">
+  <WorkbenchPage class="data-list-page data-list-page-shell">
     <template
       v-if="$slots.header"
       #header
