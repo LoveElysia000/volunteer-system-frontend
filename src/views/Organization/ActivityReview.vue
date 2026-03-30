@@ -193,8 +193,8 @@
             </div>
 
             <StatusBadge
-              :label="auditStatusText(selectedAudit.status)"
-              :tone="auditStatusTone(selectedAudit.status)"
+              :label="auditStatusText(selectedAuditStatus)"
+              :tone="auditStatusTone(selectedAuditStatus)"
             />
           </div>
         </template>
@@ -272,7 +272,7 @@
         <template #footer>
           <div class="flex flex-col gap-3 sm:flex-row sm:justify-end">
             <Button
-              v-if="selectedAuditId && selectedAudit?.status === AuditStatus.PENDING"
+              v-if="selectedAuditId && selectedAuditStatus === AuditStatus.PENDING"
               variant="success"
               :loading="actionLoading"
               @click="approveCurrentAudit"
@@ -280,7 +280,7 @@
               审核通过
             </Button>
             <Button
-              v-if="selectedAuditId && selectedAudit?.status === AuditStatus.PENDING"
+              v-if="selectedAuditId && selectedAuditStatus === AuditStatus.PENDING"
               variant="danger"
               :loading="actionLoading"
               @click="rejectCurrentAudit"
@@ -315,6 +315,8 @@ import { AuditDecisionAction, AuditStatus, AuditTargetType } from '@/types/audit
 import {
   getAuditStatusFilterText,
   getAuditStatusRequest,
+  normalizeAuditStatus,
+  resolveSelectedAuditStatus,
   type ActivityReviewStatusFilter
 } from './activityReviewStatus'
 import { FoldersIcon, SearchIcon, TimerResetIcon } from 'lucide-vue-next'
@@ -387,8 +389,16 @@ const totalPages = computed(() => Math.max(1, Math.ceil(auditsStore.total / page
 const selectedAudit = computed(() => (
   items.value.find((item) => item.id === selectedAuditId.value) || null
 ))
+const selectedAuditStatus = computed(() => (
+  resolveSelectedAuditStatus({
+    selectedAuditId: selectedAuditId.value,
+    selectedAuditStatus: selectedAudit.value?.status,
+    detailAuditId: detail.value?.id,
+    detailAuditStatus: detail.value?.status
+  })
+))
 const actionableItems = computed(() => (
-  filteredItems.value.filter((item) => item.status === AuditStatus.PENDING)
+  filteredItems.value.filter((item) => normalizeAuditStatus(item.status) === AuditStatus.PENDING)
 ))
 
 const filteredItems = computed(() => {
@@ -580,16 +590,23 @@ const targetTypeText = (targetType: AuditTargetType) => ({
   [AuditTargetType.ACTIVITY_SIGNUP]: '活动报名'
 }[targetType] || '未知类型')
 
-const auditStatusText = (status: AuditStatus) => ({
-  [AuditStatus.PENDING]: '待审核',
-  [AuditStatus.APPROVED]: '审核通过',
-  [AuditStatus.REJECTED]: '审核拒绝'
-}[status] || '未知状态')
+const auditStatusText = (status: string | number | null | undefined) => {
+  switch (normalizeAuditStatus(status)) {
+    case AuditStatus.PENDING:
+      return '待审核'
+    case AuditStatus.APPROVED:
+      return '审核通过'
+    case AuditStatus.REJECTED:
+      return '审核拒绝'
+    default:
+      return '未知状态'
+  }
+}
 
 const auditStatusTone = (
-  status: AuditStatus
+  status: string | number | null | undefined
 ): 'green' | 'blue' | 'amber' | 'slate' | 'rose' => {
-  switch (status) {
+  switch (normalizeAuditStatus(status)) {
     case AuditStatus.PENDING:
       return 'amber'
     case AuditStatus.APPROVED:
