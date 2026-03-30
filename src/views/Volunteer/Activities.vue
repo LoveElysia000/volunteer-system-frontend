@@ -791,10 +791,11 @@ watch(activityRows, () => {
   syncSelectedActivity()
 })
 
-watch([activeTab, searchQuery, startFrom, endTo, pageSize], () => {
+watch(pageSize, () => {
   if (!hasLoadedOnce.value || isApplyingRouteState.value) {
     return
   }
+
   page.value = 1
   void refreshActivities()
 })

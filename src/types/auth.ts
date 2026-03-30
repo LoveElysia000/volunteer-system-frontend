@@ -47,7 +47,7 @@ export interface LoginResponse {
 
 // 登出请求
 export interface LogoutRequest {
-  token: string
+  refreshToken: string
 }
 
 // 登出响应

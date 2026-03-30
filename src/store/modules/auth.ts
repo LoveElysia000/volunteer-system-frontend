@@ -115,9 +115,9 @@ export const useAuthStore = defineStore('auth', () => {
   // 登出
   const logout = async () => {
     try {
-      const accessTokenValue = tokenManager.getAccessToken()
-      if (accessTokenValue) {
-        await authApi.logout({ token: accessTokenValue })
+      const refreshTokenValue = tokenManager.getRefreshToken()
+      if (refreshTokenValue) {
+        await authApi.logout({ refreshToken: refreshTokenValue })
       }
     } catch (error) {
       console.error('登出请求失败:', error)
