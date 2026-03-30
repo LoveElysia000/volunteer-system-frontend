@@ -14,6 +14,7 @@ import type {
   OrganizationListData,
   OrganizationListRequest,
   OrganizationSearchRequest,
+  PublicOrganizationDetailData,
   UpdateOrganizationAccountRequest,
   UpdateOrganizationData,
   UpdateOrganizationRequest
@@ -29,6 +30,8 @@ export const organizationsApi = {
   search: (data: OrganizationSearchRequest): Promise<ApiResponse<OrganizationListData>> => organizationsClient.search<ApiResponse<OrganizationListData>>(data),
 
   detail: (organizationId: number): Promise<ApiResponse<OrganizationDetailData>> => organizationsClient.detail<ApiResponse<OrganizationDetailData>>(organizationId),
+
+  publicDetail: (organizationId: number): Promise<ApiResponse<PublicOrganizationDetailData>> => organizationsClient.publicDetail<ApiResponse<PublicOrganizationDetailData>>(organizationId),
 
   create: (data: CreateOrganizationRequest): Promise<ApiResponse<CreateOrganizationData>> => organizationsClient.create<ApiResponse<CreateOrganizationData>>(data),
 

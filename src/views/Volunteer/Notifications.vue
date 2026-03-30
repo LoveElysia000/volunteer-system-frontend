@@ -291,20 +291,14 @@
                 标记已读
               </Button>
               <Button
+                v-if="selectedTarget && !selectedTarget.disabled"
                 variant="outline"
-                :disabled="!selectedTarget || selectedTarget.disabled"
                 @click="goToRelatedPage"
               >
-                {{ selectedTarget?.label || '前往相关页面' }}
+                {{ selectedTarget.label }}
               </Button>
               <p
-                v-if="selectedTarget?.disabled"
-                class="text-xs leading-5 text-slate-500"
-              >
-                这类通知暂时没有配置更精确的目标页面，你可以先保留在通知中心统一查看。
-              </p>
-              <p
-                v-else-if="selectedTarget"
+                v-if="selectedTarget && !selectedTarget.disabled"
                 class="text-xs leading-5 text-slate-500"
               >
                 会跳到这条提醒最相关的页面。
@@ -485,12 +479,7 @@ const goToNextPage = async () => {
 }
 
 const goToRelatedPage = async () => {
-  if (!selectedTarget.value) return
-  if (selectedTarget.value.disabled) {
-    messageStore.info('暂未配置对应页面')
-    return
-  }
-
+  if (!selectedTarget.value || selectedTarget.value.disabled) return
   await router.push(selectedTarget.value.to)
 }
 

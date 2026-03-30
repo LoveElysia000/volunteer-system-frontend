@@ -1,4 +1,12 @@
 import type { DateOnlyString } from '@/types/datetime'
+import type {
+  AttendanceCodeResetRequest,
+  AttendanceCodesGenerateRequest,
+  CancelOrganizationActivityRequest,
+  CreateOrganizationActivityRequest,
+  SupplementAttendanceRequest,
+  UpdateOrganizationActivityRequest
+} from '@/types/activity'
 
 type ActivitiesHttpClient = {
   post: <T = unknown>(url: string, data?: unknown) => Promise<T>
@@ -47,11 +55,11 @@ export const createActivitiesApi = (http: ActivitiesHttpClient) => ({
     return http.post<T>('/api/activities/my', data)
   },
 
-  create: <T>(data: unknown) => {
+  create: <T>(data: CreateOrganizationActivityRequest) => {
     return http.post<T>('/api/activities/create', data)
   },
 
-  update: <T>(activityId: number, data: unknown) => {
+  update: <T>(activityId: number, data: UpdateOrganizationActivityRequest) => {
     return http.put<T>(`/api/activities/${activityId}`, data)
   },
 
@@ -59,7 +67,7 @@ export const createActivitiesApi = (http: ActivitiesHttpClient) => ({
     return http.delete<T>(`/api/activities/${activityId}`)
   },
 
-  cancelByOrganization: <T>(activityId: number, data: unknown) => {
+  cancelByOrganization: <T>(activityId: number, data: CancelOrganizationActivityRequest) => {
     return http.post<T>(`/api/activities/${activityId}/cancel`, data)
   },
 
@@ -67,11 +75,11 @@ export const createActivitiesApi = (http: ActivitiesHttpClient) => ({
     return http.post<T>(`/api/activities/${activityId}/finish`)
   },
 
-  generateAttendanceCodes: <T>(activityId: number, data: unknown) => {
+  generateAttendanceCodes: <T>(activityId: number, data: AttendanceCodesGenerateRequest) => {
     return http.post<T>(`/api/activities/${activityId}/attendance-codes/generate`, data)
   },
 
-  resetAttendanceCode: <T>(activityId: number, data: unknown) => {
+  resetAttendanceCode: <T>(activityId: number, data: AttendanceCodeResetRequest) => {
     return http.post<T>(`/api/activities/${activityId}/attendance-codes/reset`, data)
   },
 
@@ -79,7 +87,7 @@ export const createActivitiesApi = (http: ActivitiesHttpClient) => ({
     return http.get<T>(`/api/activities/${activityId}/attendance-codes`)
   },
 
-  supplementAttendance: <T>(data: unknown) => {
+  supplementAttendance: <T>(data: SupplementAttendanceRequest) => {
     return http.post<T>('/api/activities/supplement-attendance', data)
   }
 })

@@ -1,4 +1,12 @@
 import type { DateOnlyString } from '@/types/datetime'
+import type {
+  CreateOrganizationRequest,
+  OrganizationActionRequest,
+  OrganizationBatchActionRequest,
+  OrganizationBulkDeleteRequest,
+  UpdateOrganizationAccountRequest,
+  UpdateOrganizationRequest
+} from '@/types/organization'
 
 type OrganizationsHttpClient = {
   post: <T = unknown>(url: string, data?: unknown) => Promise<T>
@@ -38,15 +46,19 @@ export const createOrganizationsApi = (http: OrganizationsHttpClient) => ({
     return http.get<T>(`/api/organizations/${organizationId}`)
   },
 
-  create: <T>(data: unknown) => {
+  publicDetail: <T>(organizationId: number) => {
+    return http.get<T>(`/api/organizations/${organizationId}/public`)
+  },
+
+  create: <T>(data: CreateOrganizationRequest) => {
     return http.post<T>('/api/organizations/create', data)
   },
 
-  updateAccount: <T>(data: unknown) => {
+  updateAccount: <T>(data: UpdateOrganizationAccountRequest) => {
     return http.put<T>('/api/organizations/account', data)
   },
 
-  update: <T>(organizationId: number, data: unknown) => {
+  update: <T>(organizationId: number, data: UpdateOrganizationRequest) => {
     return http.put<T>(`/api/organizations/${organizationId}`, data)
   },
 
@@ -54,23 +66,23 @@ export const createOrganizationsApi = (http: OrganizationsHttpClient) => ({
     return http.delete<T>(`/api/organizations/${organizationId}`)
   },
 
-  disable: <T>(organizationId: number, data: unknown) => {
+  disable: <T>(organizationId: number, data: OrganizationActionRequest) => {
     return http.post<T>(`/api/organizations/${organizationId}/disable`, data)
   },
 
-  enable: <T>(organizationId: number, data: unknown) => {
+  enable: <T>(organizationId: number, data: OrganizationActionRequest) => {
     return http.post<T>(`/api/organizations/${organizationId}/enable`, data)
   },
 
-  bulkDelete: <T>(data: unknown) => {
+  bulkDelete: <T>(data: OrganizationBulkDeleteRequest) => {
     return http.post<T>('/api/organizations/bulk-delete', data)
   },
 
-  batchDisable: <T>(data: unknown) => {
+  batchDisable: <T>(data: OrganizationBatchActionRequest) => {
     return http.post<T>('/api/organizations/batch-disable', data)
   },
 
-  batchEnable: <T>(data: unknown) => {
+  batchEnable: <T>(data: OrganizationBatchActionRequest) => {
     return http.post<T>('/api/organizations/batch-enable', data)
   }
 })

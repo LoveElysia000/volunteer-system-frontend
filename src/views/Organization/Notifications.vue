@@ -248,9 +248,8 @@
         <template #footer>
           <div class="flex flex-col gap-3 sm:flex-row sm:justify-end">
             <Button
-              v-if="selectedNotificationTarget"
+              v-if="selectedNotificationTarget && !selectedNotificationTarget.disabled"
               variant="outline"
-              :disabled="selectedNotificationTarget.disabled"
               @click="goToRelatedPage"
             >
               {{ selectedNotificationTarget.label }}
@@ -264,12 +263,6 @@
               标记已读
             </Button>
           </div>
-          <p
-            v-if="selectedNotificationTarget?.disabled"
-            class="text-xs leading-5 text-slate-500"
-          >
-            这类通知暂时没有更精确的落点，继续留在通知中心查看即可。
-          </p>
         </template>
       </DetailDrawer>
     </template>
@@ -387,12 +380,7 @@ const closeNotificationDrawer = () => {
 }
 
 const goToRelatedPage = async () => {
-  if (!selectedNotificationTarget.value) return
-  if (selectedNotificationTarget.value.disabled) {
-    messageStore.info('暂未配置对应页面')
-    return
-  }
-
+  if (!selectedNotificationTarget.value || selectedNotificationTarget.value.disabled) return
   await router.push(selectedNotificationTarget.value.to)
 }
 

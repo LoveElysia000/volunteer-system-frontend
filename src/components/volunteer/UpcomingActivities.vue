@@ -42,9 +42,6 @@
       >
         查看详情
       </RouterLink>
-      <button class="volunteer-toolbar-button volunteer-toolbar-button--ghost">
-        分享提醒
-      </button>
     </template>
 
     <template #empty>

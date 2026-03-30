@@ -24,6 +24,23 @@ export interface OrganizationInfo {
   updatedAt: string
 }
 
+export interface PublicOrganizationInfo {
+  id: string
+  name: string
+  organizationCode: string
+  contactPerson: string
+  contactPhone: string
+  address: string
+  status: OrganizationStatus
+  organizationType: string
+  region: string
+  description: string
+  websiteUrl: string
+  logoUrl: string
+  createdAt: string
+  updatedAt: string
+}
+
 export interface OrganizationAccountInfo {
   userName: string
   email: string
@@ -84,6 +101,12 @@ export interface CreateOrganizationData {
 export interface OrganizationDetailData {
   organization: OrganizationInfo
   accountInfo: OrganizationAccountInfo
+  organizationProfile: OrganizationProfileInfo
+  organizationCertification: OrganizationCertificationInfo
+}
+
+export interface PublicOrganizationDetailData {
+  organization: PublicOrganizationInfo
   organizationProfile: OrganizationProfileInfo
   organizationCertification: OrganizationCertificationInfo
 }

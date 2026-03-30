@@ -2,9 +2,34 @@ import axios, { AxiosError, type AxiosResponse, type InternalAxiosRequestConfig 
 import { requestTokenRefresh } from './refresh'
 import { tokenManager } from '@/utils/token'
 import type { InternalRequestConfig, ApiError } from './types'
+import type { DateOnlyString } from '@/types/datetime'
+import type { ActivityStatus } from '@/types/activity'
+import type { VolunteerAuditStatus, VolunteerStatus } from '@/types/volunteer'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/'
 const API_TIMEOUT = 30000
+
+type ExportVolunteersRequest = {
+  keyword: string
+  auditStatus?: VolunteerAuditStatus
+  status?: VolunteerStatus
+}
+
+type ExportActivitiesRequest = {
+  keyword: string
+  status?: ActivityStatus
+  startFrom?: DateOnlyString
+  startTo?: DateOnlyString
+}
+
+type OpsReportPeriodType = 'last_7_days' | 'last_30_days' | 'custom'
+
+type ExportOpsReportRequest = {
+  periodType: OpsReportPeriodType
+  orgId: number
+  start: DateOnlyString
+  end: DateOnlyString
+}
 
 const adminClient = axios.create({
   baseURL: API_BASE_URL,
@@ -86,19 +111,19 @@ export const adminApi = {
     }).then((response) => response.data)
   },
 
-  exportVolunteers: (data: Record<string, unknown>) => {
+  exportVolunteers: (data: ExportVolunteersRequest) => {
     return adminClient.post('/api/admin/export/volunteers', data, {
       responseType: 'blob'
     })
   },
 
-  exportActivities: (data: Record<string, unknown>) => {
+  exportActivities: (data: ExportActivitiesRequest) => {
     return adminClient.post('/api/admin/export/activities', data, {
       responseType: 'blob'
     })
   },
 
-  exportOpsReport: (data: Record<string, unknown>) => {
+  exportOpsReport: (data: ExportOpsReportRequest) => {
     return adminClient.post('/api/admin/export/ops-report', data, {
       responseType: 'blob'
     })

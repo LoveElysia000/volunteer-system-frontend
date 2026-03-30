@@ -184,12 +184,6 @@ export const routes = [
     ]
   },
   {
-    path: '/demo/messages',
-    name: 'message-demo',
-    component: () => import('@/components/demo/MessageDemo.vue'),
-    meta: { title: '消息组件演示' }
-  },
-  {
     path: '/404',
     name: '404',
     component: () => import('@/views/NotFound.vue'),
