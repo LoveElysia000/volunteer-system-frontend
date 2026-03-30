@@ -3,6 +3,7 @@
     v-model="date"
     :locale="locale"
     :format="resolvedFormat"
+    :formats="resolvedFormats"
     :placeholder="placeholder"
     :disabled="disabled"
     :min-date="minDate"
@@ -118,7 +119,9 @@ const emit = defineEmits<{
   change: [value: DatePickerValue]
 }>()
 
-const date = ref<DatePickerValue>(props.modelValue)
+const normalizeValue = (value: DatePickerValue) => normalizeDatePickerValue(value, props.mode)
+
+const date = ref<DatePickerValue>(normalizeValue(props.modelValue))
 
 const resolvedFormat = computed(() => {
   if (props.format) return props.format
@@ -126,6 +129,11 @@ const resolvedFormat = computed(() => {
   if (props.mode === 'datetime') return 'yyyy-MM-dd HH:mm'
   return 'yyyy-MM-dd'
 })
+
+const resolvedFormats = computed(() => ({
+  input: resolvedFormat.value,
+  preview: resolvedFormat.value
+}))
 
 const resolvedEnableTimePicker = computed(() => {
   return props.mode !== 'date'
@@ -137,11 +145,11 @@ const resolvedEnableSeconds = computed(() => {
 })
 
 watch(() => props.modelValue, (val) => {
-  date.value = val
+  date.value = normalizeValue(val)
 })
 
 const handleUpdate = (val: DatePickerValue) => {
-  const normalizedValue = normalizeDatePickerValue(val, props.mode)
+  const normalizedValue = normalizeValue(val)
   date.value = normalizedValue
   emit('update:modelValue', normalizedValue)
   emit('change', normalizedValue)
