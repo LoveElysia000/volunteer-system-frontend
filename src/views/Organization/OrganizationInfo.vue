@@ -70,7 +70,7 @@
         tone="soft"
       >
         <div class="space-y-4">
-        <div class="data-list-toolbar data-list-toolbar-surface">
+        <div class="data-list-toolbar data-list-toolbar-surface 2xl:grid-cols-[minmax(220px,0.72fr)_minmax(0,1.28fr)]">
           <div class="data-list-toolbar-group data-list-toolbar-pane">
             <div class="data-list-summary-stack text-xs">
               <span class="data-list-pagination">{{ organizationStore.total }} 条记录</span>
@@ -79,8 +79,8 @@
             </div>
           </div>
 
-          <div class="data-list-toolbar-actions data-list-toolbar-pane">
-            <div class="data-list-filter-grid md:grid-cols-2 2xl:grid-cols-5">
+          <div class="data-list-toolbar-actions data-list-toolbar-pane 2xl:max-w-none 2xl:items-stretch">
+            <div class="data-list-filter-grid md:grid-cols-2 2xl:grid-cols-[minmax(156px,1.2fr)_repeat(4,minmax(132px,1fr))] 2xl:w-full">
               <FilterSelect
                 v-model="listFilters.status"
                 title="组织状态"
