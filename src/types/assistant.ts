@@ -1,5 +1,7 @@
+import type { AssistantScene } from '@/constants/assistantScenes'
+
 export interface AssistantSessionCreateRequest {
-  scene: string
+  scene: AssistantScene
   title?: string
 }
 
@@ -76,7 +78,7 @@ export interface AssistantActivityDraftData {
 export interface LocalAssistantSession {
   id: number
   title: string
-  scene: string
+  scene: AssistantScene
   createdAt: string
   updatedAt: string
 }

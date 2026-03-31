@@ -1,7 +1,14 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import { assistantApi } from '@/api/assistant'
+import {
+  ASSISTANT_SCENES,
+  DEFAULT_ASSISTANT_SCENE,
+  resolveAssistantScene,
+  type AssistantScene
+} from '@/constants/assistantScenes'
 import { useAuthStore } from '@/store/modules/auth'
+import { findAssistantSessionByScene, sanitizeAssistantSessions } from '@/utils/assistantSessionState'
 import type {
   AssistantActivityDraftRequest,
   AssistantMessageItem,
@@ -79,7 +86,11 @@ export const useAssistantStore = defineStore('assistant', () => {
     messages.value = []
     if (!raw) return
     try {
-      sessions.value = JSON.parse(raw)
+      const parsedSessions = JSON.parse(raw) as LocalAssistantSession[]
+      sessions.value = sanitizeAssistantSessions(parsedSessions, resolveAssistantScene)
+      if (sessions.value.length !== parsedSessions.length) {
+        persistSessions()
+      }
       if (!currentSessionId.value && sessions.value.length) {
         currentSessionId.value = sessions.value[0].id
       }
@@ -94,8 +105,9 @@ export const useAssistantStore = defineStore('assistant', () => {
     localStorage.setItem(getStorageKey(), JSON.stringify(sessions.value))
   }
 
-  const createSession = async (title = '新会话', scene = 'organization-assistant') => {
-    const response = await assistantApi.createSession({ scene, title })
+  const createSession = async (title = '新会话', scene: AssistantScene = DEFAULT_ASSISTANT_SCENE) => {
+    const resolvedScene = resolveAssistantScene(scene)
+    const response = await assistantApi.createSession({ scene: resolvedScene, title })
     if (response.code !== 200) {
       throw new Error(response.msg || '创建会话失败')
     }
@@ -103,7 +115,7 @@ export const useAssistantStore = defineStore('assistant', () => {
     const session: LocalAssistantSession = {
       id: response.data.session_id,
       title,
-      scene,
+      scene: resolvedScene,
       createdAt: nowIso(),
       updatedAt: nowIso()
     }
@@ -142,13 +154,20 @@ export const useAssistantStore = defineStore('assistant', () => {
     persistSessions()
   }
 
-  const ensureSession = async () => {
-    if (currentSession.value) return currentSession.value
-    return createSession()
+  const ensureSession = async (scene: AssistantScene = DEFAULT_ASSISTANT_SCENE, title = '新会话') => {
+    const resolvedScene = resolveAssistantScene(scene)
+    const session = findAssistantSessionByScene(sessions.value, currentSessionId.value, resolvedScene)
+
+    if (session) {
+      currentSessionId.value = session.id
+      return session
+    }
+
+    return createSession(title, resolvedScene)
   }
 
   const sendMessage = async (message: string) => {
-    const session = await ensureSession()
+    const session = await ensureSession(ASSISTANT_SCENES.GENERAL)
     sending.value = true
     try {
       const userMessage = createLocalMessage({
@@ -202,7 +221,7 @@ export const useAssistantStore = defineStore('assistant', () => {
   }
 
   const sendMessageNonStream = async (message: string) => {
-    const session = await ensureSession()
+    const session = await ensureSession(ASSISTANT_SCENES.GENERAL)
     sending.value = true
     try {
       const userMessage = createLocalMessage({
@@ -242,7 +261,7 @@ export const useAssistantStore = defineStore('assistant', () => {
   }
 
   const generateActivityDraft = async (data: Omit<AssistantActivityDraftRequest, 'session_id'>) => {
-    const session = await ensureSession()
+    const session = await ensureSession(ASSISTANT_SCENES.ACTIVITY_DRAFT, data.topic || '活动草案')
     sending.value = true
     try {
       const response = await assistantApi.generateActivityDraft({

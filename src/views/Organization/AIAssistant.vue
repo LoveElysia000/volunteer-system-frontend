@@ -227,6 +227,7 @@ import OrganizationSectionCard from '@/components/organization/OrganizationSecti
 import Dialog from '@/components/ui/Dialog.vue'
 import Input from '@/components/ui/Input.vue'
 import Textarea from '@/components/ui/Textarea.vue'
+import { DEFAULT_ASSISTANT_SCENE } from '@/constants/assistantScenes'
 import { useAssistantStore } from '@/store/modules/assistant'
 import { useMessageStore } from '@/store/modules/messages'
 
@@ -251,7 +252,7 @@ const headerMeta = computed(() => [
 
 const createNewSession = async () => {
   try {
-    const session = await assistantStore.createSession('新会话', 'organization-assistant')
+    const session = await assistantStore.createSession('新会话', DEFAULT_ASSISTANT_SCENE)
     await assistantStore.loadMessages(session.id)
     prompt.value = ''
   } catch (error: any) {
