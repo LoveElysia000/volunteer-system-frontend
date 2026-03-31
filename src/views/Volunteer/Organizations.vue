@@ -297,18 +297,18 @@
                     </p>
                   </div>
 
-                  <div class="flex shrink-0 flex-col gap-2">
-                    <button
-                      class="rounded-full border border-emerald-200 px-4 py-2 text-sm font-semibold text-emerald-700 transition hover:border-emerald-300 hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-60"
-                      :disabled="detailLoading && selectedOrganizationId === organization.id"
-                      @click="selectOrganization(organization.id)"
-                    >
-                      {{ selectedOrganizationId === organization.id ? (detailLoading ? '加载详情中...' : '查看中') : '查看详情' }}
-                    </button>
-                    <button
-                      v-if="canJoinOrganization(organization.id)"
-                      class="rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-300"
-                      :disabled="organizationActionLoading"
+                <div class="flex shrink-0 flex-col gap-2">
+                  <button
+                    class="rounded-full border border-emerald-200 px-4 py-2 text-sm font-semibold text-emerald-700 transition hover:border-emerald-300 hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-60"
+                    :disabled="detailLoading && selectedOrganizationId === normalizeNumber(organization.id)"
+                    @click="selectOrganization(organization.id)"
+                  >
+                    {{ selectedOrganizationId === normalizeNumber(organization.id) && drawerOpen ? (detailLoading ? '加载详情中...' : '查看中') : '查看详情' }}
+                  </button>
+                  <button
+                    v-if="canJoinOrganization(organization.id)"
+                    class="rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-300"
+                    :disabled="organizationActionLoading"
                       @click="joinOrganization(organization.id)"
                     >
                       申请加入
@@ -332,118 +332,167 @@
               </article>
             </div>
           </VolunteerSectionCard>
-
-          <VolunteerSectionCard
-            title="组织详情"
-            description="选择一条组织记录后，在这里查看公开资料与联系方式。"
-            tone="accent"
-          >
-            <WorkbenchEmptyPanel v-if="detailLoading">
-              正在加载组织详情...
-            </WorkbenchEmptyPanel>
-
-            <WorkbenchEmptyPanel v-else-if="detailErrorMessage">
-              {{ detailErrorMessage }}
-            </WorkbenchEmptyPanel>
-
-            <WorkbenchEmptyPanel v-else-if="!selectedOrganizationDetail">
-              点击上方组织卡片的“查看详情”后，这里会展示公开组织资料。
-            </WorkbenchEmptyPanel>
-
-            <div
-              v-else
-              class="space-y-4"
-            >
-              <div class="rounded-[1.35rem] border border-white/15 bg-white/10 px-4 py-4 text-white">
-                <div class="flex items-start justify-between gap-3">
-                  <div class="space-y-2">
-                    <div class="flex flex-wrap items-center gap-2">
-                      <h3 class="text-lg font-black tracking-tight">
-                        {{ detailOrganization?.name || selectedOrganizationSummary?.name || '组织详情' }}
-                      </h3>
-                      <VolunteerStatusBadge
-                        :label="detailOrganization?.status === OrganizationStatus.ACTIVE ? '活跃组织' : '已停用'"
-                        :tone="detailOrganization?.status === OrganizationStatus.ACTIVE ? 'green' : 'slate'"
-                      />
-                      <VolunteerStatusBadge
-                        v-if="selectedOrganizationMembership"
-                        :label="membershipStatusText(selectedOrganizationMembership.status)"
-                        :tone="membershipStatusTone(selectedOrganizationMembership.status)"
-                      />
-                    </div>
-                    <p class="text-sm text-emerald-100/90">
-                      组织编码：{{ detailOrganization?.organizationCode || detailCertification?.organizationCode || '待补充' }}
-                    </p>
-                    <p class="text-sm text-emerald-100/90">
-                      类型 / 地区：{{ detailOrganization?.organizationType || '待补充' }} / {{ detailOrganization?.region || '待补充' }}
-                    </p>
-                  </div>
-
-                  <div class="flex shrink-0 flex-col gap-2">
-                    <button
-                      v-if="selectedOrganizationSummary && canJoinOrganization(selectedOrganizationSummary.id)"
-                      class="rounded-full bg-white px-4 py-2 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-60"
-                      :disabled="organizationActionLoading"
-                      @click="joinOrganization(selectedOrganizationSummary.id)"
-                    >
-                      申请加入
-                    </button>
-                    <button
-                      v-else-if="selectedOrganizationMembership"
-                      class="rounded-full border border-white/40 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
-                      :disabled="organizationActionLoading || normalizeNumber(selectedOrganizationMembership.status) !== MembershipStatus.ACTIVE"
-                      @click="leaveOrganization(selectedOrganizationMembership.membershipId)"
-                    >
-                      {{ normalizeNumber(selectedOrganizationMembership.status) === MembershipStatus.ACTIVE ? '退出组织' : membershipStatusText(selectedOrganizationMembership.status) }}
-                    </button>
-                  </div>
-                </div>
-
-                <p class="mt-4 text-sm leading-7 text-emerald-50/95">
-                  {{ detailProfile?.description || detailOrganization?.description || '当前暂无公开简介，可以先查看近期活动与组织资料后再决定是否加入。' }}
-                </p>
-              </div>
-
-              <div class="grid gap-4 md:grid-cols-2">
-                <article class="rounded-[1.25rem] border border-slate-100 bg-white/92 px-4 py-4">
-                  <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                    联系信息
-                  </p>
-                  <div class="mt-3 space-y-2 text-sm text-slate-600">
-                    <p>联系人：{{ detailProfile?.contactPerson || detailOrganization?.contactPerson || selectedOrganizationSummary?.contactPerson || '暂不公开' }}</p>
-                    <p>联系电话：{{ detailProfile?.contactPhone || detailOrganization?.contactPhone || '暂不公开' }}</p>
-                    <p>联系地址：{{ detailProfile?.address || detailOrganization?.address || '待补充' }}</p>
-                  </div>
-                </article>
-
-                <article class="rounded-[1.25rem] border border-slate-100 bg-white/92 px-4 py-4">
-                  <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                    公开资料
-                  </p>
-                  <div class="mt-3 space-y-2 text-sm text-slate-600">
-                    <p>官网地址：{{ detailOrganization?.websiteUrl || '暂未公开' }}</p>
-                    <p>资质编码：{{ detailCertification?.organizationCode || detailOrganization?.organizationCode || '待补充' }}</p>
-                    <p>创建时间：{{ detailOrganization?.createdAt || '待同步' }}</p>
-                    <p>最近更新：{{ detailOrganization?.updatedAt || '待同步' }}</p>
-                  </div>
-                </article>
-              </div>
-
-              <article
-                v-if="detailProfile?.logoUrl || detailOrganization?.logoUrl"
-                class="overflow-hidden rounded-[1.25rem] border border-slate-100 bg-white/92"
-              >
-                <img
-                  :src="detailProfile?.logoUrl || detailOrganization?.logoUrl"
-                  :alt="`${detailOrganization?.name || selectedOrganizationSummary?.name || '组织'}标识`"
-                  class="h-48 w-full object-contain bg-slate-50 p-6"
-                >
-              </article>
-            </div>
-          </VolunteerSectionCard>
         </div>
       </template>
     </WorkbenchSplitLayout>
+
+    <DetailDrawer
+      v-model="drawerOpen"
+      width="560px"
+      :aria-label="detailOrganization?.name ? `${detailOrganization.name} 的组织详情` : '组织详情'"
+      @close="closeOrganizationDrawer"
+    >
+      <template #header>
+        <div
+          v-if="selectedOrganizationId"
+          class="space-y-3"
+        >
+          <div class="space-y-1">
+            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+              组织详情
+            </p>
+            <h2 class="text-lg font-bold tracking-tight text-slate-900">
+              {{ detailOrganization?.name || selectedOrganizationSummary?.name || '组织详情' }}
+            </h2>
+            <p class="text-sm text-slate-500">
+              组织编码：{{ detailOrganization?.organizationCode || detailCertification?.organizationCode || '待补充' }}
+            </p>
+          </div>
+
+          <div class="flex flex-wrap gap-2">
+            <VolunteerStatusBadge
+              :label="detailOrganization?.status === OrganizationStatus.ACTIVE ? '活跃组织' : '已停用'"
+              :tone="detailOrganization?.status === OrganizationStatus.ACTIVE ? 'green' : 'slate'"
+            />
+            <VolunteerStatusBadge
+              v-if="selectedOrganizationMembership"
+              :label="membershipStatusText(selectedOrganizationMembership.status)"
+              :tone="membershipStatusTone(selectedOrganizationMembership.status)"
+            />
+          </div>
+        </div>
+      </template>
+
+      <WorkbenchEmptyPanel v-if="detailLoading">
+        正在加载组织详情...
+      </WorkbenchEmptyPanel>
+
+      <WorkbenchEmptyPanel v-else-if="detailErrorMessage">
+        {{ detailErrorMessage }}
+      </WorkbenchEmptyPanel>
+
+      <WorkbenchEmptyPanel v-else-if="!selectedOrganizationId">
+        点击组织卡片的“查看详情”后，这里会展示公开组织资料。
+      </WorkbenchEmptyPanel>
+
+      <div
+        v-else
+        class="space-y-4"
+      >
+        <section class="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+          <div class="grid gap-4 sm:grid-cols-2">
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                组织类型
+              </p>
+              <p class="mt-1 text-sm font-semibold text-slate-900">
+                {{ detailOrganization?.organizationType || '待补充' }}
+              </p>
+            </div>
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                所在地区
+              </p>
+              <p class="mt-1 text-sm font-semibold text-slate-900">
+                {{ detailOrganization?.region || '待补充' }}
+              </p>
+            </div>
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                联系人
+              </p>
+              <p class="mt-1 text-sm font-semibold text-slate-900">
+                {{ detailProfile?.contactPerson || detailOrganization?.contactPerson || selectedOrganizationSummary?.contactPerson || '暂不公开' }}
+              </p>
+            </div>
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                联系电话
+              </p>
+              <p class="mt-1 text-sm font-semibold text-slate-900">
+                {{ detailProfile?.contactPhone || detailOrganization?.contactPhone || '暂不公开' }}
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section class="space-y-3">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+              组织简介
+            </p>
+            <p class="mt-1 text-sm leading-6 text-slate-700">
+              {{ detailProfile?.description || detailOrganization?.description || '当前暂无公开简介，可以先查看近期活动与组织资料后再决定是否加入。' }}
+            </p>
+          </div>
+        </section>
+
+        <div class="grid gap-4 md:grid-cols-2">
+          <article class="rounded-[1.25rem] border border-slate-200 bg-white p-4">
+            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+              联系信息
+            </p>
+            <div class="mt-3 space-y-2 text-sm text-slate-600">
+              <p>联系地址：{{ detailProfile?.address || detailOrganization?.address || '待补充' }}</p>
+              <p>官网地址：{{ detailOrganization?.websiteUrl || '暂未公开' }}</p>
+            </div>
+          </article>
+
+          <article class="rounded-[1.25rem] border border-slate-200 bg-white p-4">
+            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+              公开资料
+            </p>
+            <div class="mt-3 space-y-2 text-sm text-slate-600">
+              <p>资质编码：{{ detailCertification?.organizationCode || detailOrganization?.organizationCode || '待补充' }}</p>
+              <p>创建时间：{{ detailOrganization?.createdAt || '待同步' }}</p>
+              <p>最近更新：{{ detailOrganization?.updatedAt || '待同步' }}</p>
+            </div>
+          </article>
+        </div>
+
+        <article
+          v-if="detailProfile?.logoUrl || detailOrganization?.logoUrl"
+          class="overflow-hidden rounded-[1.25rem] border border-slate-200 bg-white"
+        >
+          <img
+            :src="detailProfile?.logoUrl || detailOrganization?.logoUrl"
+            :alt="`${detailOrganization?.name || selectedOrganizationSummary?.name || '组织'}标识`"
+            class="h-48 w-full object-contain bg-slate-50 p-6"
+          >
+        </article>
+      </div>
+
+      <template #footer>
+        <div class="flex flex-col gap-3 sm:flex-row sm:justify-end">
+          <button
+            v-if="selectedOrganizationSummary && canJoinOrganization(selectedOrganizationSummary.id)"
+            class="rounded-full bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-300"
+            :disabled="organizationActionLoading"
+            @click="joinOrganization(selectedOrganizationSummary.id)"
+          >
+            申请加入
+          </button>
+          <button
+            v-else-if="selectedOrganizationMembership"
+            class="rounded-full border border-rose-200 px-5 py-2.5 text-sm font-semibold text-rose-600 transition hover:border-rose-300 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
+            :disabled="organizationActionLoading || normalizeNumber(selectedOrganizationMembership.status) !== MembershipStatus.ACTIVE"
+            @click="leaveOrganization(selectedOrganizationMembership.membershipId)"
+          >
+            {{ normalizeNumber(selectedOrganizationMembership.status) === MembershipStatus.ACTIVE ? '退出组织' : membershipStatusText(selectedOrganizationMembership.status) }}
+          </button>
+        </div>
+      </template>
+    </DetailDrawer>
   </WorkbenchPage>
 </template>
 
@@ -452,6 +501,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { SearchIcon } from 'lucide-vue-next'
 import FilterSelect from '@/components/ui/FilterSelect.vue'
 import Input from '@/components/ui/Input.vue'
+import DetailDrawer from '@/components/data-list/DetailDrawer.vue'
 import WorkbenchEmptyPanel from '@/components/workbench/WorkbenchEmptyPanel.vue'
 import WorkbenchPage from '@/components/workbench/WorkbenchPage.vue'
 import WorkbenchSplitLayout from '@/components/workbench/WorkbenchSplitLayout.vue'
@@ -481,6 +531,7 @@ const organizations = ref<OrganizationInfo[]>([])
 const organizationsTotal = ref(0)
 const organizationsLoading = ref(false)
 const organizationActionLoading = ref(false)
+const drawerOpen = ref(false)
 const selectedOrganizationId = ref<number | null>(null)
 const selectedOrganizationDetail = ref<PublicOrganizationDetailData | null>(null)
 const detailLoading = ref(false)
@@ -666,7 +717,12 @@ const selectOrganization = async (organizationId: string | number) => {
 
   selectedOrganizationId.value = normalizedOrganizationId
   selectedOrganizationDetail.value = null
+  drawerOpen.value = true
   await loadOrganizationDetail(normalizedOrganizationId)
+}
+
+const closeOrganizationDrawer = () => {
+  drawerOpen.value = false
 }
 
 const loadOrganizations = async () => {
@@ -689,6 +745,7 @@ const loadOrganizations = async () => {
     organizationsTotal.value = response.data.total || 0
 
     if (!organizations.value.some(item => normalizeNumber(item.id) === selectedOrganizationId.value)) {
+      drawerOpen.value = false
       selectedOrganizationId.value = null
       selectedOrganizationDetail.value = null
       detailErrorMessage.value = ''

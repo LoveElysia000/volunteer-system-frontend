@@ -132,8 +132,8 @@
           row-key="id"
           :selected-key="selectedAuditId"
           interactive
-          open-text="查看"
-          open-style="text"
+          open-text="查看详情"
+          open-style="button"
           density="compact"
           empty-title="当前没有待审核记录"
           empty-description="切换筛选条件后再试。"
@@ -352,7 +352,7 @@ const targetTypeOptions = [
   { value: 'all', label: '全部类型', description: '统一查看实名、组织、成员和活动审核' },
   { value: AuditTargetType.VOLUNTEER_REAL_NAME, label: '实名审核', description: '查看志愿者实名申请' },
   { value: AuditTargetType.ORGANIZATION, label: '组织审核', description: '查看组织资料和认证变更' },
-  { value: AuditTargetType.MEMBERSHIP, label: '成员审核', description: '查看加入组织申请' },
+  { value: AuditTargetType.MEMBERSHIP, label: '成员关系', description: '查看加入、退出等成员关系变更' },
   { value: AuditTargetType.ACTIVITY_SIGNUP, label: '活动报名', description: '查看活动报名审核' }
 ] as const
 
@@ -365,7 +365,7 @@ const columns: DataTableColumn[] = [
   },
   {
     key: 'target',
-    label: '对象类型',
+    label: '审核类型',
     width: '150px'
   },
   {
@@ -463,7 +463,7 @@ const headerHighlights = computed(() => [
 
 const loadAudits = async () => {
   try {
-    const data = await auditsStore.fetchPending({
+    await auditsStore.fetchPending({
       targetTypes: targetTypes.value,
       status: getAuditStatusRequest(auditStatusFilter.value) as AuditStatus[],
       keyword: searchQuery.value || undefined,
@@ -473,10 +473,6 @@ const loadAudits = async () => {
       createdTo: createdTo.value || undefined,
       slaHours: slaHours.value || undefined
     })
-
-    if (!selectedAuditId.value && data.list.length) {
-      await openAuditById(data.list[0].id)
-    }
   } catch (error: any) {
     console.error('加载审核列表失败:', error)
     messageStore.error(error.message || '加载审核列表失败，请稍后重试')
@@ -586,7 +582,7 @@ const batchRejectFiltered = async () => {
 const targetTypeText = (targetType: AuditTargetType) => ({
   [AuditTargetType.VOLUNTEER_REAL_NAME]: '志愿者实名',
   [AuditTargetType.ORGANIZATION]: '组织审核',
-  [AuditTargetType.MEMBERSHIP]: '加入组织',
+  [AuditTargetType.MEMBERSHIP]: '成员关系',
   [AuditTargetType.ACTIVITY_SIGNUP]: '活动报名'
 }[targetType] || '未知类型')
 
