@@ -111,7 +111,7 @@
       >
         <DataTable
           :columns="columns"
-          :items="filteredVolunteers"
+          :items="volunteers"
           :loading="loading"
           row-key="id"
           :selected-key="selectedVolunteerId"
@@ -318,6 +318,7 @@ import { useMessageStore } from '@/store/modules/messages'
 import { VolunteerAuditStatus, VolunteerStatus, type VolunteerListItem, type VolunteerProfileInfo } from '@/types/volunteer'
 import { SearchIcon } from 'lucide-vue-next'
 import { shouldRefreshOnKeepAliveActivated } from '@/utils/keepAliveRefresh'
+import { buildVolunteerExportFilters, buildVolunteerListFilters } from './volunteerFilters'
 
 const route = useRoute()
 const messageStore = useMessageStore()
@@ -368,8 +369,8 @@ const columns: DataTableColumn[] = [
 ]
 
 const headerMeta = computed(() => {
-  const activeCount = filteredVolunteers.value.filter((item) => item.status === VolunteerStatus.ACTIVE).length
-  const totalHours = filteredVolunteers.value.reduce((sum, item) => sum + item.totalHours, 0)
+  const activeCount = volunteers.value.filter((item) => item.status === VolunteerStatus.ACTIVE).length
+  const totalHours = volunteers.value.reduce((sum, item) => sum + item.totalHours, 0)
   return [
     { label: '总志愿者', value: `${total.value}`, detail: '当前列表规模' },
     { label: '活跃志愿者', value: `${activeCount}`, detail: '当前筛选结果中状态为活跃' },
@@ -395,16 +396,6 @@ const headerHighlights = computed(() => [
   }
 ])
 
-const filteredVolunteers = computed(() => volunteers.value.filter((item) => {
-  if (auditStatusFilter.value !== undefined && item.auditStatus !== auditStatusFilter.value) {
-    return false
-  }
-  if (statusFilter.value !== undefined && item.status !== statusFilter.value) {
-    return false
-  }
-  return true
-}))
-
 const selectedVolunteer = computed(() => {
   if (selectedVolunteerId.value === null) {
     return null
@@ -428,9 +419,11 @@ const loadVolunteers = async () => {
   loading.value = true
   try {
     const response = await volunteerApi.list({
-      keyword: keyword.value || undefined,
-      auditStatus: auditStatusFilter.value,
-      status: statusFilter.value,
+      ...buildVolunteerListFilters({
+        keyword: keyword.value,
+        auditStatus: auditStatusFilter.value,
+        status: statusFilter.value
+      }),
       page: page.value,
       pageSize: pageSize.value
     })
@@ -531,9 +524,11 @@ const exportVolunteers = async () => {
   exporting.value = true
   try {
     const response = await adminApi.exportVolunteers({
-      keyword: keyword.value || '',
-      auditStatus: auditStatusFilter.value,
-      status: statusFilter.value
+      ...buildVolunteerExportFilters({
+        keyword: keyword.value,
+        auditStatus: auditStatusFilter.value,
+        status: statusFilter.value
+      })
     })
     downloadBlob(
       response.data,

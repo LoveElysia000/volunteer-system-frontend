@@ -10,9 +10,9 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/'
 const API_TIMEOUT = 30000
 
 type ExportVolunteersRequest = {
-  keyword: string
-  auditStatus?: VolunteerAuditStatus
-  status?: VolunteerStatus
+  keyword?: string
+  auditStatus?: VolunteerAuditStatus[]
+  status?: VolunteerStatus[]
 }
 
 type ExportActivitiesRequest = {
