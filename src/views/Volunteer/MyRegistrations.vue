@@ -373,7 +373,7 @@ const statusOptions = [
 const pageSizeOptions = [
   { key: 'registration-page-10', value: 10, label: '每页 10 条', description: '紧凑浏览' },
   { key: 'registration-page-20', value: 20, label: '每页 20 条', description: '默认密度' },
-  { key: 'registration-page-50', value: 50, label: '每页 50 条', description: '适合集中处理' }
+  { key: 'registration-page-50', value: 50, label: '每页 50 条', description: '适合批量查看' }
 ] as const
 const loadRegisteredActivities = async () => {
   loading.value = true

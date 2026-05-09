@@ -144,7 +144,7 @@ const { ensureOrganizationId } = useOrganizationContext()
 
 const dashboard = computed(() => analyticsStore.dashboard)
 const headerMeta = computed(() => [
-  { label: '报名总数', value: `${dashboard.value?.signupCount ?? 0}`, detail: '复用组织看板汇总接口' },
+  { label: '报名总数', value: `${dashboard.value?.signupCount ?? 0}`, detail: '当前区间内的报名总人次' },
   { label: '通过报名', value: `${dashboard.value?.approvedSignupCount ?? 0}`, detail: '已审核通过的报名人数' },
   { label: '到场率', value: `${Math.round(dashboard.value?.attendanceRate ?? 0)}%`, detail: '反映志愿者参与活跃度' },
   { label: '发放工时', value: `${dashboard.value?.grantedWorkHours ?? 0}h`, detail: '当前区间已结算工时' }
@@ -192,7 +192,7 @@ const averageHours = computed(() => {
 const loadAnalytics = async () => {
   const orgId = await ensureOrganizationId()
   if (!orgId) {
-    messageStore.error('当前没有可用的组织 ID，暂时无法加载志愿者统计')
+    messageStore.error('当前组织信息不可用，暂时无法加载志愿者统计')
     return
   }
 

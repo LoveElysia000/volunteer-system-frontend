@@ -419,7 +419,7 @@ const headerMeta = computed(() => [
 const summaryMetrics = computed(() => [
   { label: '当前页通知', value: `${notifications.value.length}`, detail: '按当前筛选条件返回' },
   { label: '待处理提醒', value: `${unreadInboxIds.value.length}`, detail: '优先确认未读消息' },
-  { label: '检索结果总数', value: `${notificationsStore.total}`, detail: '来自服务端搜索与分页' }
+  { label: '检索结果总数', value: `${notificationsStore.total}`, detail: '当前检索条件下的通知总数' }
 ])
 
 const loadNotifications = async () => {

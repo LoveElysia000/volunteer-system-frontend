@@ -353,12 +353,12 @@ const cachedComponents = [
 
 const pageDescriptions: Record<string, string> = {
   'organization-dashboard': '查看组织关键指标、核心任务优先级和高表现项目进展。',
-  'organization-info': '管理组织资质、简介和对外展示信息，保障资料完整可信。',
-  'organization-activities': '统一管理活动创建、执行和复盘，提升项目运营效率。',
-  'organization-volunteers': '维护志愿者档案、活跃度状态与参与表现。',
+  'organization-info': '更新组织资质、简介和对外展示信息，保持资料完整可信。',
+  'organization-activities': '管理活动创建、执行和复盘，提升项目运营效率。',
+  'organization-volunteers': '查看志愿者档案、活跃度状态与参与表现。',
   'organization-statistics': '从活动、志愿者与财务维度洞察整体运营表现。',
-  'organization-notifications': '集中处理平台消息、审核提醒和系统通知。',
-  'organization-members': '维护组织成员身份、分工与协作权限。',
+  'organization-notifications': '处理平台消息、审核提醒和系统通知。',
+  'organization-members': '查看组织成员身份、分工与协作权限。',
   'organization-activities-create': '创建新活动并配置流程、地点与参与要求。',
   'organization-activities-review': '审核活动申请与关键节点，降低运营风险。',
   'organization-statistics-activities': '查看活动维度报表，评估执行质量与投入产出。',
@@ -388,7 +388,7 @@ const currentPage = computed(() => {
   return {
     title: String(route.meta.title || '组织管理中心'),
     caption: pageCaptions[routeName] || 'Organization Center',
-    description: pageDescriptions[routeName] || '统一管理组织运营、成员协作和关键决策信息。'
+    description: pageDescriptions[routeName] || '查看组织运营数据、成员协作和关键决策信息。'
   }
 })
 

@@ -4,7 +4,7 @@
       <OrganizationPageHeader
         eyebrow="活动"
         title="活动管理"
-        description="统一管理活动状态、执行安排和关键操作。"
+        description="查看和管理活动状态、执行安排与关键操作。"
         :meta-items="headerMeta"
       >
         <template #actions>
@@ -43,6 +43,56 @@
     </template>
 
     <template #toolbar>
+      <div class="grid gap-4 rounded-[1.75rem] border border-[#ffe2d1] bg-white p-5 shadow-[0_16px_34px_-28px_rgba(120,53,15,0.22)] md:grid-cols-[1fr_340px]">
+        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <OrganizationMetricCard
+            label="总活动"
+            caption="Total"
+            :value="String(total)"
+            detail="当前筛选结果"
+            tone="orange"
+          >
+            <template #icon>
+              <ListTodoIcon class="h-5 w-5" />
+            </template>
+          </OrganizationMetricCard>
+          <OrganizationMetricCard
+            label="进行中"
+            caption="Open"
+            :value="String(openCount)"
+            detail="正在招募或执行"
+            tone="green"
+          >
+            <template #icon>
+              <CalendarCheckIcon class="h-5 w-5" />
+            </template>
+          </OrganizationMetricCard>
+          <OrganizationMetricCard
+            label="已结束"
+            caption="Ended"
+            :value="String(endedCount)"
+            detail="已完成的活动"
+            tone="blue"
+          >
+            <template #icon>
+              <CheckCircle2Icon class="h-5 w-5" />
+            </template>
+          </OrganizationMetricCard>
+          <OrganizationMetricCard
+            label="已取消"
+            caption="Cancelled"
+            :value="String(cancelledCount)"
+            detail="已取消的活动"
+            tone="slate"
+          >
+            <template #icon>
+              <XCircleIcon class="h-5 w-5" />
+            </template>
+          </OrganizationMetricCard>
+        </div>
+        <ChartPanel :option="chartOption" height="200px" />
+      </div>
+
       <DataToolbar>
         <template #filters>
           <div class="data-list-filter-grid md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-[minmax(220px,320px)_180px_180px_180px_160px]">
@@ -536,6 +586,8 @@ import DetailDrawer from '@/components/data-list/DetailDrawer.vue'
 import StatusBadge from '@/components/data-list/StatusBadge.vue'
 import OrganizationPageHeader from '@/components/organization/OrganizationPageHeader.vue'
 import OrganizationSectionCard from '@/components/organization/OrganizationSectionCard.vue'
+import OrganizationMetricCard from '@/components/organization/OrganizationMetricCard.vue'
+import ChartPanel from '@/components/chart/ChartPanel.vue'
 import { activitiesApi, ATTENDANCE_CODE_TYPE, mapActivityItemToOrganizationManagementView } from '@/api/activities'
 import { adminApi } from '@/api/admin'
 import {
@@ -546,7 +598,7 @@ import {
   type UpdateOrganizationActivityRequest
 } from '@/types/activity'
 import { useMessageStore } from '@/store/modules/messages'
-import { PlusIcon, SlidersHorizontalIcon } from 'lucide-vue-next'
+import { PlusIcon, SlidersHorizontalIcon, ListTodoIcon, CalendarCheckIcon, CheckCircle2Icon, XCircleIcon } from 'lucide-vue-next'
 import { shouldRefreshOnKeepAliveActivated } from '@/utils/keepAliveRefresh'
 
 const route = useRoute()
@@ -657,10 +709,39 @@ const currentFilterOption = computed(() => (
 ))
 
 const headerMeta = computed(() => [
-  { label: '活动总数', value: `${total.value}`, detail: '来自活动列表接口' },
+  { label: '活动总数', value: `${total.value}`, detail: '当前筛选条件下的活动总数' },
   { label: '当前筛选', value: currentFilterOption.value.label, detail: '可按状态切换' },
   { label: '分页进度', value: `${page.value}/${totalPages.value}`, detail: `每页 ${pageSize.value} 条` }
 ])
+
+const openCount = computed(() => activities.value.filter(a => a.status === '进行中').length)
+const endedCount = computed(() => activities.value.filter(a => a.status === '已结束').length)
+const cancelledCount = computed(() => activities.value.filter(a => a.status === '已取消').length)
+
+const chartOption = computed(() => ({
+  tooltip: { trigger: 'item' as const, formatter: '{b}: {c} 个 ({d}%)' },
+  legend: { bottom: 0 },
+  series: [{
+    type: 'pie',
+    radius: ['50%', '72%'],
+    center: ['50%', '45%'],
+    itemStyle: {
+      borderRadius: 4,
+      borderColor: '#fff',
+      borderWidth: 3
+    },
+    label: { show: false },
+    emphasis: {
+      scaleSize: 6,
+      label: { show: true, fontSize: 14, fontWeight: 'bold' as const }
+    },
+    data: [
+      { value: openCount.value, name: '进行中', itemStyle: { color: '#10b981' } },
+      { value: endedCount.value, name: '已结束', itemStyle: { color: '#38bdf8' } },
+      { value: cancelledCount.value, name: '已取消', itemStyle: { color: '#f43f5e' } }
+    ]
+  }]
+}))
 
 const statusTone = (statusClass: string) => {
   if (statusClass.includes('red')) return 'rose'

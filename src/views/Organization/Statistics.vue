@@ -146,7 +146,7 @@ const resolvedRange = computed(() => {
 })
 
 const headerMeta = computed(() => [
-  { label: '组织 ID', value: `${organizationStore.activeOrganizationId ?? '-'}`, detail: '当前统计范围' },
+  { label: '当前组织', value: `${organizationStore.activeOrganizationId ?? '-'}`, detail: '当前统计范围' },
   { label: '统计区间', value: `${resolvedRange.value.start} ~ ${resolvedRange.value.end}`, detail: '查询与导出共用时间范围' }
 ])
 
@@ -184,7 +184,7 @@ const funnelCards = computed(() => [
 const loadAnalytics = async () => {
   const orgId = await ensureOrganizationId()
   if (!orgId) {
-    messageStore.error('当前没有可用的组织 ID，暂时无法加载统计')
+    messageStore.error('当前组织信息不可用，暂时无法加载统计')
     return
   }
 
@@ -203,7 +203,7 @@ const loadAnalytics = async () => {
 const exportOpsReport = async () => {
   const orgId = await ensureOrganizationId()
   if (!orgId) {
-    messageStore.error('当前没有可用的组织 ID，暂时无法导出运营报表')
+    messageStore.error('当前组织信息不可用，暂时无法导出运营报表')
     return
   }
 

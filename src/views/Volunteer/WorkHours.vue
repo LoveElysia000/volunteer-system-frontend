@@ -24,7 +24,7 @@
             <Input
               v-model="activityIdInput"
               type="number"
-              placeholder="输入活动 ID 筛选工时流水"
+              placeholder="输入活动编号筛选工时"
               theme="emerald"
             />
             <RouterLink
@@ -150,7 +150,7 @@
           open-style="text"
           density="compact"
           empty-title="当前没有可展示的工时流水"
-          empty-description="调整活动 ID 或工时类型后再试。"
+           empty-description="调整活动编号或工时类型后再试。"
           @row-click="openLogDrawer"
         >
           <template #cell-createdAt="{ item }">

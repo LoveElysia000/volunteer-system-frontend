@@ -3,7 +3,7 @@
     <OrganizationPageHeader
       eyebrow="活动创建"
       title="新建活动"
-      description="集中填写活动基础信息、排期和执行参数，保持和现有后台工作台一致的创建体验。"
+      description="填写活动基础信息、排期和参与要求，快速发布新的志愿活动。"
       layout="operations"
       :meta-items="headerMeta"
     >
@@ -176,14 +176,14 @@
             v-if="recentCreatedActivityId"
             class="mt-4 rounded-[1.2rem] border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700"
           >
-            最近创建 ID：#{{ recentCreatedActivityId }}
+            最近创建编号：#{{ recentCreatedActivityId }}
           </div>
         </OrganizationSectionCard>
 
         <OrganizationSectionCard
           title="提交前检查"
           caption="Checklist"
-          description="保持基础信息完整，可以减少后续编辑和审核成本。"
+          description="保持基础信息完整，有助于活动顺利发布和开展。"
         >
           <ul class="space-y-3">
             <li

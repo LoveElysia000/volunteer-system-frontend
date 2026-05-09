@@ -183,7 +183,7 @@ const conversionHighlights = computed(() => [
 const loadAnalytics = async () => {
   const orgId = await ensureOrganizationId()
   if (!orgId) {
-    messageStore.error('当前没有可用的组织 ID，暂时无法加载活动统计')
+    messageStore.error('当前组织信息不可用，暂时无法加载活动统计')
     return
   }
 

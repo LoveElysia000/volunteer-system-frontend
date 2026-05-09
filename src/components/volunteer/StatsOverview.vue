@@ -3,7 +3,7 @@
     <VolunteerSummaryCard
       label="当前积分"
       :value="String(points)"
-      detail="来自首页汇总接口的当前累计积分"
+      detail="当前账号的累计积分"
       tone="green"
     >
       <template #icon>
