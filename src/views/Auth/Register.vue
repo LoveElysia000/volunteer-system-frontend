@@ -140,7 +140,7 @@
                       开始你的绿色行动旅程
                     </h2>
                     <p class="mt-3 max-w-2xl text-base leading-7 text-slate-500">
-                      页面按你给出的模板重构，但不会改动当前项目的注册字段与接口参数。只需要填写一次，就可以完成账号创建。
+                       填写基本信息，即可完成账号创建，开始参与环保活动。
                     </p>
                   </div>
 
@@ -623,9 +623,9 @@
                           立即登录
                         </router-link>
                       </p>
-                      <p class="text-xs text-slate-400">
-                        当前注册参数与后端接口保持一致
-                      </p>
+                       <p class="text-xs text-slate-400">
+                         注册信息将用于账号登录和活动报名
+                       </p>
                     </div>
                   </div>
                 </form>

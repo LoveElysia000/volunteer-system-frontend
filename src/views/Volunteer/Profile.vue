@@ -2,7 +2,7 @@
   <WorkbenchPage>
     <VolunteerPageHeader
       eyebrow="个人信息"
-      title="维护你的志愿者档案"
+      title="志愿者档案"
       description="个人资料、服务偏好和通知方式会影响推荐任务与团队协作体验。"
       :meta-items="headerMeta"
       layout="operations"
@@ -124,7 +124,7 @@
 
         <VolunteerSectionCard
           title="资料状态"
-          description="账户、资料、实名三块分开维护后，联调会更稳定。"
+          description="检查账户信息、个人资料和实名认证的完成情况。"
           tone="soft"
         >
           <div class="mb-4 flex items-center justify-between rounded-[1.1rem] border border-white/80 bg-white/90 px-4 py-3">
@@ -132,9 +132,9 @@
               <p class="text-sm font-semibold text-slate-900">
                 账户状态
               </p>
-              <p class="mt-1 text-xs text-slate-500">
-                来自 `/api/me/profile` 的志愿者状态字段。
-              </p>
+               <p class="mt-1 text-xs text-slate-500">
+                 当前志愿者账号的状态标识。
+               </p>
             </div>
             <span
               class="shrink-0 rounded-full px-3 py-1 text-xs font-semibold"
@@ -173,7 +173,7 @@
         <div class="space-y-6">
         <VolunteerSectionCard
           title="账户信息"
-          description="单独通过账户信息接口维护用户名、邮箱和手机号。"
+          description="更新你的用户名、邮箱地址和手机号码。"
         >
           <div class="grid gap-4 md:grid-cols-2">
             <label class="text-sm font-medium text-slate-600">
@@ -215,7 +215,7 @@
 
         <VolunteerSectionCard
           title="个人资料"
-          description="这些资料通过志愿者资料接口维护，不再处理实名认证字段。"
+          description="设置性别、生日和个人简介信息。"
           tone="soft"
         >
           <div class="grid gap-4 md:grid-cols-2">
@@ -336,17 +336,17 @@
 
         <VolunteerSectionCard
           title="我的组织"
-          description="组织查询、加入申请和退出操作已经统一收敛到组织页，避免资料页重复承接业务接口。"
+          description="查看已加入的组织、申请加入新组织或退出当前组织。"
           tone="soft"
         >
           <div class="space-y-4">
             <div class="rounded-[1.1rem] border border-white/80 bg-white/90 px-4 py-4">
               <p class="text-sm font-semibold text-slate-900">
-                组织关系统一在“我的组织”页面维护
-              </p>
-              <p class="mt-2 text-sm leading-6 text-slate-500">
-                那里会展示公开组织列表、我的组织关系、加入申请状态和退出操作，和后端组织相关接口一一对应。
-              </p>
+                 组织关系请前往"我的组织"页面管理
+               </p>
+                <p class="mt-2 text-sm leading-6 text-slate-500">
+                  包含公开组织列表、我的组织关系、加入申请状态和退出操作。
+                </p>
             </div>
             <RouterLink
               to="/volunteer/organizations"
@@ -439,7 +439,7 @@ const birthdayValue = computed<string | null>({
 
 const headerMeta = computed(() => [
   { label: '当前等级', value: `Lv.${volunteerLevel.value}`, detail: `${user.value?.points || 0} 当前积分` },
-  { label: '实名认证', value: auditStatusLabel.value, detail: '审核状态来自实名信息' },
+  { label: '实名认证', value: auditStatusLabel.value, detail: '当前实名认证审核状态' },
   { label: '服务次数', value: `${serviceCountValue.value} 次`, detail: `${creditScoreValue.value} 当前信用分` }
 ])
 
@@ -460,7 +460,7 @@ const profileHealthChecklist = computed(() => {
   const hasVerification = auditStatus.value === VolunteerAuditStatus.APPROVED
 
   return [
-    { label: '账户信息完整', detail: '用户名、邮箱、手机号由账户信息接口单独维护。', done: hasAccountInfo },
+    { label: '账户信息完整', detail: '确保联系信息准确，方便接收活动通知。', done: hasAccountInfo },
     { label: '个人简介已填写', detail: '建议说明你的长期服务意愿与擅长领域。', done: hasBio },
     { label: '实名认证已完成', detail: '实名通过后，报名与签到等流程会更顺畅。', done: hasVerification }
   ]

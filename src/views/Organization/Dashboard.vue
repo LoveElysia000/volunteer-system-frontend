@@ -217,42 +217,14 @@
             compact
           />
         </template>
-
-        <div class="flex min-h-[clamp(14rem,32vh,17.5rem)] items-end gap-3 border-b border-slate-100 pb-5">
-          <div
-            v-for="row in trendRowsForView"
-            :key="`${selectedTrendRange}-${row.key}`"
-            class="group flex min-w-0 flex-1 flex-col items-center gap-2"
-          >
-            <div
-              class="w-full rounded-t-xl transition-all duration-200"
-              :class="row.highlight ? 'bg-[#ec5b13] shadow-[0_18px_36px_-30px_rgba(236,91,19,0.85)]' : 'bg-[#ffd7c1] group-hover:bg-[#f8b28a]'"
-              :style="{ height: `${Math.max(row.value, 18)}%` }"
-            />
-            <span
-              class="text-[10px] font-bold"
-              :class="row.highlight ? 'text-[#ec5b13]' : 'text-slate-400'"
-            >
-              {{ row.month }}
-            </span>
-          </div>
-        </div>
-
-        <div class="mt-4 flex items-center gap-4 text-xs font-medium text-slate-500">
-          <div class="flex items-center gap-2">
-            <span class="h-3 w-3 rounded-full bg-[#ec5b13]" /> 最近月份
-          </div>
-          <div class="flex items-center gap-2">
-            <span class="h-3 w-3 rounded-full bg-slate-300" /> 历史月份
-          </div>
-        </div>
+        <ChartPanel :option="trendChartOption" height="260px" />
       </OrganizationSectionCard>
 
       <OrganizationSectionCard
         class="organization-critical-tasks"
         title="关键任务"
         caption="Critical Tasks"
-        description="直接展示待审核接口返回的真实记录。"
+        description="集中查看需处理的待审核任务。"
         tone="soft"
       >
         <template #header>
@@ -315,7 +287,7 @@
       class="organization-top-projects"
       title="重点活动"
       caption="Top Projects"
-      description="直接展示活动接口返回的真实活动。"
+      description="查看当前重点跟进的活动。"
     >
       <transition-group
         name="organization-list-rise"
@@ -420,6 +392,7 @@ import {
 import Input from '@/components/ui/Input.vue'
 import FilterSelect from '@/components/ui/FilterSelect.vue'
 import DatePicker from '@/components/ui/DatePicker.vue'
+import ChartPanel from '@/components/chart/ChartPanel.vue'
 import WorkbenchHeroPanel from '@/components/workbench/WorkbenchHeroPanel.vue'
 import WorkbenchPage from '@/components/workbench/WorkbenchPage.vue'
 import OrganizationSectionCard from '@/components/organization/OrganizationSectionCard.vue'
@@ -569,6 +542,27 @@ const trendRowsForView = computed(() => {
   return organizationImpactTrendRows.value
 })
 
+const trendChartOption = computed(() => {
+  const rows = trendRowsForView.value
+  const months = rows.map(r => r.month)
+  const values = rows.map(r => r.value)
+  const lastIdx = rows.length - 1
+  return {
+    tooltip: { trigger: 'axis' as const },
+    grid: { left: 8, right: 8, top: 12, bottom: 24 },
+    xAxis: { type: 'category' as const, data: months, axisLabel: { fontSize: 10 } },
+    yAxis: { type: 'value' as const, minInterval: 1, splitLine: { lineStyle: { color: '#f1f5f9' } } },
+    series: [{
+      type: 'bar',
+      data: values.map((v, i) => ({
+        value: v,
+        itemStyle: { color: i === lastIdx ? '#ec5b13' : '#ffd7c1', borderRadius: [4, 4, 0, 0] }
+      })),
+      barMaxWidth: 32
+    }]
+  }
+})
+
 const criticalTaskRows = computed(() => auditsStore.items.map(mapAuditToTaskRow))
 const topProjectRows = computed(() => {
   return dashboardActivities.value
@@ -687,17 +681,11 @@ const taskStatusClass = (tone: 'green' | 'amber' | 'orange') => {
   return 'bg-[#ffe6d7] text-[#c94f14]'
 }
 
-const taskProgressClass = (tone: 'green' | 'amber' | 'orange') => {
-  if (tone === 'green') return 'bg-emerald-500'
-  if (tone === 'amber') return 'bg-amber-500'
-  return 'bg-[#ec5b13]'
-}
-
 const handleExport = async () => {
   if (isExporting.value) return
   const orgId = await ensureOrganizationId()
   if (!orgId) {
-    messageStore.error('当前没有可用的组织 ID，暂时无法导出运营报表')
+    messageStore.error('当前组织信息不可用，暂时无法导出运营报表')
     return
   }
 

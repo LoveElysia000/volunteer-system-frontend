@@ -617,7 +617,7 @@ const summaryCards = computed(() => [
 
 const discoveryMetrics = computed(() => [
   { label: '搜索结果', value: `${organizations.value.length}`, detail: '当前页组织卡片数' },
-  { label: '接口总量', value: `${organizationsTotal.value}`, detail: '组织列表接口返回总数' },
+  { label: '组织总数', value: `${organizationsTotal.value}`, detail: '符合条件的公开组织总数' },
   { label: '可直接申请', value: `${organizations.value.filter(item => canJoinOrganization(item.id)).length}`, detail: '尚未建立关系的组织' }
 ])
 const organizationsTotalPages = computed(() => Math.max(1, Math.ceil(organizationsTotal.value / organizationsPageSize.value)))
@@ -711,7 +711,7 @@ const loadOrganizationDetail = async (organizationId: number) => {
 const selectOrganization = async (organizationId: string | number) => {
   const normalizedOrganizationId = normalizeNumber(organizationId)
   if (!Number.isInteger(normalizedOrganizationId) || normalizedOrganizationId <= 0) {
-    messageStore.error('组织 ID 无效，暂时无法查看详情')
+    messageStore.error('组织信息无效，暂时无法查看详情')
     return
   }
 
@@ -798,7 +798,7 @@ const goToNextMembershipsPage = async () => {
 const joinOrganization = async (organizationId: string | number) => {
   const normalizedOrganizationId = normalizeNumber(organizationId)
   if (!Number.isInteger(normalizedOrganizationId) || normalizedOrganizationId <= 0) {
-    messageStore.error('组织 ID 无效，暂时无法加入')
+    messageStore.error('组织信息无效，暂时无法加入')
     return
   }
 

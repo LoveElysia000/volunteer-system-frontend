@@ -339,7 +339,7 @@ const selectedNotificationTarget = computed(() => (
 ))
 
 const headerMeta = computed(() => [
-  { label: '消息总数', value: `${notificationsStore.total}`, detail: '来自通知中心接口' },
+  { label: '消息总数', value: `${notificationsStore.total}`, detail: '当前账号的通知收件箱' },
   { label: '未读消息', value: `${unreadCount.value}`, detail: unreadOnly.value ? '当前仅展示未读' : '可批量标记已读' },
   { label: '分页进度', value: `${page.value}/${totalPages.value}`, detail: `每页 ${pageSize.value} 条` }
 ])

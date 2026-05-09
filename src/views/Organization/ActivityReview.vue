@@ -4,7 +4,7 @@
       <OrganizationPageHeader
         eyebrow="审核队列"
         title="审核中心"
-        description="集中处理实名认证、组织资料、活动等各类待办审批。"
+        description="处理实名认证、组织资料、活动等各类待审核事项。"
         layout="operations"
         :meta-items="headerMeta"
       >
@@ -94,7 +94,7 @@
         <template #summary>
           <div class="data-list-summary-stack">
             <span class="data-list-pagination">第 {{ page }} / {{ totalPages }} 页</span>
-            <span>接口返回 <strong>{{ auditsStore.total }}</strong> 条审核记录</span>
+            <span>共 <strong>{{ auditsStore.total }}</strong> 条审核记录</span>
             <span>当前列表 <strong>{{ filteredItems.length }}</strong> 条</span>
           </div>
         </template>
@@ -426,7 +426,7 @@ const targetTypes = computed(() => (
 ))
 
 const headerMeta = computed(() => [
-  { label: '审核记录总数', value: `${auditsStore.total}`, detail: '来源于审核中心接口' },
+  { label: '审核记录总数', value: `${auditsStore.total}`, detail: '当前筛选条件下的审核记录总数' },
   {
     label: '当前模块',
     value: targetTypeFilter.value === 'all' ? '综合审核' : targetTypeText(targetTypeFilter.value),

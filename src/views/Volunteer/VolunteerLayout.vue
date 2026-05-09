@@ -406,7 +406,7 @@ const pageDescriptions: Record<string, string> = {
   'volunteer-work-hours': '查看自己的工时发放、作废与重算记录，快速核对服务时长变化。',
   'volunteer-notifications': '统一查看报名结果、活动变更和工时提醒，避免错过关键服务动态。',
   'volunteer-organizations': '查看你已加入的组织，并直接完成加入申请或退出操作。',
-  'volunteer-profile': '维护个人资料、服务偏好和志愿者展示信息。',
+  'volunteer-profile': '查看和更新个人资料、服务偏好以及志愿者展示信息。',
 }
 
 const pageCaptions: Record<string, string> = {
@@ -425,7 +425,7 @@ const currentPage = computed(() => {
   return {
     title: String(route.meta.title || '志愿者中心'),
     caption: pageCaptions[routeName] || 'Volunteer Center',
-    description: pageDescriptions[routeName] || '统一管理你的志愿者任务、记录和成长信息。'
+    description: pageDescriptions[routeName] || '查看你的志愿者任务、服务记录和成长信息。'
   }
 })
 

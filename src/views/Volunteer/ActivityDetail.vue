@@ -18,7 +18,7 @@
 
     <VolunteerSectionCard
       title="活动信息"
-      description="当前页展示后端真实返回的活动详情字段。"
+      description="查看活动的详细时间、地点和服务信息。"
     >
       <WorkbenchEmptyPanel
         v-if="loading"
@@ -264,7 +264,7 @@ const remainingSeats = computed(() => {
   return detail.value.maxPeople - detail.value.currentPeople
 })
 const headerMeta = computed(() => [
-  { label: '活动状态', value: statusText.value, detail: '实时取自接口' },
+  { label: '活动状态', value: statusText.value, detail: '当前活动的最新状态' },
   { label: '服务时长', value: `${detail.value?.duration ?? 0} 小时`, detail: '当前活动安排' },
   { label: '剩余名额', value: `${remainingSeats.value > 0 ? remainingSeats.value : 0} 个`, detail: remainingSeats.value > 0 ? '仍可继续报名' : '当前名额已满' }
 ])

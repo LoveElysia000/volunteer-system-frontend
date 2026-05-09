@@ -34,6 +34,48 @@
     </template>
 
     <template #toolbar>
+      <div class="grid gap-4 rounded-[1.75rem] border border-[#ffe2d1] bg-white p-5 shadow-[0_16px_34px_-28px_rgba(120,53,15,0.22)] md:grid-cols-[1fr_340px]">
+        <div class="grid gap-3 sm:grid-cols-2">
+          <OrganizationMetricCard
+            label="成员总数"
+            caption="Total"
+            :value="String(membershipsStore.stats?.totalCount ?? 0)"
+            detail="当前组织成员规模"
+            tone="orange"
+          >
+            <template #icon><UsersIcon class="h-5 w-5" /></template>
+          </OrganizationMetricCard>
+          <OrganizationMetricCard
+            label="正式成员"
+            caption="Active"
+            :value="String(membershipsStore.stats?.activeCount ?? 0)"
+            detail="已通过审核的成员"
+            tone="green"
+          >
+            <template #icon><ShieldCheckIcon class="h-5 w-5" /></template>
+          </OrganizationMetricCard>
+          <OrganizationMetricCard
+            label="待审核"
+            caption="Pending"
+            :value="String(membershipsStore.stats?.pendingCount ?? 0)"
+            detail="等待处理的申请"
+            tone="amber"
+          >
+            <template #icon><UserCheckIcon class="h-5 w-5" /></template>
+          </OrganizationMetricCard>
+          <OrganizationMetricCard
+            label="已拒绝/退出"
+            caption="Others"
+            :value="String(othersCount)"
+            detail="已拒绝或已退出"
+            tone="slate"
+          >
+            <template #icon><UserRoundSearchIcon class="h-5 w-5" /></template>
+          </OrganizationMetricCard>
+        </div>
+        <ChartPanel :option="membersChartOption" height="200px" />
+      </div>
+
       <DataToolbar>
         <template #filters>
           <div class="data-list-filter-grid md:grid-cols-2 2xl:grid-cols-4">
@@ -298,7 +340,9 @@ import { useMembershipsStore } from '@/store/modules/memberships'
 import { useMessageStore } from '@/store/modules/messages'
 import { useOrganizationContext } from '@/composables/useOrganizationContext'
 import { MembershipRole, MembershipStatus, type MemberInfo } from '@/types/membership'
-import { SearchIcon, ShieldCheckIcon, UserRoundSearchIcon } from 'lucide-vue-next'
+import { SearchIcon, ShieldCheckIcon, UserRoundSearchIcon, UsersIcon, UserCheckIcon } from 'lucide-vue-next'
+import ChartPanel from '@/components/chart/ChartPanel.vue'
+import OrganizationMetricCard from '@/components/organization/OrganizationMetricCard.vue'
 
 const membershipsStore = useMembershipsStore()
 const messageStore = useMessageStore()
@@ -385,7 +429,7 @@ const isUpdatingSelectedMember = computed(() => {
 })
 const totalPages = computed(() => Math.max(1, Math.ceil((membershipsStore.total || 0) / pageSize.value)))
 const headerMeta = computed(() => [
-  { label: '成员总数', value: `${membershipsStore.stats?.totalCount ?? 0}`, detail: '来自成员统计接口' },
+  { label: '成员总数', value: `${membershipsStore.stats?.totalCount ?? 0}`, detail: '当前组织的成员总人数' },
   { label: '待审核', value: `${membershipsStore.stats?.pendingCount ?? 0}`, detail: '可直接在本页处理' },
   { label: '正式成员', value: `${membershipsStore.stats?.activeCount ?? 0}`, detail: '当前组织稳定成员' },
   { label: '分页进度', value: `${page.value}/${totalPages.value}`, detail: `每页 ${pageSize.value} 条` }
@@ -407,6 +451,26 @@ const headerHighlights = computed(() => [
     tone: 'neutral'
   }
 ])
+
+const othersCount = computed(() => (membershipsStore.stats?.totalCount ?? 0) - (membershipsStore.stats?.activeCount ?? 0) - (membershipsStore.stats?.pendingCount ?? 0))
+
+const membersChartOption = computed(() => ({
+  tooltip: { trigger: 'item' as const, formatter: '{b}: {c} 人 ({d}%)' },
+  legend: { bottom: 0 },
+  series: [{
+    type: 'pie',
+    radius: ['50%', '72%'],
+    center: ['50%', '45%'],
+    itemStyle: { borderRadius: 4, borderColor: '#fff', borderWidth: 3 },
+    label: { show: false },
+    emphasis: { scaleSize: 6, label: { show: true, fontSize: 14, fontWeight: 'bold' as const } },
+    data: [
+      { value: membershipsStore.stats?.activeCount ?? 0, name: '正式成员', itemStyle: { color: '#10b981' } },
+      { value: membershipsStore.stats?.pendingCount ?? 0, name: '待审核', itemStyle: { color: '#f59e0b' } },
+      { value: othersCount.value, name: '已拒绝/退出', itemStyle: { color: '#94a3b8' } }
+    ]
+  }]
+}))
 
 const syncSelectedMember = () => {
   if (selectedMembershipId.value === null) {
@@ -434,7 +498,7 @@ const closeMemberDrawer = () => {
 const loadMembers = async () => {
   const organizationId = await ensureOrganizationId()
   if (!organizationId) {
-    messageStore.error('当前没有可用的组织 ID，暂时无法加载成员')
+    messageStore.error('当前组织信息不可用，暂时无法加载成员')
     return
   }
 

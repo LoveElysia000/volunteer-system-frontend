@@ -4,7 +4,7 @@
       <OrganizationPageHeader
         eyebrow="志愿者"
         title="志愿者管理"
-        description="集中管理志愿者档案、服务表现和导入导出。"
+        description="查看志愿者档案、服务表现，支持导入和导出。"
         layout="operations"
         :meta-items="headerMeta"
       >
@@ -56,6 +56,48 @@
     </template>
 
     <template #toolbar>
+      <div class="grid gap-4 rounded-[1.75rem] border border-[#ffe2d1] bg-white p-5 shadow-[0_16px_34px_-28px_rgba(120,53,15,0.22)] md:grid-cols-[1fr_340px]">
+        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <OrganizationMetricCard
+            label="志愿者总数"
+            caption="Total"
+            :value="String(total)"
+            detail="当前筛选结果"
+            tone="orange"
+          >
+            <template #icon><UsersIcon class="h-5 w-5" /></template>
+          </OrganizationMetricCard>
+          <OrganizationMetricCard
+            label="已认证"
+            caption="Approved"
+            :value="String(approvedCount)"
+            detail="审核通过的志愿者"
+            tone="green"
+          >
+            <template #icon><ShieldCheckIcon class="h-5 w-5" /></template>
+          </OrganizationMetricCard>
+          <OrganizationMetricCard
+            label="审核中"
+            caption="Pending"
+            :value="String(pendingCount)"
+            detail="等待审核处理"
+            tone="amber"
+          >
+            <template #icon><UserCheckIcon class="h-5 w-5" /></template>
+          </OrganizationMetricCard>
+          <OrganizationMetricCard
+            label="未认证"
+            caption="Unverified"
+            :value="String(unverifiedCount)"
+            detail="尚未提交认证"
+            tone="slate"
+          >
+            <template #icon><UserCheckIcon class="h-5 w-5" /></template>
+          </OrganizationMetricCard>
+        </div>
+        <ChartPanel :option="volunteerChartOption" height="200px" />
+      </div>
+
       <DataToolbar>
         <template #filters>
           <div class="data-list-filter-grid md:grid-cols-2 2xl:grid-cols-3">
@@ -316,9 +358,11 @@ import { volunteerApi } from '@/api/volunteer'
 import { adminApi } from '@/api/admin'
 import { useMessageStore } from '@/store/modules/messages'
 import { VolunteerAuditStatus, VolunteerStatus, type VolunteerListItem, type VolunteerProfileInfo } from '@/types/volunteer'
-import { SearchIcon } from 'lucide-vue-next'
+import { SearchIcon, UsersIcon, UserCheckIcon, ShieldCheckIcon } from 'lucide-vue-next'
 import { shouldRefreshOnKeepAliveActivated } from '@/utils/keepAliveRefresh'
 import { buildVolunteerExportFilters, buildVolunteerListFilters } from './volunteerFilters'
+import ChartPanel from '@/components/chart/ChartPanel.vue'
+import OrganizationMetricCard from '@/components/organization/OrganizationMetricCard.vue'
 
 const route = useRoute()
 const messageStore = useMessageStore()
@@ -395,6 +439,28 @@ const headerHighlights = computed(() => [
     tone: 'neutral'
   }
 ])
+
+const unverifiedCount = computed(() => volunteers.value.filter(v => v.auditStatus === VolunteerAuditStatus.UNVERIFIED).length)
+const pendingCount = computed(() => volunteers.value.filter(v => v.auditStatus === VolunteerAuditStatus.PENDING).length)
+const approvedCount = computed(() => volunteers.value.filter(v => v.auditStatus === VolunteerAuditStatus.APPROVED).length)
+
+const volunteerChartOption = computed(() => ({
+  tooltip: { trigger: 'item' as const, formatter: '{b}: {c} 人 ({d}%)' },
+  legend: { bottom: 0 },
+  series: [{
+    type: 'pie',
+    radius: ['50%', '72%'],
+    center: ['50%', '45%'],
+    itemStyle: { borderRadius: 4, borderColor: '#fff', borderWidth: 3 },
+    label: { show: false },
+    emphasis: { scaleSize: 6, label: { show: true, fontSize: 14, fontWeight: 'bold' as const } },
+    data: [
+      { value: approvedCount.value, name: '已通过', itemStyle: { color: '#10b981' } },
+      { value: pendingCount.value, name: '审核中', itemStyle: { color: '#f59e0b' } },
+      { value: unverifiedCount.value, name: '未认证', itemStyle: { color: '#94a3b8' } }
+    ]
+  }]
+}))
 
 const selectedVolunteer = computed(() => {
   if (selectedVolunteerId.value === null) {

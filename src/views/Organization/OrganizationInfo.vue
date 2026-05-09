@@ -759,7 +759,7 @@ const activeOrganizationCode = computed(() => {
 })
 
 const headerMeta = computed(() => [
-  { label: '可管理组织', value: `${organizationStore.total}`, detail: '来自组织列表接口' },
+  { label: '可管理组织', value: `${organizationStore.total}`, detail: '当前可管理的组织数量' },
   { label: '当前查看', value: drawerOpen.value ? drawerOrganizationName.value : '未打开详情', detail: '详情在右侧抽屉查看' },
   { label: '当前筛选', value: statusFilterText(listFilters.status), detail: '按启用状态筛选组织列表' },
   { label: '列表密度', value: `每页 ${listFilters.pageSize} 条`, detail: '当前列表分页设置' }

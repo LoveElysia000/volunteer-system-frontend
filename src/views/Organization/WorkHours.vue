@@ -26,12 +26,12 @@
             <Input
               v-model="activityIdInput"
               type="number"
-              placeholder="活动 ID"
+              placeholder="活动编号"
             />
             <Input
               v-model="signupIdInput"
               type="number"
-              placeholder="报名 ID"
+              placeholder="报名编号"
             />
           </div>
         </template>
@@ -133,18 +133,18 @@
 
         <OrganizationSectionCard
           title="快速处理"
-          description="无需选中流水，也可以按报名 ID 直接处理。"
+          description="无需选中流水，也可以按报名编号直接处理。"
           tone="soft"
         >
           <div class="space-y-4">
             <div class="grid gap-4 md:grid-cols-2">
               <label class="text-sm font-medium text-slate-600">
-                报名 ID
+                报名编号
                 <Input
                   v-model="actionFormSignupIdInput"
                   class="mt-2"
                   type="number"
-                  placeholder="请输入报名 ID"
+                  placeholder="请输入报名编号"
                 />
               </label>
               <label class="text-sm font-medium text-slate-600">
@@ -153,7 +153,7 @@
                   v-model="actionFormHoursInput"
                   class="mt-2"
                   type="number"
-                  placeholder="仅重算时填写"
+                  placeholder="不填则保持原工时"
                 />
               </label>
             </div>
@@ -334,21 +334,21 @@
 
             <div class="grid gap-4 md:grid-cols-2">
               <label class="text-sm font-medium text-slate-600">
-                报名 ID
+                 报名编号
                 <Input
                   v-model="actionFormSignupIdInput"
                   class="mt-2"
                   type="number"
-                  placeholder="报名 ID"
+                  placeholder="报名编号"
                 />
               </label>
               <label class="text-sm font-medium text-slate-600">
-                重算工时
+                 重算工时
                 <Input
                   v-model="actionFormHoursInput"
                   class="mt-2"
                   type="number"
-                  placeholder="仅重算使用"
+                  placeholder="不填则保持原工时"
                 />
               </label>
               <div class="md:col-span-2">
@@ -588,7 +588,7 @@ const goToNextPage = async () => {
 
 const voidWorkHour = async () => {
   if (!actionForm.value.signupId || !actionForm.value.reason) {
-    messageStore.error('请先填写报名 ID 和原因')
+    messageStore.error('请先填写报名编号和原因')
     return
   }
   acting.value = true
@@ -619,7 +619,7 @@ const voidWorkHour = async () => {
 
 const recalculateWorkHour = async () => {
   if (!actionForm.value.signupId || !actionForm.value.reason) {
-    messageStore.error('请先填写报名 ID 和原因')
+    messageStore.error('请先填写报名编号和原因')
     return
   }
   acting.value = true
