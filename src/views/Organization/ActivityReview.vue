@@ -230,21 +230,22 @@
 
           <section class="space-y-3">
             <div class="rounded-2xl border border-slate-200 bg-white p-4">
-              <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                变更前
-              </p>
-              <p class="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-600">
-                {{ detail.oldContent || '无' }}
-              </p>
+              <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">变更前</p>
+              <div class="mt-2 space-y-1.5">
+                <div v-for="item in formattedOld" :key="item.key" class="flex gap-2 text-sm leading-6">
+                  <span class="font-semibold text-slate-500 shrink-0 w-20">{{ item.key }}：</span>
+                  <span class="text-slate-700">{{ item.value }}</span>
+                </div>
+              </div>
             </div>
-
             <div class="rounded-2xl border border-slate-200 bg-white p-4">
-              <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                变更后
-              </p>
-              <p class="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-600">
-                {{ detail.newContent || '无' }}
-              </p>
+              <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">变更后</p>
+              <div class="mt-2 space-y-1.5">
+                <div v-for="item in formattedNew" :key="item.key" class="flex gap-2 text-sm leading-6">
+                  <span class="font-semibold text-slate-500 shrink-0 w-20">{{ item.key }}：</span>
+                  <span class="text-slate-700">{{ item.value }}</span>
+                </div>
+              </div>
             </div>
           </section>
 
@@ -312,6 +313,21 @@ import OrganizationSectionCard from '@/components/organization/OrganizationSecti
 import { useAuditsStore } from '@/store/modules/audits'
 import { useMessageStore } from '@/store/modules/messages'
 import { AuditDecisionAction, AuditStatus, AuditTargetType } from '@/types/audit'
+import {
+  ActivitySignupStatus,
+  AttendanceStatus,
+  WorkHourStatus
+} from '@/types/activity'
+import { OrganizationStatus } from '@/types/organization'
+import { VolunteerAuditStatus } from '@/types/volunteer'
+import {
+  ATTENDANCE_STATUS_LABELS,
+  CHECK_OUT_STATUS_LABELS,
+  WORK_HOUR_STATUS_LABELS,
+  ACTIVITY_SIGNUP_STATUS_LABELS,
+  VOLUNTEER_AUDIT_STATUS_LABELS,
+  ORGANIZATION_STATUS_LABELS
+} from '@/constants/status'
 import {
   getAuditStatusFilterText,
   getAuditStatusRequest,
@@ -386,6 +402,163 @@ const items = computed(() => auditsStore.items)
 const detail = computed(() => auditsStore.currentRecord)
 const loading = computed(() => auditsStore.loading)
 const totalPages = computed(() => Math.max(1, Math.ceil(auditsStore.total / pageSize.value)))
+
+const formattedOld = computed(() => formatContent(detail.value?.oldContent, detail.value?.targetType))
+const formattedNew = computed(() => formatContent(detail.value?.newContent, detail.value?.targetType))
+
+function formatContent(content: string | null | undefined, targetType?: AuditTargetType): { key: string; value: string }[] {
+  if (!content) return []
+  try {
+    const obj = JSON.parse(content)
+    if (typeof obj !== 'object' || obj === null) return [{ key: '内容', value: String(obj) }]
+    return Object.entries(obj).map(([k, v]) => ({
+      key: getFieldLabel(k, targetType),
+      value: formatFieldValue(k, v, targetType)
+    }))
+  } catch {
+    return [{ key: '内容', value: content }]
+  }
+}
+
+function getFieldLabel(key: string, targetType?: AuditTargetType): string {
+  const labels: Record<string, Record<string, string>> = {
+    [AuditTargetType.ACTIVITY_SIGNUP]: {
+      id: '编号',
+      activity_id: '活动编号',
+      volunteer_id: '志愿者编号',
+      signup_time: '报名时间',
+      status: '报名状态',
+      check_in_status: '签到状态',
+      check_in_time: '签到时间',
+      check_out_status: '签退状态',
+      check_out_time: '签退时间',
+      work_hour_status: '工时状态',
+      work_hour_version: '工时版本',
+      last_work_hour_log_id: '最后工时日志',
+      granted_hours: '已发工时',
+      granted_at: '发放时间',
+      created_at: '创建时间',
+      updated_at: '更新时间'
+    },
+    [AuditTargetType.VOLUNTEER_REAL_NAME]: {
+      realName: '真实姓名',
+      idCard: '身份证号',
+      phone: '手机号码',
+      email: '邮箱',
+      auditStatus: '认证状态',
+      reason: '审核原因',
+      remark: '备注'
+    },
+    [AuditTargetType.ORGANIZATION]: {
+      name: '组织名称',
+      organizationName: '组织名称',
+      organizationCode: '组织编码',
+      organizationType: '组织类型',
+      region: '所在地区',
+      contactPerson: '联系人',
+      contactPhone: '联系电话',
+      email: '邮箱',
+      description: '简介',
+      address: '地址',
+      websiteUrl: '官网',
+      logoUrl: '组织标识',
+      id: '组织编号',
+      accountId: '账户编号',
+      status: '组织状态',
+      auditStatus: '审核状态',
+      reason: '审核原因',
+      remark: '备注',
+      userName: '用户名',
+      createdAt: '创建时间',
+      updatedAt: '更新时间'
+    },
+    [AuditTargetType.MEMBERSHIP]: {
+      volunteerName: '志愿者姓名',
+      volunteerId: '志愿者编号',
+      volunteer_id: '志愿者编号',
+      org_id: '组织编号',
+      status: '成员状态',
+      role: '角色',
+      position: '职位',
+      expectedHours: '期望工时',
+      reason: '申请原因',
+      remark: '备注',
+      motivation: '加入动机',
+      joinDate: '加入时间',
+      join_date: '加入时间',
+      joined_at: '加入时间',
+      applied_at: '申请时间',
+      left_at: '退出时间',
+      leaveReason: '退出原因',
+      leave_reason: '退出原因',
+      reviewComment: '审核说明',
+      created_at: '创建时间',
+      updated_at: '更新时间'
+    }
+  }
+  const commonLabels: Record<string, string> = {
+    title: '标题',
+    description: '描述',
+    name: '名称',
+    code: '编码',
+    phone: '手机',
+    email: '邮箱',
+    remark: '备注',
+    id: '编号',
+    auditStatus: '审核状态',
+    createdAt: '创建时间',
+    updatedAt: '更新时间',
+    created_at: '创建时间',
+    updated_at: '更新时间'
+  }
+  return labels[targetType ?? -1]?.[key] || commonLabels[key] || key
+}
+
+function formatFieldValue(key: string, value: unknown, targetType?: AuditTargetType): string {
+  if (value === null || value === undefined) return '无'
+
+  if (targetType === AuditTargetType.ACTIVITY_SIGNUP) {
+    if (key === 'check_in_status') return ATTENDANCE_STATUS_LABELS[Number(value) as AttendanceStatus] || String(value)
+    if (key === 'check_out_status') return CHECK_OUT_STATUS_LABELS[Number(value) as AttendanceStatus] || String(value)
+    if (key === 'work_hour_status') return WORK_HOUR_STATUS_LABELS[Number(value) as WorkHourStatus] || String(value)
+    if (key === 'status') return ACTIVITY_SIGNUP_STATUS_LABELS[Number(value) as ActivitySignupStatus] || String(value)
+  }
+
+  if (targetType === AuditTargetType.ORGANIZATION) {
+    if (key === 'status') return ORGANIZATION_STATUS_LABELS[Number(value) as OrganizationStatus] || String(value)
+    if (key === 'auditStatus') return VOLUNTEER_AUDIT_STATUS_LABELS[Number(value) as VolunteerAuditStatus] || String(value)
+  }
+
+  if (targetType === AuditTargetType.MEMBERSHIP) {
+    if (key === 'status') return formatMembershipStatus(Number(value))
+    if (key === 'role') return formatMembershipRole(Number(value))
+  }
+
+  if (targetType === AuditTargetType.VOLUNTEER_REAL_NAME) {
+    if (key === 'idCard') return maskIdCard(String(value))
+    if (key === 'auditStatus') return VOLUNTEER_AUDIT_STATUS_LABELS[Number(value) as VolunteerAuditStatus] || String(value)
+  }
+
+  if (typeof value === 'boolean') return value ? '是' : '否'
+  if (typeof value === 'string') return value || '无'
+  return String(value)
+}
+
+function formatMembershipStatus(status: number): string {
+  const map: Record<number, string> = { 1: '待审核', 2: '正式成员', 3: '已拒绝', 4: '已退出' }
+  return map[status] || String(status)
+}
+
+function formatMembershipRole(role: number): string {
+  const map: Record<number, string> = { 1: '普通成员', 2: '管理员', 3: '负责人' }
+  return map[role] || String(role)
+}
+
+function maskIdCard(idCard: string): string {
+  if (idCard.length >= 10) return idCard.slice(0, 4) + '********' + idCard.slice(-4)
+  return idCard
+}
+
 const selectedAudit = computed(() => (
   items.value.find((item) => item.id === selectedAuditId.value) || null
 ))
