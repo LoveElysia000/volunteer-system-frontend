@@ -126,7 +126,7 @@
             </template>
 
             <template #cell-createdAt="{ item }">
-              {{ item.createdAt }}
+              {{ formatDate(item.createdAt) }}
             </template>
           </DataTable>
         </OrganizationSectionCard>
@@ -291,7 +291,7 @@
                   操作时间
                 </p>
                 <p class="mt-1 text-sm font-semibold text-slate-900">
-                  {{ selectedLog.createdAt }}
+                  {{ formatDate(selectedLog.createdAt) }}
                 </p>
               </div>
               <div>
@@ -431,6 +431,17 @@ import { WorkHourOperationType, type WorkHourLogItem } from '@/types/work-hour'
 import { HistoryIcon } from 'lucide-vue-next'
 
 const messageStore = useMessageStore()
+
+const formatDate = (value?: string) => {
+  if (!value) return '-'
+  try {
+    const d = new Date(value)
+    if (isNaN(d.getTime())) return value
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+  } catch {
+    return value
+  }
+}
 
 const activityId = ref<number | undefined>()
 const signupId = ref<number | undefined>()

@@ -167,8 +167,9 @@
         >
           <template #cell-identity="{ item }">
             <div class="flex items-center gap-3">
-              <div class="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-[#f08b53] to-[#ec5b13] text-sm font-bold text-white">
-                {{ item.realName?.charAt(0) || '志' }}
+              <div class="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-[#f08b53] to-[#ec5b13] text-sm font-bold text-white">
+                <img v-if="item.avatarUrl" :src="item.avatarUrl" alt="" class="h-full w-full object-cover" />
+                <span v-else>{{ item.realName?.charAt(0) || '志' }}</span>
               </div>
               <div class="min-w-0">
                 <p class="truncate text-sm font-semibold text-slate-900">

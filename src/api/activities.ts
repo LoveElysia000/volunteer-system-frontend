@@ -64,7 +64,8 @@ export const mapActivityItemToOrganizationManagementView = (
       : 'bg-red-100 text-red-700',
   participants: item.currentPeople,
   maxPeople: item.maxPeople,
-  duration: item.duration
+  duration: item.duration,
+  coverUrl: item.coverUrl
 })
 
 const activitiesClient = createActivitiesApi(http)

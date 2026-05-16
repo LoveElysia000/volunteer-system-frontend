@@ -154,34 +154,18 @@
             @row-click="openActivityDrawer"
           >
             <template #default="{ item }">
-              <div class="space-y-3">
-                <div class="flex flex-wrap items-center gap-3">
-                  <StatusBadge
-                    :label="getStatusText(item.activityStatus)"
-                    :tone="getStatusTone(item.activityStatus)"
-                  />
-                  <StatusBadge
-                    :label="item.userRegistrationStatus === 'registered' ? '已报名' : '待报名'"
-                    :tone="item.userRegistrationStatus === 'registered' ? 'blue' : 'amber'"
-                  />
-                  <span
-                    v-if="item.tag"
-                    class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400"
-                  >
-                    {{ item.tag }}
-                  </span>
-                </div>
-
-                <div>
-                  <h3 class="text-lg font-bold tracking-tight text-slate-900">
-                    {{ item.title }}
-                  </h3>
-                  <p class="mt-2 text-sm leading-6 text-slate-600">
-                    {{ item.description }}
-                  </p>
-                </div>
-
-                <div class="flex flex-wrap gap-4 text-sm text-slate-500">
+              <div class="flex gap-4">
+                <div class="min-w-0 flex-1 space-y-3">
+                  <div class="flex flex-wrap items-center gap-3">
+                    <StatusBadge :label="getStatusText(item.activityStatus)" :tone="getStatusTone(item.activityStatus)" />
+                    <StatusBadge :label="item.userRegistrationStatus === 'registered' ? '已报名' : '待报名'" :tone="item.userRegistrationStatus === 'registered' ? 'blue' : 'amber'" />
+                    <span v-if="item.tag" class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">{{ item.tag }}</span>
+                  </div>
+                  <div>
+                    <h3 class="text-lg font-bold tracking-tight text-slate-900">{{ item.title }}</h3>
+                    <p class="mt-2 text-sm leading-6 text-slate-600">{{ item.description }}</p>
+                  </div>
+                  <div class="flex flex-wrap gap-4 text-sm text-slate-500">
                   <span>{{ item.timeRange }}</span>
                   <span>{{ item.location }}</span>
                   <span>{{ item.duration }} 小时</span>
@@ -189,6 +173,8 @@
                   <span class="font-semibold text-emerald-700">{{ item.orgName || item.tag || '活动任务' }}</span>
                 </div>
               </div>
+              <img v-if="item.coverUrl" :src="item.coverUrl" alt="" class="h-20 w-28 shrink-0 rounded-xl border border-slate-100 object-cover self-start" />
+            </div>
             </template>
           </DataList>
         </VolunteerSectionCard>

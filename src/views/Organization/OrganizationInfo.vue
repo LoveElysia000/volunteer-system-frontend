@@ -115,7 +115,14 @@
         </DataToolbar>
 
         <div
-          v-if="organizationStore.organizations.length"
+          v-if="organizationStore.loading"
+          class="flex items-center justify-center py-12"
+        >
+          <span class="text-sm text-slate-400">正在加载组织数据...</span>
+        </div>
+
+        <div
+          v-else-if="organizationStore.organizations.length"
           class="data-table-frame"
         >
           <div class="hidden grid-cols-[minmax(0,1.45fr)_minmax(110px,0.75fr)_minmax(140px,0.9fr)_100px_110px_120px] gap-4 border-b border-slate-200 bg-slate-50/80 px-5 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-400 2xl:grid">
@@ -421,8 +428,9 @@
                           <span class="drawer-value whitespace-pre-line">{{ currentOrganization.description || '待补充' }}</span>
                         </div>
                         <div class="drawer-field">
-                          <span class="drawer-label">Logo 地址</span>
-                          <span class="drawer-value break-all">{{ currentOrganization.logoUrl || '待补充' }}</span>
+                          <span class="drawer-label">Logo</span>
+                          <img v-if="currentOrganization.logoUrl" :src="currentOrganization.logoUrl" alt="Logo" class="mt-1 h-20 w-20 rounded-xl border border-slate-200 object-contain bg-white" />
+                          <span v-else class="drawer-value">待补充</span>
                         </div>
                         <div class="drawer-field">
                           <span class="drawer-label">官网地址</span>
@@ -445,11 +453,15 @@
                           />
                         </label>
                         <label class="drawer-edit-label">
-                          Logo 地址
-                          <Input
-                            v-model="organizationForm.logoUrl"
-                            class="mt-2"
-                          />
+                          Logo
+                          <div class="mt-2 flex items-center gap-3">
+                            <Input v-model="organizationForm.logoUrl" class="flex-1" placeholder="输入 URL 或上传" />
+                            <label class="inline-flex cursor-pointer items-center gap-2 rounded-full border border-[#ffd8c2] bg-white px-4 py-2 text-sm font-semibold text-[#ec5b13] transition hover:bg-[#fff7f2]">
+                              {{ logoUploading ? '上传中' : '上传' }}
+                              <input type="file" accept="image/jpeg,image/png,image/gif" class="hidden" @change="handleLogoUpload(organizationForm, $event)" />
+                            </label>
+                          </div>
+                          <img v-if="organizationForm.logoUrl" :src="organizationForm.logoUrl" alt="Logo预览" class="mt-3 h-16 rounded-lg border border-slate-200 object-contain bg-white" />
                         </label>
                         <label class="drawer-edit-label">
                           官网地址
@@ -634,11 +646,15 @@
           />
         </label>
         <label class="drawer-edit-label">
-          Logo 地址
-          <Input
-            v-model="createForm.logoUrl"
-            class="mt-2"
-          />
+          Logo
+          <div class="mt-2 flex items-center gap-3">
+            <Input v-model="createForm.logoUrl" class="flex-1" placeholder="输入 URL 或上传" />
+            <label class="inline-flex cursor-pointer items-center gap-2 rounded-full border border-[#ffd8c2] bg-white px-4 py-2 text-sm font-semibold text-[#ec5b13] transition hover:bg-[#fff7f2]">
+              {{ logoUploading ? '上传中' : '上传' }}
+              <input type="file" accept="image/jpeg,image/png,image/gif" class="hidden" @change="handleLogoUpload(createForm, $event)" />
+            </label>
+          </div>
+          <img v-if="createForm.logoUrl" :src="createForm.logoUrl" alt="Logo预览" class="mt-3 h-16 rounded-lg border border-slate-200 object-contain bg-white" />
         </label>
       </div>
       <div class="mt-4 flex justify-end gap-3">
@@ -689,6 +705,7 @@ import {
   UsersIcon,
   XIcon
 } from 'lucide-vue-next'
+import { uploadImage } from '@/api/upload'
 
 const authStore = useAuthStore()
 const messageStore = useMessageStore()
@@ -697,6 +714,7 @@ const accountSaving = ref(false)
 const createDialogOpen = ref(false)
 const createSaving = ref(false)
 const organizationSaving = ref(false)
+const logoUploading = ref(false)
 const drawerOpen = ref(false)
 const drawerLoading = ref(false)
 const drawerMode = ref<'view' | 'edit'>('view')
@@ -897,6 +915,24 @@ const saveAccountChanges = async () => {
     messageStore.error(error.message || '保存账户信息失败，请稍后重试')
   } finally {
     accountSaving.value = false
+  }
+}
+
+const handleLogoUpload = async (form: { logoUrl: string }, event: Event) => {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file) return
+  logoUploading.value = true
+  try {
+    const url = await uploadImage(file, 'org')
+    form.logoUrl = url
+    messageStore.success('Logo 已上传')
+  } catch (error: any) {
+    console.error('上传 Logo 失败:', error)
+    messageStore.error(error.message || '上传 Logo 失败')
+  } finally {
+    logoUploading.value = false
+    input.value = ''
   }
 }
 

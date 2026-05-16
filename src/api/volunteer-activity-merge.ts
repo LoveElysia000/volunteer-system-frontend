@@ -83,7 +83,8 @@ export const mapActivityItemToVolunteerView = (
     orgName: mergedItem.orgName,
     signupStatus: mergedItem.signupStatus,
     grantedHours: mergedItem.grantedHours,
-    auditReason: mergedItem.auditReason
+    auditReason: mergedItem.auditReason,
+    coverUrl: item.coverUrl
   }
 }
 
@@ -106,7 +107,8 @@ export const mapRegisteredActivityItemToVolunteerView = (item: ActivityListItem)
   orgName: item.orgName,
   signupStatus: item.signupStatus,
   grantedHours: item.grantedHours,
-  auditReason: item.auditReason
+  auditReason: item.auditReason,
+  coverUrl: item.coverUrl
 })
 
 export const mergeVolunteerActivityRows = (

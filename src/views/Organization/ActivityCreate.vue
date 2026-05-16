@@ -146,30 +146,28 @@
           tone="soft"
         >
           <label class="text-sm font-medium text-slate-600">
-            封面地址
-            <Input
-              v-model="form.coverUrl"
-              class="mt-2"
-              placeholder="可选，填写活动封面 URL"
-              allow-clear
-            />
+            封面图片
+            <div class="mt-2">
+              <label class="inline-flex cursor-pointer items-center gap-2 rounded-full border border-[#ffd8c2] bg-white px-4 py-2 text-sm font-semibold text-[#ec5b13] transition hover:bg-[#fff7f2]">
+                <UploadIcon class="h-4 w-4" />
+                {{ coverUploading ? '上传中...' : '选择封面图片' }}
+                <input type="file" accept="image/jpeg,image/png,image/gif" class="hidden" :disabled="coverUploading" @change="handleCoverUpload" />
+              </label>
+              <p class="mt-1 text-xs text-slate-400">支持 jpg/png/gif，最大 10MB</p>
+            </div>
           </label>
 
           <div
-            v-if="form.coverUrl.trim()"
+            v-if="form.coverUrl"
             class="mt-4 overflow-hidden rounded-[1.3rem] border border-slate-200 bg-slate-50"
           >
-            <img
-              :src="form.coverUrl.trim()"
-              alt="活动封面预览"
-              class="h-56 w-full object-cover"
-            >
+            <img :src="form.coverUrl" alt="活动封面预览" class="h-56 w-full object-cover">
           </div>
           <div
             v-else
             class="mt-4 rounded-[1.3rem] border border-dashed border-slate-200 bg-white px-4 py-10 text-center text-sm text-slate-500"
           >
-            填写封面地址后，这里会显示活动封面预览。
+            选择图片后会自动上传并显示预览
           </div>
 
           <div
@@ -228,12 +226,15 @@ import OrganizationPageHeader from '@/components/organization/OrganizationPageHe
 import OrganizationSectionCard from '@/components/organization/OrganizationSectionCard.vue'
 import { useMessageStore } from '@/store/modules/messages'
 import { useOrganizationStore } from '@/store/modules/organization'
+import { uploadImage } from '@/api/upload'
+import { UploadIcon } from 'lucide-vue-next'
 import type { CreateOrganizationActivityRequest } from '@/types/activity'
 
 const router = useRouter()
 const messageStore = useMessageStore()
 const organizationStore = useOrganizationStore()
 const submitting = ref(false)
+const coverUploading = ref(false)
 const recentCreatedActivityId = ref<number | null>(null)
 const organizationId = computed(() => organizationStore.activeOrganizationId ?? organizationStore.currentOrganization?.id ?? 0)
 
@@ -300,6 +301,24 @@ const readinessChecklist = computed(() => [
   { label: '活动排期', detail: '开始时间必须早于结束时间。', done: Boolean(form.startTime && form.endTime && new Date(form.endTime).getTime() > new Date(form.startTime).getTime()) },
   { label: '地点与人数', detail: '地点和人数上限会影响招募效果与执行安排。', done: Boolean(form.location.trim() && form.maxPeople > 0) }
 ])
+
+const handleCoverUpload = async (event: Event) => {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file) return
+  coverUploading.value = true
+  try {
+    const url = await uploadImage(file, 'activity')
+    form.coverUrl = url
+    messageStore.success('封面已上传')
+  } catch (error: any) {
+    console.error('上传封面失败:', error)
+    messageStore.error(error.message || '上传封面失败')
+  } finally {
+    coverUploading.value = false
+    input.value = ''
+  }
+}
 
 const submitActivity = async () => {
   if (!organizationId.value) {
