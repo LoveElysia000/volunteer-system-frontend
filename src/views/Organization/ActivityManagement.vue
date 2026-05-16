@@ -174,13 +174,12 @@
           @row-click="openActivityDrawer"
         >
           <template #cell-identity="{ item }">
-            <div class="min-w-0 space-y-1">
-              <p class="truncate text-sm font-semibold text-slate-900">
-                {{ item.title }}
-              </p>
-              <p class="truncate text-xs text-slate-500">
-                {{ item.description }}
-              </p>
+            <div class="flex items-start gap-3">
+              <img v-if="item.coverUrl" :src="item.coverUrl" alt="" class="mt-0.5 h-10 w-16 shrink-0 rounded-lg border border-slate-100 object-cover" />
+              <div class="min-w-0 flex-1 space-y-1">
+                <p class="truncate text-sm font-semibold text-slate-900">{{ item.title }}</p>
+                <p class="truncate text-xs text-slate-500">{{ item.description }}</p>
+              </div>
             </div>
           </template>
 

@@ -132,28 +132,22 @@
               @row-click="openRegistrationDrawer"
             >
               <template #default="{ item }">
-                <div class="space-y-3">
-                  <div class="flex flex-wrap items-center gap-3">
-                    <h3 class="text-lg font-bold text-slate-900">
-                      {{ item.title }}
-                    </h3>
-                    <VolunteerStatusBadge
-                      :label="registrationBadgeLabel(item)"
-                      :tone="registrationBadgeTone(item)"
-                    />
+                <div class="flex gap-4">
+                  <div class="min-w-0 flex-1 space-y-3">
+                    <div class="flex flex-wrap items-center gap-3">
+                      <h3 class="text-lg font-bold text-slate-900">{{ item.title }}</h3>
+                      <VolunteerStatusBadge :label="registrationBadgeLabel(item)" :tone="registrationBadgeTone(item)" />
+                    </div>
+                    <p class="text-sm leading-6 text-slate-600">{{ item.description }}</p>
+                    <div class="grid gap-2 text-sm text-slate-500 sm:grid-cols-2 2xl:grid-cols-4">
+                      <p>时间：{{ item.timeRange }}</p>
+                      <p>地点：{{ item.location }}</p>
+                      <p>报名进度：{{ registrationProgressText(item) }}</p>
+                      <p>预计服务：{{ item.duration }} 小时</p>
+                      <p class="font-semibold text-emerald-700 sm:col-span-2 2xl:col-span-1">{{ item.orgName || '所属组织待确认' }}</p>
+                    </div>
                   </div>
-                  <p class="text-sm leading-6 text-slate-600">
-                    {{ item.description }}
-                  </p>
-                  <div class="grid gap-2 text-sm text-slate-500 sm:grid-cols-2 2xl:grid-cols-4">
-                    <p>时间：{{ item.timeRange }}</p>
-                    <p>地点：{{ item.location }}</p>
-                    <p>报名进度：{{ registrationProgressText(item) }}</p>
-                    <p>预计服务：{{ item.duration }} 小时</p>
-                    <p class="font-semibold text-emerald-700 sm:col-span-2 2xl:col-span-1">
-                      {{ item.orgName || '所属组织待确认' }}
-                    </p>
-                  </div>
+                  <img v-if="item.coverUrl" :src="item.coverUrl" alt="" class="h-20 w-28 shrink-0 rounded-xl border border-slate-100 object-cover self-start" />
                 </div>
               </template>
             </DataList>

@@ -11,7 +11,11 @@ export default defineConfig({
   },
   server: {
     port: 3000,
-    open: true
+    open: true,
+    proxy: {
+      '/api': { target: 'http://localhost:1109' },
+      '/uploads': { target: 'http://localhost:1109' }
+    }
   },
   build: {
     outDir: 'dist',

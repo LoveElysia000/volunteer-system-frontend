@@ -42,8 +42,11 @@
                 class="flex items-center gap-4"
                 :class="isCompact ? 'flex-col justify-center gap-3 text-center' : ''"
               >
-                <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-700 text-xl font-black text-white">
-                  {{ userInitials }}
+                <div
+                  class="flex h-14 w-14 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-700 text-xl font-black text-white"
+                >
+                  <img v-if="userAvatar" :src="userAvatar" alt="头像" class="h-full w-full object-cover">
+                  <span v-else>{{ userInitials }}</span>
                 </div>
                 <div
                   v-if="!isCompact"
@@ -250,8 +253,9 @@
 
           <div class="volunteer-shell-panel p-4">
             <div class="flex items-center gap-3">
-              <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-700 text-lg font-bold text-white">
-                {{ userInitials }}
+              <div class="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-700 text-lg font-bold text-white">
+                <img v-if="userAvatar" :src="userAvatar" alt="头像" class="h-full w-full object-cover">
+                <span v-else>{{ userInitials }}</span>
               </div>
               <div>
                 <p class="font-bold text-slate-900">
@@ -301,6 +305,7 @@ const router = useRouter()
 const authStore = useAuthStore()
 const volunteerStore = useVolunteerStore()
 const { user, points, volunteerLevel, levelProgressPercentage } = useVolunteerMetrics()
+const userAvatar = computed(() => user.value?.avatarUrl || volunteerStore.profile?.avatarUrl || '')
 const isMobileSidebarOpen = ref(false)
 const { isMobile, isCompact, isExpanded } = useResponsiveWorkbench()
 

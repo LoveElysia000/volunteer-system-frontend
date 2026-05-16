@@ -249,6 +249,7 @@ export interface VolunteerActivityViewItem {
   signupStatus?: ActivitySignupStatus
   grantedHours?: number
   auditReason?: string
+  coverUrl?: string
 }
 
 export interface OrganizationManagementActivityItem {
@@ -268,4 +269,5 @@ export interface OrganizationManagementActivityItem {
   participants: number
   maxPeople: number
   duration: number
+  coverUrl?: string
 }

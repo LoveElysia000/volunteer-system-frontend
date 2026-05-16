@@ -39,85 +39,151 @@
       </template>
     </VolunteerPageHeader>
 
-    <WorkbenchSplitLayout
-      variant="studio"
-      class="volunteer-profile-studio"
-    >
-      <template #main>
-        <div class="space-y-6">
-        <VolunteerSectionCard
-          title="志愿者名片"
-          description="你的身份展示、等级和近期状态。"
-          tone="accent"
-        >
-          <div class="space-y-6 text-white">
-            <div class="flex items-center gap-4">
-              <img
-                v-if="avatarPreview"
-                :src="avatarPreview"
-                alt="头像"
-                class="h-20 w-20 rounded-[1.5rem] object-cover"
-              >
-              <div
-                v-else
-                class="flex h-20 w-20 items-center justify-center rounded-[1.5rem] bg-white/15 text-3xl font-black"
-              >
-                {{ userInitials }}
-              </div>
-              <div>
-                <p class="text-2xl font-black">
-                  {{ displayName }}
-                </p>
-                <p class="mt-1 text-sm text-emerald-100/85">
-                  Lv.{{ volunteerLevel }} · 环保志愿者
-                </p>
-              </div>
+    <div class="space-y-6">
+      <VolunteerSectionCard
+        title="志愿者名片"
+        description="你的身份展示、等级和近期状态。"
+        tone="accent"
+      >
+        <div class="space-y-6 text-white">
+          <div class="flex items-center gap-4">
+            <img
+              v-if="avatarPreview"
+              :src="avatarPreview"
+              alt="头像"
+              class="h-20 w-20 rounded-[1.5rem] object-cover"
+            >
+            <div
+              v-else
+              class="flex h-20 w-20 items-center justify-center rounded-[1.5rem] bg-white/15 text-3xl font-black"
+            >
+              {{ userInitials }}
             </div>
+            <div>
+              <p class="text-2xl font-black">
+                {{ displayName }}
+              </p>
+              <p class="mt-1 text-sm text-emerald-100/85">
+                Lv.{{ volunteerLevel }} · 环保志愿者
+              </p>
+            </div>
+          </div>
 
-            <label class="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:border-white/30 hover:bg-white/15">
-              <CameraIcon class="h-4 w-4" />
-              更换头像
-              <input
-                type="file"
-                accept="image/*"
-                class="hidden"
-                @change="handleAvatarUpload"
-              >
+          <label class="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/15 px-4 py-2 text-sm font-semibold text-white transition"
+            :class="avatarUploading ? 'bg-white/5 border-white/10 opacity-50' : 'bg-white/10 hover:border-white/30 hover:bg-white/15'"
+          >
+            <CameraIcon class="h-4 w-4" />
+            {{ avatarUploading ? '上传中...' : '更换头像' }}
+            <input
+              type="file"
+              accept="image/*"
+              class="hidden"
+              :disabled="avatarUploading"
+              @change="handleAvatarUpload"
+            >
+          </label>
+
+          <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div class="rounded-[1.25rem] bg-white/10 p-4">
+              <p class="text-xs uppercase tracking-[0.2em] text-emerald-100/70">当前积分</p>
+              <p class="mt-2 text-2xl font-black">{{ user?.points || 0 }}</p>
+            </div>
+            <div class="rounded-[1.25rem] bg-white/10 p-4">
+              <p class="text-xs uppercase tracking-[0.2em] text-emerald-100/70">累计时长</p>
+              <p class="mt-2 text-2xl font-black">{{ user?.totalHours || 0 }}h</p>
+            </div>
+            <div class="rounded-[1.25rem] bg-white/10 p-4">
+              <p class="text-xs uppercase tracking-[0.2em] text-emerald-100/70">服务次数</p>
+              <p class="mt-2 text-2xl font-black">{{ serviceCountValue }}</p>
+            </div>
+            <div class="rounded-[1.25rem] bg-white/10 p-4">
+              <p class="text-xs uppercase tracking-[0.2em] text-emerald-100/70">信用分</p>
+              <p class="mt-2 text-2xl font-black">{{ creditScoreValue }}</p>
+            </div>
+          </div>
+        </div>
+      </VolunteerSectionCard>
+
+      <div class="grid gap-6 lg:grid-cols-2">
+        <VolunteerSectionCard
+          title="账户信息"
+          description="更新你的用户名、邮箱地址和手机号码。"
+        >
+          <div class="space-y-4">
+            <label class="block text-sm font-medium text-slate-600">
+              用户名
+              <Input v-model="accountForm.username" class="mt-2" theme="emerald" />
             </label>
+            <label class="block text-sm font-medium text-slate-600">
+              邮箱地址
+              <Input v-model="accountForm.email" class="mt-2" theme="emerald" />
+            </label>
+            <label class="block text-sm font-medium text-slate-600">
+              手机号码
+              <Input v-model="accountForm.phone" class="mt-2" theme="emerald" />
+            </label>
+          </div>
+          <div class="mt-4 flex justify-end">
+            <Button variant="success" rounded :loading="accountSaving" @click="saveAccountChanges">保存账户信息</Button>
+          </div>
+        </VolunteerSectionCard>
 
-            <div class="grid gap-3 sm:grid-cols-2">
-              <div class="rounded-[1.25rem] bg-white/10 p-4">
-                <p class="text-xs uppercase tracking-[0.2em] text-emerald-100/70">
-                  当前积分
-                </p>
-                <p class="mt-2 text-2xl font-black">
-                  {{ user?.points || 0 }}
-                </p>
+        <VolunteerSectionCard
+          title="个人资料"
+          description="设置性别、生日和个人简介信息。"
+          tone="soft"
+        >
+          <div class="space-y-4">
+            <label class="block text-sm font-medium text-slate-600">
+              性别
+              <div class="mt-2">
+                <FilterSelect v-model="profileForm.gender" title="性别" :icon="UsersIcon" :options="genderOptions" theme="emerald" />
               </div>
-              <div class="rounded-[1.25rem] bg-white/10 p-4">
-                <p class="text-xs uppercase tracking-[0.2em] text-emerald-100/70">
-                  累计时长
-                </p>
-                <p class="mt-2 text-2xl font-black">
-                  {{ user?.totalHours || 0 }}h
-                </p>
+            </label>
+            <label class="block text-sm font-medium text-slate-600">
+              生日
+              <div class="mt-2">
+                <DatePicker v-model="birthdayValue" placeholder="请选择生日" mode="date" theme="emerald" />
               </div>
-              <div class="rounded-[1.25rem] bg-white/10 p-4">
-                <p class="text-xs uppercase tracking-[0.2em] text-emerald-100/70">
-                  服务次数
-                </p>
-                <p class="mt-2 text-2xl font-black">
-                  {{ serviceCountValue }}
-                </p>
+            </label>
+            <label class="block text-sm font-medium text-slate-600">
+              个人简介
+              <Textarea v-model="profileForm.introduction" class="mt-2" :min-rows="3" :max-rows="6" allow-clear show-word-limit :max-length="300" theme="emerald" />
+            </label>
+          </div>
+          <div class="mt-4 flex justify-end">
+            <Button variant="success" rounded :loading="profileSaving" @click="saveProfileChanges">保存个人资料</Button>
+          </div>
+        </VolunteerSectionCard>
+      </div>
+
+      <div class="grid gap-6 lg:grid-cols-2">
+        <VolunteerSectionCard
+          title="实名认证"
+          description="认证通过后，报名、签到等流程会更顺畅。"
+          tone="soft"
+        >
+          <div class="space-y-4">
+            <div class="flex items-start justify-between gap-4 rounded-[1.1rem] border border-white/80 bg-white/90 px-4 py-4">
+              <div>
+                <p class="text-sm font-semibold text-slate-900">当前认证状态</p>
+                <p class="mt-1 text-xs text-slate-500">{{ auditStatusDescription }}</p>
+                <p class="mt-2 text-xs text-slate-500">当前实名：{{ verificationInfo?.realName || '未提交' }}</p>
               </div>
-              <div class="rounded-[1.25rem] bg-white/10 p-4">
-                <p class="text-xs uppercase tracking-[0.2em] text-emerald-100/70">
-                  信用分
-                </p>
-                <p class="mt-2 text-2xl font-black">
-                  {{ creditScoreValue }}
-                </p>
-              </div>
+              <span class="shrink-0 rounded-full px-3 py-1 text-xs font-semibold" :class="auditStatusClass">{{ auditStatusLabel }}</span>
+            </div>
+            <div v-if="canSubmitRealName" class="grid gap-4 md:grid-cols-2">
+              <label class="block text-sm font-medium text-slate-600">
+                真实姓名
+                <Input v-model="realNameForm.realName" class="mt-2" placeholder="请输入身份证上的真实姓名" theme="emerald" />
+              </label>
+              <label class="block text-sm font-medium text-slate-600">
+                身份证号
+                <Input v-model="realNameForm.idCard" class="mt-2" placeholder="请输入 18 位身份证号" theme="emerald" />
+              </label>
+            </div>
+            <div v-if="canSubmitRealName" class="flex justify-end">
+              <Button variant="success" rounded :loading="realNameSubmitting" @click="submitRealName">提交实名认证</Button>
             </div>
           </div>
         </VolunteerSectionCard>
@@ -129,236 +195,34 @@
         >
           <div class="mb-4 flex items-center justify-between rounded-[1.1rem] border border-white/80 bg-white/90 px-4 py-3">
             <div>
-              <p class="text-sm font-semibold text-slate-900">
-                账户状态
-              </p>
-               <p class="mt-1 text-xs text-slate-500">
-                 当前志愿者账号的状态标识。
-               </p>
+              <p class="text-sm font-semibold text-slate-900">账户状态</p>
+              <p class="mt-1 text-xs text-slate-500">当前志愿者账号的状态标识。</p>
             </div>
-            <span
-              class="shrink-0 rounded-full px-3 py-1 text-xs font-semibold"
-              :class="volunteerStatusClass"
-            >
-              {{ volunteerStatusLabel }}
-            </span>
+            <span class="shrink-0 rounded-full px-3 py-1 text-xs font-semibold" :class="volunteerStatusClass">{{ volunteerStatusLabel }}</span>
           </div>
           <ul class="space-y-3">
-            <li
-              v-for="item in profileHealthChecklist"
-              :key="item.label"
-              class="volunteer-surface-lift flex items-start justify-between gap-3 rounded-[1.1rem] border border-white/80 bg-white/90 px-4 py-3"
-            >
+            <li v-for="item in profileHealthChecklist" :key="item.label" class="flex items-start justify-between gap-3 rounded-[1.1rem] border border-white/80 bg-white/90 px-4 py-3">
               <div>
-                <p class="text-sm font-semibold text-slate-900">
-                  {{ item.label }}
-                </p>
-                <p class="mt-1 text-xs text-slate-500">
-                  {{ item.detail }}
-                </p>
+                <p class="text-sm font-semibold text-slate-900">{{ item.label }}</p>
+                <p class="mt-1 text-xs text-slate-500">{{ item.detail }}</p>
               </div>
-              <span
-                class="shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold"
-                :class="item.done ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'"
-              >
-                {{ item.done ? '已完成' : '待完善' }}
-              </span>
+              <span class="shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold" :class="item.done ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'">{{ item.done ? '已完成' : '待完善' }}</span>
             </li>
           </ul>
         </VolunteerSectionCard>
+      </div>
+
+      <VolunteerSectionCard
+        title="我的组织"
+        description="查看已加入的组织、申请加入新组织或退出当前组织。"
+        tone="soft"
+      >
+        <div class="flex items-center justify-between">
+          <p class="text-sm text-slate-600">组织关系请前往"我的组织"页面管理</p>
+          <RouterLink to="/volunteer/organizations" class="rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700">前往我的组织</RouterLink>
         </div>
-      </template>
-
-      <template #aside>
-        <div class="space-y-6">
-        <VolunteerSectionCard
-          title="账户信息"
-          description="更新你的用户名、邮箱地址和手机号码。"
-        >
-          <div class="grid gap-4 md:grid-cols-2">
-            <label class="text-sm font-medium text-slate-600">
-              用户名
-              <Input
-                v-model="accountForm.username"
-                class="mt-2"
-                theme="emerald"
-              />
-            </label>
-            <label class="text-sm font-medium text-slate-600">
-              邮箱地址
-              <Input
-                v-model="accountForm.email"
-                class="mt-2"
-                theme="emerald"
-              />
-            </label>
-            <label class="text-sm font-medium text-slate-600">
-              手机号码
-              <Input
-                v-model="accountForm.phone"
-                class="mt-2"
-                theme="emerald"
-              />
-            </label>
-          </div>
-          <div class="mt-4 flex justify-end">
-            <Button
-              variant="success"
-              rounded
-              :loading="accountSaving"
-              @click="saveAccountChanges"
-            >
-              保存账户信息
-            </Button>
-          </div>
-        </VolunteerSectionCard>
-
-        <VolunteerSectionCard
-          title="个人资料"
-          description="设置性别、生日和个人简介信息。"
-          tone="soft"
-        >
-          <div class="grid gap-4 md:grid-cols-2">
-            <label class="text-sm font-medium text-slate-600">
-              性别
-              <div class="mt-2">
-                <FilterSelect
-                  v-model="profileForm.gender"
-                  title="性别"
-                  :icon="UsersIcon"
-                  :options="genderOptions"
-                  theme="emerald"
-                />
-              </div>
-            </label>
-            <label class="text-sm font-medium text-slate-600">
-              生日
-              <div class="mt-2">
-                <DatePicker
-                  v-model="birthdayValue"
-                  placeholder="请选择生日"
-                  mode="date"
-                  theme="emerald"
-                />
-              </div>
-            </label>
-            <label class="text-sm font-medium text-slate-600 md:col-span-2">
-              个人简介
-              <Textarea
-                v-model="profileForm.introduction"
-                class="mt-2"
-                :min-rows="3"
-                :max-rows="6"
-                allow-clear
-                show-word-limit
-                :max-length="300"
-                theme="emerald"
-              />
-            </label>
-          </div>
-          <div class="mt-4 flex justify-end">
-            <Button
-              variant="success"
-              rounded
-              :loading="profileSaving"
-              @click="saveProfileChanges"
-            >
-              保存个人资料
-            </Button>
-          </div>
-        </VolunteerSectionCard>
-
-        <VolunteerSectionCard
-          title="实名认证"
-          description="认证通过后，报名、签到等真实业务流程会更顺畅。"
-          tone="soft"
-        >
-          <div class="space-y-4">
-            <div class="volunteer-surface-lift flex items-start justify-between gap-4 rounded-[1.1rem] border border-white/80 bg-white/90 px-4 py-4">
-              <div>
-                <p class="text-sm font-semibold text-slate-900">
-                  当前认证状态
-                </p>
-                <p class="mt-1 text-xs text-slate-500">
-                  {{ auditStatusDescription }}
-                </p>
-                <p class="mt-2 text-xs text-slate-500">
-                  当前实名：{{ verificationInfo?.realName || '未提交' }}
-                </p>
-              </div>
-              <span
-                class="shrink-0 rounded-full px-3 py-1 text-xs font-semibold"
-                :class="auditStatusClass"
-              >
-                {{ auditStatusLabel }}
-              </span>
-            </div>
-
-            <div
-              v-if="canSubmitRealName"
-              class="grid gap-4 md:grid-cols-2"
-            >
-              <label class="text-sm font-medium text-slate-600">
-                真实姓名
-                <Input
-                  v-model="realNameForm.realName"
-                  class="mt-2"
-                  placeholder="请输入身份证上的真实姓名"
-                  theme="emerald"
-                />
-              </label>
-              <label class="text-sm font-medium text-slate-600">
-                身份证号
-                <Input
-                  v-model="realNameForm.idCard"
-                  class="mt-2"
-                  placeholder="请输入 18 位身份证号"
-                  theme="emerald"
-                />
-              </label>
-            </div>
-
-            <div
-              v-if="canSubmitRealName"
-              class="flex justify-end"
-            >
-              <Button
-                variant="success"
-                rounded
-                :loading="realNameSubmitting"
-                @click="submitRealName"
-              >
-                提交实名认证
-              </Button>
-            </div>
-          </div>
-        </VolunteerSectionCard>
-
-        <VolunteerSectionCard
-          title="我的组织"
-          description="查看已加入的组织、申请加入新组织或退出当前组织。"
-          tone="soft"
-        >
-          <div class="space-y-4">
-            <div class="rounded-[1.1rem] border border-white/80 bg-white/90 px-4 py-4">
-              <p class="text-sm font-semibold text-slate-900">
-                 组织关系请前往"我的组织"页面管理
-               </p>
-                <p class="mt-2 text-sm leading-6 text-slate-500">
-                  包含公开组织列表、我的组织关系、加入申请状态和退出操作。
-                </p>
-            </div>
-            <RouterLink
-              to="/volunteer/organizations"
-              class="inline-flex w-fit items-center justify-center rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700"
-            >
-              前往我的组织
-            </RouterLink>
-          </div>
-        </VolunteerSectionCard>
-        </div>
-      </template>
-    </WorkbenchSplitLayout>
+      </VolunteerSectionCard>
+    </div>
   </WorkbenchPage>
 </template>
 
@@ -371,7 +235,6 @@ import DatePicker from '@/components/ui/DatePicker.vue'
 import FilterSelect from '@/components/ui/FilterSelect.vue'
 import Textarea from '@/components/ui/Textarea.vue'
 import WorkbenchPage from '@/components/workbench/WorkbenchPage.vue'
-import WorkbenchSplitLayout from '@/components/workbench/WorkbenchSplitLayout.vue'
 import { VOLUNTEER_AUDIT_STATUS_LABELS } from '@/constants/status'
 import { useAuthStore } from '@/store/modules/auth'
 import { useVolunteerStore } from '@/store/modules/volunteer'
@@ -386,6 +249,7 @@ import {
 import { CameraIcon, UsersIcon } from 'lucide-vue-next'
 import VolunteerPageHeader from '@/components/volunteer/VolunteerPageHeader.vue'
 import VolunteerSectionCard from '@/components/volunteer/VolunteerSectionCard.vue'
+import { uploadImage } from '@/api/upload'
 
 const authStore = useAuthStore()
 const volunteerStore = useVolunteerStore()
@@ -395,6 +259,7 @@ const profile = computed(() => volunteerStore.profile)
 const accountInfo = computed(() => volunteerStore.accountInfo)
 const verificationInfo = computed(() => volunteerStore.verification)
 const avatarPreview = ref('')
+const avatarUploading = ref(false)
 const accountSaving = ref(false)
 const profileSaving = ref(false)
 const realNameSubmitting = ref(false)
@@ -531,14 +396,29 @@ const syncForm = () => {
   realNameForm.idCard = verificationInfo.value?.idCard || ''
 }
 
-const handleAvatarUpload = (event: Event) => {
+const handleAvatarUpload = async (event: Event) => {
   const input = event.target as HTMLInputElement
-  if (!input.files?.[0]) return
+  const file = input.files?.[0]
+  if (!file) return
+
   const reader = new FileReader()
   reader.onload = (loadEvent) => {
     avatarPreview.value = String(loadEvent.target?.result || '')
   }
-  reader.readAsDataURL(input.files[0])
+  reader.readAsDataURL(file)
+
+  avatarUploading.value = true
+  try {
+    const url = await uploadImage(file, 'avatar')
+    avatarPreview.value = url
+    messageStore.success('头像已上传，保存资料后生效')
+  } catch (error: any) {
+    console.error('上传头像失败:', error)
+    messageStore.error(error.message || '上传头像失败')
+  } finally {
+    avatarUploading.value = false
+    input.value = ''
+  }
 }
 
 const saveAccountChanges = async () => {
