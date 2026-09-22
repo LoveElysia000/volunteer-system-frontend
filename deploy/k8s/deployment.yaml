@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: volunteer-system-frontend
+  namespace: volunteer-system
+  labels:
+    app: volunteer-system-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: volunteer-system-frontend
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      # 单副本下先起新再停旧，保证发布零停机
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: volunteer-system-frontend
+    spec:
+      # 复用后端已创建的 GHCR pull secret（volunteer-system 命名空间）
+      # 镜像设为 Public 后删除此段
+      imagePullSecrets:
+        - name: ghcr-creds
+      containers:
+        - name: volunteer-system-frontend
+          # CD 部署时更新为 <git sha>；此处的 latest 仅为首次 apply 前的占位
+          image: ghcr.io/loveelysia000/volunteer-system-frontend:latest
+          # 占位用的可变标签必须搭配 Always，避免命中节点上的过期缓存
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              memory: 128Mi
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8080
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8080

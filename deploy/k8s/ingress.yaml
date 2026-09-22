@@ -1,0 +1,36 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: volunteer-system-frontend
+  namespace: volunteer-system
+  labels:
+    app: volunteer-system-frontend
+spec:
+  ingressClassName: traefik
+  rules:
+    # 暂无域名：不写 host 即 catch-all，用 http://<服务器IP>/ 直接访问
+    # 有域名后改成: - host: eco.volunteer.com
+    - http:
+        paths:
+          # API 与上传文件直转后端 Service（volunteer-app:1109），nginx 只负责静态文件
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: volunteer-app
+                port:
+                  number: 1109
+          - path: /uploads
+            pathType: Prefix
+            backend:
+              service:
+                name: volunteer-app
+                port:
+                  number: 1109
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: volunteer-system-frontend
+                port:
+                  number: 80
